@@ -10,6 +10,13 @@ NektoGraph empowers developers with full **SPARQL-star** (SPARQL 1.2) Query and 
 ### 🌐 Standalone Workbench
 For immediate use, you can download or access the **[NektoGraph Standalone Workbench](./publish/index.html)** (use "download raw file" option to download standalone index.html file). This is a single, self-contained HTML file that encapsulates the entire editor, database engine, and reasoning capabilities—no server or installation required.
 
+### 🧭 The Vision
+Nektograph was born from a simple yet powerful goal: to create a **"Zero-Setup" Knowledge Graph Toolkit** that bridges the gap between complex semantic theory and practical implementation. 
+
+> "We envision a future where Knowledge Graphs are accessible to everyone—from students learning about axioms to enterprise developers performing agile data refactoring."
+
+Read the full story, our technical philosophy, and the ambitious roadmap in **[The Nektograph Vision & Journey](./VISION.md)**.
+
 ---
 
 ## 🌟 Core Capabilities
