@@ -1,0 +1,51 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "module": "ESNext",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "skipLibCheck": true,
+
+        /* Bundler mode */
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+
+        /* Linting */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+
+        "baseUrl": ".",
+        "paths": {
+            // Direct Linkage to Type Truth for Promoted Libraries (V6 Standard)
+            "@triplestore/core": ["./src/runtime/lib_types.ts"],
+            "@triplestore/sparql": ["./src/runtime/lib_types.ts"],
+            "@triplestore/inference": ["./src/runtime/lib_types.ts"],
+            "@triplestore/generator": ["./src/runtime/lib_types.ts"],
+            "@triplestore/io": ["./src/runtime/lib_types.ts"],
+            "@triplestore/hover": ["./src/runtime/lib_types.ts"],
+            "@triplestore/search": ["./src/runtime/lib_types.ts"],
+            
+            // Internal App Packages (Direct Source)
+            "@triplestore/edit-engine": ["../../packages/edit-engine/src/index.ts"],
+            "@triplestore/session": ["../../packages/session/src/index.ts"],
+            "@triplestore/3dview": ["../../packages/3dview/src/index.ts"],
+            "@triplestore/maintenance": ["../../packages/maintenance/src/index.ts"],
+            "@triplestore/window-manager": ["./src/runtime/lib_types.ts"],
+            "@triplestore/kg-triple": ["../../packages/kg-triple/src/index.ts"],
+            "@triplestore/graph-selector": ["../../packages/graph-selector/src/index.ts"],
+            "@triplestore/data-sync": ["../../packages/data-sync/src/index.ts"],
+            "@triplestore/events": ["../../packages/events/index.ts"],
+            "@triplestore/uri": ["../../lib_sources/uri-utils/src/index.ts"],
+            "@triplestore/rdf-factory": ["../../lib_sources/rdf-factory/src/index.ts"],
+            "@triplestore/sparql-parser": ["../../lib_sources/sparql-parser-lite/src/index.ts"]
+        }
+    },
+    "include": ["src"]
+}

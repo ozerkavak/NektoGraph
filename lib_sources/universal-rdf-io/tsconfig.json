@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@triplestore/uri": ["../uri-utils/src/index.ts"],
+      "@triplestore/rdf-factory": ["../rdf-factory/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "uri-utils",
+  "version": "Beta v1.0",
+  "status": "active",
+  "isolated": true,
+  "type": "utility",
+  "description": "Zero-dependency replacement for generic URI libraries. Optimized for RDF IRIs."
+}

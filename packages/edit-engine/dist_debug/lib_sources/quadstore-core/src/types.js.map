@@ -1,0 +1,1 @@
+{"version":3,"file":"types.js","sourceRoot":"","sources":["../../../../../../lib_sources/quadstore-core/src/types.ts"],"names":[],"mappings":"AAEA,MAAM,CAAC,MAAM,QAAQ,GAAG;IACpB,GAAG,EAAE,IAAI;IACT,KAAK,EAAE,IAAI;IACX,OAAO,EAAE,IAAI;CACP,CAAC;AAKX,qEAAqE;AACrE,MAAM,CAAC,MAAM,SAAS,GAAG,mBAAmB,CAAC;AAC7C,MAAM,CAAC,MAAM,UAAU,GAAG,GAAG,CAAC;AAG9B,MAAM,CAAC,MAAM,aAAa,GAAW,EAAE,CAAC"}

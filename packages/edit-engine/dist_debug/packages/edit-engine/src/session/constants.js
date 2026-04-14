@@ -1,0 +1,9 @@
+export const DIFF_GRAPH_URI = 'http://example.org/graphs/system/diff';
+export const NS_AG = 'http://example.org/ns/';
+export const TYPE_DELETION = NS_AG + 'Deletion';
+export const PROP_SUBJECT = NS_AG + 'subject';
+export const PROP_PREDICATE = NS_AG + 'predicate';
+export const PROP_OBJECT = NS_AG + 'object'; // Reified Object
+export const PROP_TIMESTAMP = NS_AG + 'timestamp';
+export const DEFAULT_WRITE_GRAPH = 'http://example.org/graphs/user';
+//# sourceMappingURL=constants.js.map

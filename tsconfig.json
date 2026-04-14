@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@triplestore/core": ["lib_sources/quadstore-core/src/index.ts"],
+      "@triplestore/sparql": ["packages/sparql/src/index.ts"],
+      "@triplestore/inference": ["lib_sources/inference/src/index.ts"],
+      "@triplestore/edit-engine": ["packages/edit-engine/src/index.ts"],
+      "@triplestore/generator": ["lib_sources/generator/src/index.ts"],
+      "@triplestore/maintenance": ["packages/maintenance/src/index.ts"],
+      "@triplestore/3dview": ["packages/3dview/src/index.ts"],
+      "@triplestore/io": ["lib_sources/universal-rdf-io/src/index.ts"],
+      "@triplestore/hover": ["lib_sources/hover_card/src/index.ts"],
+      "@triplestore/search": ["lib_sources/search/src/search.ts"],
+      "@triplestore/events": ["packages/events/index.ts"],
+      "@triplestore/uri": ["lib_sources/uri-utils/src/index.ts"],
+      "@triplestore/rdf-factory": ["lib_sources/rdf-factory/src/index.ts"],
+      "@triplestore/sparql-parser": ["lib_sources/sparql-parser-lite/src/index.ts"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

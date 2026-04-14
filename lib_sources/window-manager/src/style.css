@@ -1,0 +1,157 @@
+
+:root {
+    /* Default (Night/Glass) */
+    --wm-bg: rgba(25, 25, 30, 0.85);
+    --wm-border: rgba(255, 255, 255, 0.14);
+    --wm-highlight: rgba(255, 255, 255, 0.08);
+    --wm-shadow-active: 0 40px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--wm-border);
+    --wm-shadow-inactive: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --wm-text: rgba(255, 255, 255, 0.95);
+    --wm-btn-hover: rgba(255, 255, 255, 0.12);
+    --wm-content-bg: rgba(15, 15, 20, 0.7);
+}
+
+[data-wm-theme="day"] {
+    --wm-bg: rgba(255, 255, 255, 0.92);
+    --wm-border: rgba(0, 0, 0, 0.12);
+    --wm-highlight: rgba(255, 255, 255, 1);
+    --wm-shadow-active: 0 30px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--wm-border);
+    --wm-shadow-inactive: 0 12px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    --wm-text: #111111;
+    --wm-btn-hover: rgba(0, 0, 0, 0.06);
+    --wm-content-bg: #f8f9fa;
+}
+
+.wb-window {
+    border-radius: 12px;
+    background: var(--wm-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--wm-border);
+    box-shadow: var(--wm-shadow-inactive);
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s, box-shadow 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    position: absolute;
+    overflow: hidden;
+}
+
+.wb-window.active {
+    box-shadow: var(--wm-shadow-active);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-wm-theme="day"] .wb-window.active {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.wb-window::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 var(--wm-highlight);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.window-header {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 6px 0 16px;
+    user-select: none;
+    border-bottom: 1px solid var(--wm-border);
+    cursor: default;
+}
+
+.window-header:active {
+    cursor: grabbing;
+}
+
+.win-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--wm-text);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+.win-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.win-btn {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--wm-text);
+    opacity: 0.6;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 14px;
+    transition: all 0.15s;
+    z-index: 10;
+}
+
+.win-btn:hover {
+    background: var(--wm-btn-hover);
+    opacity: 1;
+}
+
+.win-btn.close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.window-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--wm-content-bg);
+}
+
+.wb-window.minimized {
+    border-radius: 10px 10px 0 0 !important;
+    border-bottom: none;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+    background: var(--wm-bg);
+}
+
+.wb-window.minimized::after {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.wb-window.minimized:hover {
+    transform: translateY(-2px);
+}
+
+.wb-window.maximized {
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.resize-handle {
+    position: absolute;
+    z-index: 100;
+}
+
+.resize-handle.n { top: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+.resize-handle.s { bottom: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+.resize-handle.e { top: 0; bottom: 0; right: 0; width: 6px; cursor: ew-resize; }
+.resize-handle.w { top: 0; bottom: 0; left: 0; width: 6px; cursor: ew-resize; }
+.resize-handle.ne { top: 0; right: 0; width: 12px; height: 12px; cursor: nesw-resize; }
+.resize-handle.nw { top: 0; left: 0; width: 12px; height: 12px; cursor: nwse-resize; }
+.resize-handle.se { bottom: 0; right: 0; width: 12px; height: 12px; cursor: nwse-resize; }
+.resize-handle.sw { bottom: 0; left: 0; width: 12px; height: 12px; cursor: nesw-resize; }

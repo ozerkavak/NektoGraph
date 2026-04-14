@@ -1,0 +1,260 @@
+import { DEFAULT_GRAPH } from './types';
+import { Index } from './indices';
+export class QuadStore {
+    capacity;
+    _size;
+    s;
+    p;
+    o;
+    g;
+    idxS;
+    idxP;
+    idxO;
+    idxG;
+    listeners = [];
+    constructor(initialCapacity = 1024) {
+        this.capacity = initialCapacity;
+        this._size = 0;
+        this.s = new BigUint64Array(initialCapacity);
+        this.p = new BigUint64Array(initialCapacity);
+        this.o = new BigUint64Array(initialCapacity);
+        this.g = new BigUint64Array(initialCapacity);
+        this.idxS = new Index();
+        this.idxP = new Index();
+        this.idxO = new Index();
+        this.idxG = new Index();
+    }
+    get size() {
+        return this._size;
+    }
+    on(_event, listener) {
+        this.listeners.push(listener);
+    }
+    off(_event, listener) {
+        this.listeners = this.listeners.filter(l => l !== listener);
+    }
+    emit(event) {
+        for (const listener of this.listeners) {
+            listener(event);
+        }
+    }
+    /**
+     * Adds a quad to the store.
+     * Uses Indices for existence check (Intersection of S, P, O, G location lists).
+     */
+    add(subject, predicate, object, graph = DEFAULT_GRAPH, source = 'user') {
+        if (this.fastExists(subject, predicate, object, graph)) {
+            return false;
+        }
+        this.ensureCapacity();
+        const idx = this._size;
+        this.s[idx] = subject;
+        this.p[idx] = predicate;
+        this.o[idx] = object;
+        this.g[idx] = graph;
+        this.idxS.add(subject, idx);
+        this.idxP.add(predicate, idx);
+        this.idxO.add(object, idx);
+        this.idxG.add(graph, idx);
+        this._size++;
+        this.emit({
+            type: 'add',
+            quads: [{ subject, predicate, object, graph }],
+            source
+        });
+        return true;
+    }
+    addQuads(quads, source = 'user') {
+        const added = [];
+        for (const q of quads) {
+            if (this.fastExists(q.subject, q.predicate, q.object, q.graph))
+                continue;
+            this.ensureCapacity();
+            const idx = this._size;
+            this.s[idx] = q.subject;
+            this.p[idx] = q.predicate;
+            this.o[idx] = q.object;
+            this.g[idx] = q.graph;
+            this.idxS.add(q.subject, idx);
+            this.idxP.add(q.predicate, idx);
+            this.idxO.add(q.object, idx);
+            this.idxG.add(q.graph, idx);
+            this._size++;
+            added.push(q);
+        }
+        if (added.length > 0) {
+            this.emit({
+                type: 'add',
+                quads: added,
+                source
+            });
+        }
+        return added.length;
+    }
+    delete(subject, predicate, object, graph = DEFAULT_GRAPH, source = 'user') {
+        const candidates = this.getIndicesForPattern(subject, predicate, object, graph) ?? [];
+        if (candidates.length === 0)
+            return false;
+        const idxToDelete = candidates[0];
+        this.swapRemove(idxToDelete);
+        this.emit({
+            type: 'delete',
+            quads: [{ subject, predicate, object, graph }],
+            source
+        });
+        return true;
+    }
+    *match(subject, predicate, object, graph = null) {
+        const candidates = this.getIndicesForPattern(subject, predicate, object, graph);
+        if (candidates === undefined) {
+            for (let i = 0; i < this._size; i++) {
+                yield [this.s[i], this.p[i], this.o[i], this.g[i]];
+            }
+        }
+        else {
+            for (const i of candidates) {
+                yield [this.s[i], this.p[i], this.o[i], this.g[i]];
+            }
+        }
+    }
+    has(subject, predicate, object, graph = DEFAULT_GRAPH) {
+        return this.fastExists(subject, predicate, object, graph);
+    }
+    hasAny(subject, predicate, object) {
+        return this.fastExists(subject, predicate, object, null);
+    }
+    clearGraph(graphID, source = 'user') {
+        const indices = this.idxG.get(graphID);
+        if (!indices || indices.length === 0)
+            return 0;
+        const toDeleteIndices = [...indices];
+        // Determine quads to emit for event
+        const deletedQuads = [];
+        let count = 0;
+        for (const idx of toDeleteIndices) {
+            const s = this.s[idx];
+            const p = this.p[idx];
+            const o = this.o[idx];
+            const g = this.g[idx];
+            if (this.delete(s, p, o, g, source)) {
+                count++;
+                deletedQuads.push({ subject: s, predicate: p, object: o, graph: g });
+            }
+        }
+        return count;
+    }
+    /**
+     * Moves all quads from sourceGraphId to targetGraphId.
+     * This is an O(N_source) operation that modifies the graph ID array directly and updates the graph index.
+     * Important: This bypasses Event emission for individual quads to avoid memory overhead.
+     */
+    moveQuads(sourceGraphId, targetGraphId) {
+        const sourceIndices = this.idxG.get(sourceGraphId);
+        if (!sourceIndices || sourceIndices.length === 0)
+            return 0;
+        const indicesToMove = [...sourceIndices]; // Clone the list since we will be mutating the index
+        const count = indicesToMove.length;
+        for (const idx of indicesToMove) {
+            // Update the graph column
+            this.g[idx] = targetGraphId;
+            this.idxG.remove(sourceGraphId, idx);
+            this.idxG.add(targetGraphId, idx);
+        }
+        return count;
+    }
+    // --- Helpers ---
+    fastExists(s, p, o, g) {
+        const matches = this.getIndicesForPattern(s, p, o, g) ?? [];
+        return matches.length > 0;
+    }
+    /**
+     * Returns the intersection of indices for the non-null terms.
+     */
+    getIndicesForPattern(s, p, o, g) {
+        let candidates;
+        // Helper to intersect current candidates with new list
+        const refine = (list) => {
+            if (!list) {
+                candidates = []; // Term not found -> 0 results
+                return;
+            }
+            if (candidates === undefined) {
+                candidates = [...list]; // Initialize
+            }
+            else {
+                candidates = Index.intersect(candidates, list);
+            }
+        };
+        if (s !== null)
+            refine(this.idxS.get(s));
+        if (candidates !== undefined && candidates.length === 0)
+            return [];
+        if (p !== null)
+            refine(this.idxP.get(p));
+        if (candidates !== undefined && candidates.length === 0)
+            return [];
+        if (o !== null)
+            refine(this.idxO.get(o));
+        if (candidates !== undefined && candidates.length === 0)
+            return [];
+        if (g !== null)
+            refine(this.idxG.get(g));
+        return candidates; // undefined (Universe) or number[] (Specific)
+    }
+    ensureCapacity() {
+        if (this._size >= this.capacity) {
+            const newCap = this.capacity * 2;
+            const newS = new BigUint64Array(newCap);
+            const newP = new BigUint64Array(newCap);
+            const newO = new BigUint64Array(newCap);
+            const newG = new BigUint64Array(newCap);
+            newS.set(this.s);
+            newP.set(this.p);
+            newO.set(this.o);
+            newG.set(this.g);
+            this.s = newS;
+            this.p = newP;
+            this.o = newO;
+            this.g = newG;
+            this.capacity = newCap;
+        }
+    }
+    /**
+     * Removes element at 'idx' by swapping with the last element.
+     * CRITICAL: Must update indices!
+     */
+    swapRemove(idx) {
+        const lastIdx = this._size - 1;
+        const sToRemove = this.s[idx];
+        const pToRemove = this.p[idx];
+        const oToRemove = this.o[idx];
+        const gToRemove = this.g[idx];
+        // 1. Remove from Indices
+        this.idxS.remove(sToRemove, idx);
+        this.idxP.remove(pToRemove, idx);
+        this.idxO.remove(oToRemove, idx);
+        this.idxG.remove(gToRemove, idx);
+        if (idx !== lastIdx) {
+            // 2. Metadata of the element moving from last -> idx
+            const sMoved = this.s[lastIdx];
+            const pMoved = this.p[lastIdx];
+            const oMoved = this.o[lastIdx];
+            const gMoved = this.g[lastIdx];
+            // 3. Move Data
+            this.s[idx] = sMoved;
+            this.p[idx] = pMoved;
+            this.o[idx] = oMoved;
+            this.g[idx] = gMoved;
+            // 4. Update Indices for the moved element
+            // It was at 'lastIdx', now at 'idx'
+            this.idxS.updatePointer(sMoved, lastIdx, idx);
+            this.idxP.updatePointer(pMoved, lastIdx, idx);
+            this.idxO.updatePointer(oMoved, lastIdx, idx);
+            this.idxG.updatePointer(gMoved, lastIdx, idx);
+        }
+        // Cleanup last slot (optional for typed arrays but good for debug)
+        // this.s[lastIdx] = 0n; 
+        this._size--;
+    }
+}
+//# sourceMappingURL=store.js.map

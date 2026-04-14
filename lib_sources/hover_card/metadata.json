@@ -1,0 +1,21 @@
+{
+    "name": "@triplestore/hover-card",
+    "version": "Beta v1.0",
+    "description": "High-performance RDF Knowledge Graph tooltip engine with Rich Literal support.",
+    "author": "NektoGraph",
+    "last_standardized": "2026-03-06",
+    "features": [
+        "RAF-based smooth positioning",
+        "Rich Literal rendering (XSD & Lang badges)",
+        "Collision detection & Viewport flipping",
+        "Data-agnostic entityResolver architecture"
+    ],
+    "dependencies": {
+        "host": "Browser with ESM support"
+    },
+    "governance": {
+        "model": "Source-First",
+        "source_path": "lib_sources/hover_card/src/index.ts",
+        "deployment_path": "apps/workbench/src/libs/hover_card.js"
+    }
+}

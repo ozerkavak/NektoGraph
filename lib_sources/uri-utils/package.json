@@ -1,0 +1,15 @@
+{
+  "name": "uri-utils",
+  "version": "1.0.0-beta",
+  "description": "Zero-dependency IRI normalization and resolution for RDF applications.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0"
+  }
+}

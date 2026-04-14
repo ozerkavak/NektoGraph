@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "lib": [
+            "ESNext",
+            "DOM"
+        ],
+        "declaration": true,
+        "outDir": "./dist",
+        "rootDir": "src",
+        "strict": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "baseUrl": ".",
+        "paths": {
+            "@triplestore/core": ["../../lib_sources/quadstore-core/src/index.ts"],
+            "@triplestore/generator": ["../../lib_sources/generator/src/index.ts"]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

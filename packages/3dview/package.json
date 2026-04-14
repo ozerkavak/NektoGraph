@@ -1,0 +1,23 @@
+{
+  "name": "@triplestore/3dview",
+  "version": "1.0.0-beta",
+  "description": "Zero-dependency WebGL 2.0 3D Entity Voyager library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "keywords": [
+    "webgl",
+    "3d",
+    "graph",
+    "visualization"
+  ],
+  "author": "NektoGraph",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}

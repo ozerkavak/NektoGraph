@@ -1,0 +1,8 @@
+{
+  "name": "rdf-factory",
+  "version": "Beta v1.0",
+  "status": "active",
+  "isolated": true,
+  "type": "kernel",
+  "description": "Custom RDFJS DataFactory. Core InterOp module."
+}

@@ -1,0 +1,8 @@
+{
+  "name": "sparql-parser-lite",
+  "version": "Beta v1.0",
+  "status": "active",
+  "isolated": true,
+  "type": "utility",
+  "description": "Custom SPARQL result parser. Replaces sparqljson-parse and sparqlxml-parse."
+}

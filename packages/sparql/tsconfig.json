@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@triplestore/core": ["../../lib_sources/quadstore-core/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}
