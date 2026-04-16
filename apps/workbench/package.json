@@ -1,7 +1,7 @@
 {
   "name": "nektograph-workbench",
   "private": true,
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,14 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@triplestore/3dview": "1.0.0-beta",
-    "@triplestore/core": "1.0.0-beta",
-    "@triplestore/edit-engine": "1.0.0-beta",
-    "@triplestore/graph-selector": "1.0.0-beta",
-    "@triplestore/inference": "1.0.0-beta",
-    "@triplestore/sparql": "1.0.0-beta",
-    "@triplestore/maintenance": "1.0.0-beta",
-    "@triplestore/data-sync": "1.0.0-beta",
+    "@triplestore/3dview": "1.0.1-beta",
+    "@triplestore/core": "1.0.1-beta",
+    "@triplestore/edit-engine": "1.0.1-beta",
+    "@triplestore/graph-selector": "1.0.1-beta",
+    "@triplestore/inference": "1.0.1-beta",
+    "@triplestore/sparql": "1.0.1-beta",
+    "@triplestore/maintenance": "1.0.1-beta",
+    "@triplestore/data-sync": "1.0.1-beta",
     "jsonld-streaming-parser": "*",
     "jsonld-streaming-serializer": "^3.0.0",
     "n3": "*",
@@ -30,3 +30,5 @@
     "vite-plugin-singlefile": "^2.3.0"
   }
 }
+
+

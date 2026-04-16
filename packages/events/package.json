@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/events",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "description": "Zero-dependency, high-performance EventEmitter for Web Workers and UI orchestration.",
   "main": "index.ts",
   "types": "index.ts",
@@ -16,3 +16,5 @@
   "author": "NektoGraph",
   "license": "ISC"
 }
+
+

@@ -1217,11 +1217,11 @@ export class AppState {
                                 // User requested disabling left-click window open
                             },
                             onNodeContextMenu: (nodeId: string, x: number, y: number, container: any) => {
-                                this.show3DContextMenu(nodeId, x, y, container);
+                                this.show3DContextMenu(nodeId, x, y, container, winId);
                             },
                             onToggleEmptyProps: (show: boolean) => {
                                 if (kg.structured) {
-                                    const data = Entity3DAdapter.adapt(kg.structured, show);
+                                    const data = Entity3DAdapter.adapt(kg.structured, show, uiState.showOrphansIn3D);
                                     container.updateGraph(data);
                                 }
                             }
@@ -1235,7 +1235,7 @@ export class AppState {
 
                     if (kg.structured) {
                         const showEmpty = (container as any).showEmptyProps || false;
-                        const data = Entity3DAdapter.adapt(kg.structured, showEmpty);
+                        const data = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D);
                         container.updateGraph(data);
                     } else {
                         content.innerHTML += `<div style="position:absolute; top:10px; left:10px; color:white;">No Data</div>`;
@@ -1395,7 +1395,8 @@ export class AppState {
             }
 
             // 1. Adapt new subgraph (centered at 0,0,0)
-            const subgraph = Entity3DAdapter.adapt(kg.structured, (container as any).showEmptyProps || false);
+            const showEmpty = (container as any).showEmptyProps || false;
+            const subgraph = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D);
 
             // 2. Get current graph nodes (Uses pinned getNodes() method)
             const currentNodes = container.getNodes() as any[];
@@ -1506,7 +1507,7 @@ export class AppState {
         }
     }
 
-    private show3DContextMenu(nodeId: string, x: number, y: number, container: any) {
+    private show3DContextMenu(nodeId: string, x: number, y: number, container: any, winId: string) {
         // Remove existing context menu if any
         const existing = document.getElementById('threed-context-menu');
         if (existing) existing.remove();
@@ -1603,13 +1604,25 @@ export class AppState {
                 this.openEntityEditor(semantic.uri!);
             });
 
-            // NEW: Open Entity Connections
-            addItem('Open Entity Connections (Expand)', () => {
+            addItem('Expand Entity Connections', () => {
                 const origin = node?.position || [0, 0, 0];
-                // Use a copy of origin to avoid reference issues
                 this.expand3DEntity(semantic.uri!, [origin[0], origin[1], origin[2]], container, nodeId);
             });
         }
+
+        addItem(`${uiState.showOrphansIn3D ? '✓' : '○'} Show Orphan Properties`, () => {
+            uiState.showOrphansIn3D = !uiState.showOrphansIn3D;
+            // Force re-render of current window
+            const win = this.windowManager.getWindow(winId);
+            if (win) {
+                const kg = KGEntity.get(this.factory.namedNode(winId.replace('3d_', '')));
+                if (kg.structured) {
+                    const showEmpty = (container as any).showEmptyProps || false;
+                    const data = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D);
+                    container.updateGraph(data);
+                }
+            }
+        });
 
 
         document.body.appendChild(menu);

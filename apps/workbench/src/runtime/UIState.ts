@@ -13,6 +13,8 @@ export class UIState {
     public dragWinId: string | null = null;
     public dragOffset: { x: number, y: number } = { x: 0, y: 0 };
 
+    public showOrphansIn3D: boolean = false;
+
     private static _instance: UIState;
     public static get instance(): UIState {
         if (!this._instance) this._instance = new UIState();

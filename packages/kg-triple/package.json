@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/kg-triple",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "description": "RDF-star Triple Active Record for NektoGraph",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,10 +10,12 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@triplestore/core": "1.0.0-beta",
-    "@triplestore/edit-engine": "1.0.0-beta"
+    "@triplestore/core": "1.0.1-beta",
+    "@triplestore/edit-engine": "1.0.1-beta"
   },
   "devDependencies": {
     "typescript": "^5.3.0"
   }
 }
+
+

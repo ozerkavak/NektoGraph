@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/sparql",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "description": "Streaming SPARQL Engine for BigInt Triplestore.",
   "main": "./dist/sparql.umd.js",
   "module": "./dist/sparql.es.js",
@@ -21,7 +21,7 @@
     "@comunica/utils-algebra": "^5.1.3",
     "@traqula/core": "^1.0.3",
     "@traqula/parser-sparql-1-2": "^1.0.3",
-    "@triplestore/core": "1.0.0-beta",
+    "@triplestore/core": "1.0.1-beta",
     "sparqljs": "^3.0.0"
   },
   "license": "ISC",
@@ -30,3 +30,5 @@
     "vitest": "^4.0.17"
   }
 }
+
+

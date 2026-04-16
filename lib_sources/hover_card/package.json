@@ -1,6 +1,6 @@
 {
   "name": "hover_card",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -14,3 +14,5 @@
     "vite-plugin-dts": "^3.0.0"
   }
 }
+
+

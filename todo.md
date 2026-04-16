@@ -64,3 +64,34 @@ The "Direct Properties" area will be the primary view for BNode annotations.
 ### 4. Phase: Interaction
 - **Edit Support:** Leverage existing Property-Chip buttons (delete, edit) to allow fine-grained modification of BNode-based annotation groups.
 - **Provenance Link:** Ensure the `occurrenceOf` link is protected or clearly marked as a structural anchor.
+
+---
+
+# TODO: Ontology Refinement & Reasoning Support (OWL-Compliance)
+
+## Urgency
+**MEDIUM** - Affects data integrity, reasoner compatibility, and the semantic clarity of the knowledge graph.
+
+## Source of the Problem
+External ontology audit and internal architectural review identified gaps in how NektoGraph handles OWL axioms and how the core NGO ontology is structured.
+1. **Technical Gap:** `SchemaIndex.ts` ignores `owl:AllDisjointClasses` (BNode + RDF List), preventing OWA (Open World Assumption) trap protection in the UI.
+2. **Structural Gap:** Managed individuals (e.g., `OfficialLevel`, `Death`) lack `owl:NamedIndividual` markers, causing "punning" or ambiguity where they appear as both instances and potential classes.
+3. **Partitioning Gap:** `State.ts` does not recognize advanced OWL terms, causing core schema metadata to bleed into "User Data" graphs during import.
+
+## Required Actions
+
+### 1. Technical: AllDisjointClasses Support
+Upgrade the schema indexing engine to understand complex disjointness.
+1. **Vocabulary:** Add `owl:AllDisjointClasses` and `owl:members` to `packages/edit-engine/src/schema/vocabulary.ts`.
+2. **SchemaIndex:** Update `buildIndex()` to scan for `owl:AllDisjointClasses`, use `resolveList()` on members, and populate `disjointWith` maps bidirectionally for all listed classes.
+3. **Partitioning:** Add these terms to `ontSchemaTypes` and `ontSchemaPredicates` in `apps/workbench/src/runtime/State.ts` to ensure integrity during import.
+
+### 2. Structural: NGO Ontology Refinement
+Apply "Best Practices" to `40nodesNGOont.ttl` to eliminate ambiguity.
+1. **Individual Declarations:** Explicitly add `a owl:NamedIndividual` to all controlled vocabulary members (`OfficialLevel`, `UnofficialLevel`, and all subjects under `EndReason`).
+2. **Ambiguity Cleanup:** Ensure `EndReason` sub-items (e.g., `Death`, `Resignation`) are consistently defined as individuals of their respective parent classes to prevent unintended class-punning.
+3. **RACI Completion:** Add missing `:consulted` and `:informed` properties to fully support RACI matrix modeling.
+
+### 3. Verification
+- **Hover validation:** Ensure that adding `owl:AllDisjointClasses` to the TTL causes "Disjoint With" to appear in the Hover Card for all affected classes.
+- **Inference consistency:** Check that individuals are correctly typed as instances only, avoiding reasoner conflicts.

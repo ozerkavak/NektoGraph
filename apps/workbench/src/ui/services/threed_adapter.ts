@@ -4,7 +4,7 @@ import { KGEntity } from './kg_entity';
 import { state } from '../../runtime/State';
 
 export class Entity3DAdapter {
-    static adapt(entity: RichEntityStructured, showEmpty: boolean = false): ThreeDGraphData {
+    static adapt(entity: RichEntityStructured, showEmpty: boolean = false, showOrphans: boolean = false): ThreeDGraphData {
         const nodes: Node3DData[] = [];
         const focusId = typeof entity.id === 'bigint' ? entity.id.toString() : (entity.id as any).id;
 
@@ -164,9 +164,83 @@ export class Entity3DAdapter {
         });
 
 
-        // Orphans (Separate Sector or Shell)
-        if (entity.orphanProperties.length > 0) {
-            // TODO: Add orphan handling in a dedicated "Orphan Shell"
+        // --- 3. Orphans (Dedicated Sector) ---
+        if (showOrphans && entity.orphanProperties.length > 0) {
+            const orphanClassId = 'special_orphans';
+            const angle = Math.PI; // Opposite to focus-classes direction
+            const cx = Math.sin(angle) * CLASS_R;
+            const cz = Math.cos(angle) * CLASS_R;
+            const cy = CLASS_CY;
+
+            nodes.push({
+                id: orphanClassId,
+                label: 'Orphan Properties',
+                type: 'class',
+                shape: 'cube',
+                color: '#f59e0b', // Amber/Orange for orphans
+                position: [cx, cy, cz],
+                neighbors: [],
+                semanticData: { uri: 'http://example.org/internal/Orphans' }
+            });
+            addEdge(focusId, orphanClassId, 'has_orphans', 'dashed');
+
+            const filteredOrphans = showEmpty ? entity.orphanProperties : entity.orphanProperties.filter(p => p.values.length > 0);
+            const SHELL_R = CLASS_R + 3.0;
+
+            filteredOrphans.forEach((prop, propIdx) => {
+                const propId = typeof prop.property === 'bigint' ? prop.property.toString() : (prop.property as any).id;
+                const pNodeId = `${orphanClassId}_${propId}`;
+                const pSpread = Math.PI * 0.4;
+                const pAngle = (propIdx / Math.max(1, filteredOrphans.length - 1)) * pSpread - (pSpread / 2);
+                
+                const px = Math.sin(angle + pAngle) * SHELL_R;
+                const pz = Math.cos(angle + pAngle) * SHELL_R;
+                const py = CLASS_CY - 1.2 - (propIdx * 1.5);
+
+                nodes.push({
+                    id: pNodeId,
+                    label: prop.label || 'Property',
+                    type: 'property',
+                    shape: 'pyramid',
+                    color: '#fbbf24',
+                    position: [px, py, pz],
+                    neighbors: [],
+                    semanticData: { uri: typeof prop.property === 'bigint' ? state.factory.decode(prop.property).value : (prop.property as any).value || String(prop.property) }
+                });
+                addEdge(orphanClassId, pNodeId, 'has');
+
+                // Values for Orphans
+                const VAL_DIST = 2.5;
+                prop.values.forEach((val, valIdx) => {
+                    const vAngle = (valIdx / Math.max(1, prop.values.length - 1)) * (Math.PI / 2) - (Math.PI / 4);
+                    const vx = px + Math.sin(angle + pAngle + vAngle) * VAL_DIST;
+                    const vz = pz + Math.cos(angle + pAngle + vAngle) * VAL_DIST;
+                    const vy = py - 0.8;
+
+                    const term = state.factory.decode(val.value);
+                    const isRef = term.termType === 'NamedNode';
+                    const valLabel = isRef ? KGEntity.get(val.value).getDisplayName() : (term as any).value;
+                    const valContent = String((term as any).value).replace(/[^a-zA-Z0-9]/g, '_').substring(0, 32);
+                    const valNodeId = `${pNodeId}_v_${valIdx}_${valContent}`;
+                    const isGhost = val.source === 'inference';
+
+                    nodes.push({
+                        id: valNodeId,
+                        label: valLabel,
+                        type: 'value',
+                        shape: 'cube',
+                        color: val.source === 'new' ? '#ffff00' : (isGhost ? '#800080' : '#cccccc'),
+                        position: [vx, vy, vz],
+                        isGhost,
+                        isNew: val.source === 'new',
+                        neighbors: [],
+                        semanticData: term.termType === 'Literal' ? {
+                            literal: { value: term.value, dataType: term.datatype, lang: term.language }
+                        } : { uri: (term as any).value }
+                    });
+                    addEdge(pNodeId, valNodeId, 'val', isGhost ? 'dashed' : 'solid');
+                });
+            });
         }
 
         return { nodes, focusNodeId: focusId };

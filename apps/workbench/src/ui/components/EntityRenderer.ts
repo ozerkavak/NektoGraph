@@ -117,9 +117,17 @@ export class EntityRenderer {
                                 </div>
                                 `;
                             }).join('')}
-                            <div style="padding:0 12px;">
-                                ${entity.orphanProperties.map((p: any) => renderUnique(p)).join('')}
-                            </div>
+                            ${entity.orphanProperties.length > 0 ? `
+                                <div id="sec_orphans_${winId}" class="group-section" style="margin-top:16px;">
+                                    <div class="group-header" style="font-size:12px; font-weight:700; color:var(--accent-amber); margin:0; padding:8px 14px; background:rgba(245, 158, 11, 0.1); display:flex; align-items:center; gap:8px;">
+                                        ORPHAN PROPERTIES
+                                        <span style="font-weight:400; font-size:10px; opacity:0.5;">(${entity.orphanProperties.length} items)</span>
+                                    </div>
+                                    <div style="padding:0 12px;">
+                                        ${entity.orphanProperties.map((p: any) => renderUnique(p)).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
                         </div>
 
                         ${entity.incomings.length > 0 ? `

@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/edit-engine",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "description": "Edit Engine and Session Management for Quadstore.",
   "main": "./dist/edit-engine.umd.js",
   "module": "./dist/edit-engine.es.js",
@@ -17,13 +17,15 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@triplestore/core": "1.0.0-beta",
-    "@triplestore/inference": "1.0.0-beta",
-    "@triplestore/sparql": "1.0.0-beta",
-    "@triplestore/session": "1.0.0-beta"
+    "@triplestore/core": "1.0.1-beta",
+    "@triplestore/inference": "1.0.1-beta",
+    "@triplestore/sparql": "1.0.1-beta",
+    "@triplestore/session": "1.0.1-beta"
   },
   "license": "ISC",
   "devDependencies": {
     "vitest": "^4.0.17"
   }
 }
+
+

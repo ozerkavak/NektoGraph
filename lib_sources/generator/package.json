@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/generator",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "description": "Value Generation Library for RDF: Unique IDs, Labels, and Comments.",
   "main": "./dist/generator.umd.js",
   "module": "./dist/generator.es.js",
@@ -16,7 +16,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@triplestore/core": "1.0.0-beta"
+    "@triplestore/core": "1.0.1-beta"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
@@ -25,3 +25,5 @@
   },
   "license": "ISC"
 }
+
+
