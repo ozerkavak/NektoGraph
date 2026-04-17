@@ -166,10 +166,7 @@ export class MaintenanceView {
         [...connections.incoming, ...connections.outgoing].forEach(q => graphsUsed.add(q.graph));
 
         let provenanceHtml = Array.from(graphsUsed).map(g => {
-            const info = state.graphs.get(g);
-            const uri = info?.uri || 'Unknown Graph';
-            const source = info?.sourceURL ? ` (Source: ${info.sourceURL})` : '';
-            return `<div class="provenance-tag" title="${uri}${source}">${state.factory.decode(g).value.split('/').pop()}</div>`;
+            return `<div class="provenance-tag">${state.factory.decode(g).value.split('/').pop()}</div>`;
         }).join('');
 
         const decodedUri = state.factory.decode(id).value;
@@ -284,8 +281,6 @@ export class MaintenanceView {
         else if (gInfo?.type === 'data') chipClass += ' src-data';
 
         const typeColor = gInfo?.type === 'ontology' ? '#3b82f6' : (gInfo?.type === 'inference' ? '#a855f7' : '#22c55e');
-        const tooltip = `Graph: ${gInfo?.uri || 'Unknown'}\nType: ${gInfo?.type || 'Default'}\nOrigin: ${gInfo?.sourceType || 'local'}\nLocation: ${gInfo?.filename || gInfo?.sourceURL || 'Internal'}`;
-
 
         // Language tag for literals
         let langTag = '';
@@ -294,7 +289,7 @@ export class MaintenanceView {
         }
 
         return `
-            <div class="maint-value-chip ${v.isIncoming ? 'incoming' : 'outgoing'} ${isTriple ? 'chip-compound' : ''}" data-id="${valId.toString()}">
+            <div class="maint-value-chip ${v.isIncoming ? 'incoming' : 'outgoing'} ${isTriple ? 'chip-compound' : ''}" data-id="${valId.toString()}" data-node-id="${valId.toString()}" data-kind="entity">
                 <span class="maint-direction" style="margin-right:8px;">${v.isIncoming ? '←' : '→'}</span>
                 
                 <span class="${chipClass}" style="min-width: fit-content; max-width: 60%; overflow:hidden;">
@@ -302,7 +297,7 @@ export class MaintenanceView {
                     ${langTag}
                 </span>
 
-                <div class="graph-info-stack" style="margin-left: auto; margin-right: 12px; align-items: flex-end;" title="${tooltip}">
+                <div class="graph-info-stack" style="margin-left: auto; margin-right: 12px; align-items: flex-end;">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="te-gname" style="color:${typeColor}">${gName}</span>
                         <span class="te-gtype">${gInfo?.type || 'data'}</span>

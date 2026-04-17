@@ -85,7 +85,29 @@ export class EntityResolver {
         for (const raw of composite.match(id, labelPred, null, null)) {
             labels.push({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] });
         }
-        return this.resolveLanguageValue(labels, lang as any);
+        
+        let label = this.resolveLanguageValue(labels, lang as any);
+        
+        // Lazy Fallback: Check SKOS if rdfs:label is missing
+        if (!label) {
+            const prefLabelPred = this.factory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel');
+            const skosLabels: Quad[] = [];
+            for (const raw of composite.match(id, prefLabelPred, null, null)) {
+                skosLabels.push({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] });
+            }
+            label = this.resolveLanguageValue(skosLabels, lang as any);
+
+            if (!label) {
+                const altLabelPred = this.factory.namedNode('http://www.w3.org/2004/02/skos/core#altLabel');
+                const altLabels: Quad[] = [];
+                for (const raw of composite.match(id, altLabelPred, null, null)) {
+                    altLabels.push({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] });
+                }
+                label = this.resolveLanguageValue(altLabels, lang as any);
+            }
+        }
+
+        return label;
     }
 
     public getComment(id: NodeID, lang: 'en' | 'tr' = 'en', session?: DraftStore): string | undefined {
@@ -178,6 +200,30 @@ export class EntityResolver {
                 if (!labels[l]) labels[l] = term.value;
             }
             sources.add(this.determineSource({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] }, session));
+        }
+
+        // Lazy Fallback: Only fetch SKOS if no labels found
+        if (Object.keys(labels).length === 0) {
+            const prefLabelPred = this.factory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel');
+            for (const raw of composite.match(id, prefLabelPred, null, null)) {
+                const term = this.factory.decode(raw[2]);
+                if (term.termType === 'Literal') {
+                    const l = term.language || '';
+                    if (!labels[l]) labels[l] = term.value;
+                }
+                sources.add(this.determineSource({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] }, session));
+            }
+            if (Object.keys(labels).length === 0) {
+                const altLabelPred = this.factory.namedNode('http://www.w3.org/2004/02/skos/core#altLabel');
+                for (const raw of composite.match(id, altLabelPred, null, null)) {
+                    const term = this.factory.decode(raw[2]);
+                    if (term.termType === 'Literal') {
+                        const l = term.language || '';
+                        if (!labels[l]) labels[l] = term.value;
+                    }
+                    sources.add(this.determineSource({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] }, session));
+                }
+            }
         }
 
         for (const raw of composite.match(id, commentPred, null, null)) {

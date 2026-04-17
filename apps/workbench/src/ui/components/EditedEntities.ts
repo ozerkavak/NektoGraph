@@ -120,10 +120,10 @@ export class EditedEntities {
         // Use data-node-id for Triples to avoid the broken global HoverCard logic for BigInts.
         const hoverAttrs = isTriple 
             ? `data-node-id="${nodeId}"` 
-            : `data-id="${kg.uri}" data-kind="entity"`;
+            : `data-id="${kg.uri}" data-node-id="${kg.id.toString()}" data-kind="entity"`;
 
         return `
-            <div class="mod-item" onclick="${openAction}" ${hoverAttrs} title="${isTriple ? 'Edit Triple Annotations' : 'Edit Entity'}">
+            <div class="mod-item" onclick="${openAction}" ${hoverAttrs}>
                 <span class="tree-icon" style="${iconStyle}">${isTriple ? '📋' : '✏️'}</span>
                 <span class="mod-label">${displayName}</span>
             </div>

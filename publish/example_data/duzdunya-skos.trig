@@ -5,7 +5,7 @@
 
 <http://www.40nodes.net/ontologies/ngo/data/skos-data> {
 
-    # --- Üyelik Seviyeleri Şeması ---
+    # --- Üyelik Seviyeleri Şeması (Membership Level Scheme) ---
     :id_skosSCH001 a skos:ConceptScheme ; 
         rdfs:label "Membership Level Scheme"@en, "Üyelik Seviyesi Şeması"@tr .
 
@@ -18,7 +18,7 @@
         skos:inScheme :id_skosSCH001 ; 
         rdfs:label "Unofficial"@en, "Gayrı-Resmi"@tr .
 
-    # --- Bitiş Nedenleri Şeması ---
+    # --- Bitiş Nedenleri Şeması (End Reason Scheme) ---
     :id_skosSCH002 a skos:ConceptScheme ; 
         rdfs:label "End Reason Scheme"@en, "Bitiş Nedeni Şeması"@tr .
 
@@ -34,7 +34,7 @@
         skos:inScheme :id_skosSCH002 ; 
         rdfs:label "Sanction End"@en, "Yaptırım Bitişi"@tr .
 
-    # Alt Kavramlar (skos:broader hiyerarşisi korunmuştur)
+    # Alt Kavramlar (skos:broader hiyerarşisi)
     :id_skosEND004 a skos:Concept ; 
         skos:broader :id_skosEND001 ; 
         rdfs:label "Structural Upgrade"@en, "Birim Statü Yükselmesi"@tr .

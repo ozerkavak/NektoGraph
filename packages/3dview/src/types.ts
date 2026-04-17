@@ -17,6 +17,7 @@ export interface Node3DData {
     isData?: boolean;
     semanticData?: {
         uri?: string;
+        nodeId?: string;
         literal?: {
             value: string;
             dataType?: string;

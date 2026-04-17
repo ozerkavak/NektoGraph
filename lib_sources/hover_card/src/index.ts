@@ -130,7 +130,7 @@ class HoverCard {
         // --- Event Delegation Controller ---
         document.addEventListener('mouseover', (e) => {
             const targetEl = e.target as HTMLElement;
-            const hoverable = targetEl.closest('[data-id], .unified-item, .chip, .prop-key, .val-text');
+            const hoverable = targetEl.closest('[data-node-id], [data-id], .unified-item, .chip, .prop-key, .val-text');
             if (!hoverable) return;
 
             const targetData = (HoverCard as any).resolveTarget(hoverable as HTMLElement);
@@ -146,7 +146,7 @@ class HoverCard {
 
         document.addEventListener('mouseout', (e) => {
             const target = e.target as HTMLElement;
-            if (target.closest('[data-id], .unified-item, .prop-key, .val-text')) {
+            if (target.closest('[data-node-id], [data-id], .unified-item, .chip, .prop-key, .val-text')) {
                 clearTimeout(HoverCard.hoverTimer);
                 HoverCard.hoverTimer = setTimeout(() => {
                     if (!HoverCard.cardEl?.matches(':hover')) {
@@ -171,16 +171,17 @@ class HoverCard {
             };
         }
 
-        let id = el.getAttribute('data-id');
+        let id = el.getAttribute('data-node-id') || el.getAttribute('data-id');
         if (!id && el.classList.contains('prop-key')) {
             id = el.getAttribute('title');
         }
 
         if (!id) return null;
 
-        const isUri = id.startsWith('http') || id.startsWith('urn:') || id.includes('://');
+        const isNodeId = el.hasAttribute('data-node-id');
+        const isUri = !isNodeId && (id.startsWith('http') || id.startsWith('urn:') || id.includes('://'));
 
-        if (el.classList.contains('prop-key')) {
+        if (el.classList.contains('prop-key') || isNodeId) {
             return { kind: 'entity', idOrValue: id };
         }
 

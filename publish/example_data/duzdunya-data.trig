@@ -18,65 +18,109 @@
     :id_L6Y3Q7 a :District ; rdfs:label "Kusadasi"@en, "Kuşadası"@tr .
 
     ### 2. KİŞİLER (PEOPLE)
-    :id_P9A0Z1 a :Person ; rdfs:label "Ayşe Başkan" . 
-    :id_P2B8X4 a :Person ; rdfs:label "Fatma Teşkilatçı" . 
-    :id_P5C1M9 a :Person ; rdfs:label "Ahmet Sayman" .
-    :id_P0D7P2 a :Person ; rdfs:label "Mehmet Sekreter" .
-    :id_P4E6R8 a :Person ; rdfs:label "Mike Flatearth" .
-    :id_P1F9B3 a :Person ; rdfs:label "Hans" .
-    :id_P8G5H0 a :Person ; rdfs:label "Otto" .
-    :id_P6K4D2 a :Person ; rdfs:label "Helga" .
-    :id_P3Y7Q6 a :Person ; rdfs:label "Ali Aydın" .
-    :id_P7S2W1 a :Person ; rdfs:label "Deniz Düzdünya" .
+    :id_P9A0Z1 a :Person ; rdfs:label "Ayşe Başkan"@en, "Ayşe Başkan"@tr . 
+    :id_P2B8X4 a :Person ; rdfs:label "Fatma Teşkilatçı"@en, "Fatma Teşkilatçı"@tr . 
+    :id_P5C1M9 a :Person ; rdfs:label "Ahmet Sayman"@en, "Ahmet Sayman"@tr .
+    :id_P0D7P2 a :Person ; rdfs:label "Mehmet Sekreter"@en, "Mehmet Sekreter"@tr .
+    :id_P4E6R8 a :Person ; rdfs:label "Mike Flatearth"@en, "Mike Flatearth"@tr .
+    :id_P1F9B3 a :Person ; rdfs:label "Hans"@en, "Hans"@tr .
+    :id_P8G5H0 a :Person ; rdfs:label "Otto"@en, "Otto"@tr .
+    :id_P6K4D2 a :Person ; rdfs:label "Helga"@en, "Helga"@tr .
+    :id_P3Y7Q6 a :Person ; rdfs:label "Ali Aydın"@en, "Ali Aydın"@tr .
+    :id_P7S2W1 a :Person ; rdfs:label "Deniz Düzdünya"@en, "Deniz Düzdünya"@tr .
 
     ### 3. TEŞKİLAT YAPISI (ORGANIZATION UNITS)
     
     # Genel Merkez
-    :id_U1A9Z2 a :Headquarters ; rdfs:label "Düz Dünyacılar Partisi GM"@tr ; :representsLocation :id_L9Z2X1 ; :hasPresident :id_P9A0Z1 .
-    :id_U4B8X3 a :CentralRepresentativeCommittee ; rdfs:label "Merkez Temsil Heyeti"@tr ; :isSubUnitOf :id_U1A9Z2 .
+    :id_U1A9Z2 a :Headquarters ; 
+        rdfs:label "Flat Earthers Party HQ"@en, "Düz Dünyacılar Partisi GM"@tr ; 
+        :representsLocation :id_L9Z2X1 ; 
+        :hasPresident :id_P9A0Z1 .
+
+    :id_U4B8X3 a :CentralRepresentativeCommittee ; 
+        rdfs:label "Central Representative Committee"@en, "Merkez Temsil Heyeti"@tr ; 
+        :isSubUnitOf :id_U1A9Z2 .
     
     # Departmanlar
-    :id_U7C1M9 a :OfficialUnit ; rdfs:label "Genel Saymanlık"@tr ; :isSubUnitOf :id_U1A9Z2 ; :hasTreasurer :id_P5C1M9 .
-    :id_U0D7P2 a :OfficialUnit ; rdfs:label "Genel Sekreterlik"@tr ; :isSubUnitOf :id_U1A9Z2 ; :hasSecretary :id_P0D7P2 .
-    :id_U3E6R8 a :DepartmentOfOrganization ; rdfs:label "Teşkilatlanma Başkanlığı"@tr ; :isSubUnitOf :id_U1A9Z2 ; :hasVicePresident :id_P2B8X4 .
-    :id_U6F9B3 a :OfficialUnit ; rdfs:label "Yurtdışı Teşkilatı"@tr ; :isSubUnitOf :id_U3E6R8 .
+    :id_U7C1M9 a :OfficialUnit ; 
+        rdfs:label "General Treasury"@en, "Genel Saymanlık"@tr ; 
+        :isSubUnitOf :id_U1A9Z2 ; 
+        :hasTreasurer :id_P5C1M9 .
 
-    # Yurtdışı (ABD Temsilcilik, Almanya Başkanlık)
-    :id_U9G5H0 a :Representation ; rdfs:label "ABD Temsilciliği"@tr ; :representsLocation :id_L3V8N4 ; :isSubUnitOf :id_U6F9B3 ; :hasRepresentative :id_P4E6R8 .
-    :id_U2K4D2 a :OfficialUnit ; rdfs:label "Almanya Ülke Birimi"@tr ; :representsLocation :id_L5M1K9 ; :isSubUnitOf :id_U6F9B3 .
-    :id_U5Y7Q6 a :DistrictPresidency ; rdfs:label "Berlin İlçe Başkanlığı"@tr ; :representsLocation :id_L8D4F2 ; :isSubUnitOf :id_U2K4D2 ; :hasPresident :id_P1F9B3 ; :hasTreasurer :id_P8G5H0 ; :hasSecretary :id_P6K4D2 .
+    :id_U0D7P2 a :OfficialUnit ; 
+        rdfs:label "General Secretariat"@en, "Genel Sekreterlik"@tr ; 
+        :isSubUnitOf :id_U1A9Z2 ; 
+        :hasSecretary :id_P0D7P2 .
 
-    # Yurtiçi (Aydın Dönüşümü)
-    :id_U7Z2M1 a :ProvinceRepresentation ; rdfs:label "Aydın İl Temsilciliği (2024)"@tr ; :representsLocation :id_L4R6W8 ; :isSubUnitOf :id_U3E6R8 .
-    :id_U0W5N8 a :ProvincePresidency ; rdfs:label "Aydın İl Başkanlığı (2025)"@tr ; :representsLocation :id_L4R6W8 ; :isSubUnitOf :id_U3E6R8 .
-    :id_U3Q9K2 a :DistrictPresidency ; rdfs:label "Kuşadası İlçe Başkanlığı"@tr ; :representsLocation :id_L6Y3Q7 ; :isSubUnitOf :id_U0W5N8 .
+    :id_U3E6R8 a :DepartmentOfOrganization ; 
+        rdfs:label "Presidency of Organization"@en, "Teşkilatlanma Başkanlığı"@tr ; 
+        :isSubUnitOf :id_U1A9Z2 ; 
+        :hasVicePresident :id_P2B8X4 .
+
+    :id_U6F9B3 a :OfficialUnit ; 
+        rdfs:label "Foreign Organization"@en, "Yurtdışı Teşkilatı"@tr ; 
+        :isSubUnitOf :id_U3E6R8 .
+
+    # Yurtdışı
+    :id_U9G5H0 a :Representation ; 
+        rdfs:label "USA Representation"@en, "ABD Temsilciliği"@tr ; 
+        :representsLocation :id_L3V8N4 ; 
+        :isSubUnitOf :id_U6F9B3 ; 
+        :hasRepresentative :id_P4E6R8 .
+
+    :id_U2K4D2 a :OfficialUnit ; 
+        rdfs:label "Germany Country Unit"@en, "Almanya Ülke Birimi"@tr ; 
+        :representsLocation :id_L5M1K9 ; 
+        :isSubUnitOf :id_U6F9B3 .
+
+    :id_U5Y7Q6 a :DistrictPresidency ; 
+        rdfs:label "Berlin District Presidency"@en, "Berlin İlçe Başkanlığı"@tr ; 
+        :representsLocation :id_L8D4F2 ; 
+        :isSubUnitOf :id_U2K4D2 ; 
+        :hasPresident :id_P1F9B3 ; 
+        :hasTreasurer :id_P8G5H0 ; 
+        :hasSecretary :id_P6K4D2 .
+
+    # Yurtiçi
+    :id_U7Z2M1 a :ProvinceRepresentation ; 
+        rdfs:label "Aydin Provincial Representation (2024)"@en, "Aydın İl Temsilciliği (2024)"@tr ; 
+        :representsLocation :id_L4R6W8 ; 
+        :isSubUnitOf :id_U3E6R8 .
+
+    :id_U0W5N8 a :ProvincePresidency ; 
+        rdfs:label "Aydin Provincial Presidency (2025)"@en, "Aydın İl Başkanlığı (2025)"@tr ; 
+        :representsLocation :id_L4R6W8 ; 
+        :isSubUnitOf :id_U3E6R8 .
+
+    :id_U3Q9K2 a :DistrictPresidency ; 
+        rdfs:label "Kusadasi District Presidency"@en, "Kuşadası İlçe Başkanlığı"@tr ; 
+        :representsLocation :id_L6Y3Q7 ; 
+        :isSubUnitOf :id_U0W5N8 .
 
     ### 4. ZAMANSAL OLAYLAR VE ÜYELİKLER (RDF-STAR)
-    
-    # 2024 Aydın (Gayrı-Resmi Dönem)
+    # 2024 Aydın
     :id_P3Y7Q6 :memberOf :id_U7Z2M1 . 
     _:occ_ali_2024 a :MembershipOccurrence ; rdf:reifies << :id_P3Y7Q6 :memberOf :id_U7Z2M1 >> ;
         :membershipLevel :id_skosLVL002 ; :startDate "2024-01-01"^^xsd:date ; :endDate "2025-01-01"^^xsd:date ; :endReason :id_skosEND004 .
 
     :id_P7S2W1 :memberOf :id_U7Z2M1 . 
-    _:occ_deniz_2024 a :MembershipOccurrence ; rdf:reifies << :id_P7S2W1 :memberOf :id_U7Z2M1 >> ; # ID DÜZELTİLDİ
+    _:occ_deniz_2024 a :MembershipOccurrence ; rdf:reifies << :id_P7S2W1 :memberOf :id_U7Z2M1 >> ;
         :membershipLevel :id_skosLVL002 ; :startDate "2024-06-01"^^xsd:date ; :endDate "2025-01-01"^^xsd:date ; :endReason :id_skosEND004 .
 
-    # 2025 Aydın ve Kuşadası (Resmi Dönem)
-    # Kural: Resmi üyelik Aydın İl Başkanlığı'nda. Kuşadası gönüllü statüde.
-    :id_P3Y7Q6 :memberOf :id_U0W5N8 . # Ali -> Aydın İl (Resmi)
+    # 2025 Aydın ve Kuşadası
+    :id_P3Y7Q6 :memberOf :id_U0W5N8 .
     _:occ_ali_resmi a :MembershipOccurrence ; rdf:reifies << :id_P3Y7Q6 :memberOf :id_U0W5N8 >> ;
         :membershipLevel :id_skosLVL001 ; :startDate "2025-01-02"^^xsd:date .
 
-    :id_P7S2W1 :memberOf :id_U0W5N8 . # Deniz -> Aydın İl (Resmi)
+    :id_P7S2W1 :memberOf :id_U0W5N8 .
     _:occ_deniz_resmi a :MembershipOccurrence ; rdf:reifies << :id_P7S2W1 :memberOf :id_U0W5N8 >> ;
         :membershipLevel :id_skosLVL001 ; :startDate "2025-01-02"^^xsd:date .
 
-    :id_P3Y7Q6 :memberOf :id_U3Q9K2 . # Ali -> Kuşadası (Gönüllü)
+    :id_P3Y7Q6 :memberOf :id_U3Q9K2 .
     _:occ_ali_kusadasi a :MembershipOccurrence ; rdf:reifies << :id_P3Y7Q6 :memberOf :id_U3Q9K2 >> ;
         :membershipLevel :id_skosLVL002 ; :startDate "2025-01-02"^^xsd:date .
 
-    # Atamalar (RACI ve Görevlendirme)
+    # Atamalar
     :id_U0W5N8 :hasPresident :id_P3Y7Q6 .
     _:assign_ali_pres a :AssignmentOccurrence ; rdf:reifies << :id_U0W5N8 :hasPresident :id_P3Y7Q6 >> ;
         :startDate "2025-02-01"^^xsd:date ; :assignedBy :id_P2B8X4 .
@@ -86,13 +130,14 @@
         :startDate "2025-02-01"^^xsd:date ; :assignedBy :id_P2B8X4 .
 
     ### 5. PROJE VE RACI (WBS)
-    :id_W9A1B2 a :Project ; rdfs:label "Global Flat Map Project"@tr ;
+    :id_W9A1B2 a :Project ; 
+        rdfs:label "Global Flat Map Project"@en, "Küresel Düz Harita Projesi"@tr ;
         :startDate "2026-04-16"^^xsd:date ; :deadline "2027-01-01"^^xsd:date .
     
-    :id_W3C4D5 a :Task ; rdfs:label "Berlin Buz Duvarı Ölçümü"@tr ;
+    :id_W3C4D5 a :Task ; 
+        rdfs:label "Berlin Ice Wall Measurement"@en, "Berlin Buz Duvarı Ölçümü"@tr ;
         :deadline "2026-08-01"^^xsd:date .
 
-    # Hiyerarşi Bağlantısı (Düzeltildi)
     :id_W9A1B2 :hasTask :id_W3C4D5 .
 
     # RACI Roller

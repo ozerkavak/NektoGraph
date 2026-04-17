@@ -185,6 +185,22 @@ export class SessionDiffView {
         const rows: DiffRow[] = [];
 
         for (const raw of draft.additions.match(null, null, null, null)) {
+            const s = raw[0];
+            const p = raw[1];
+            const o = raw[2];
+            const g = raw[3] || 0n;
+
+            // 1. Skip if the quad is explicitly marked as inferred in the session
+            if ((draft as any).isInferred(s, p, o, g)) {
+                continue;
+            }
+
+            // 2. Skip if the graph is a technical inference graph
+            const gTerm = state.factory.decode(g);
+            if (gTerm && gTerm.value && gTerm.value.startsWith('http://example.org/graphs/inference/')) {
+                continue;
+            }
+
             rows.push(this.quadToRow(raw, 'add'));
         }
 

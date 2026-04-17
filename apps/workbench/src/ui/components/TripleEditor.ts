@@ -207,7 +207,7 @@ export class TripleEditor {
                     <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:80px;">
                         <span style="font-size:8px; font-weight:800; color:var(--text-muted); opacity:0.5; text-transform:uppercase;">${role === 's' ? 'Subject' : (role === 'p' ? 'Predicate' : 'Object')}</span>
                         <div class="chip" style="height:28px; padding:0 10px; display:flex; align-items:center; border:1px solid ${color}; background:rgba(255,255,255,0.05); border-radius:4px; cursor:${isRef || isTriple ? 'pointer' : 'default'};" 
-                             data-id="${idVal}" data-kind="${kind}" ${isLiteral && t.language ? `data-lang="${t.language}"` : ''}>
+                             data-id="${idVal}" data-node-id="${idVal}" data-kind="${kind}" ${isLiteral && t.language ? `data-lang="${t.language}"` : ''}>
                              <span class="chip-label" style="font-size:12px; font-weight:700; color:${color};" ${clickAction}>${label}</span>
                         </div>
                     </div>
@@ -439,9 +439,9 @@ export class TripleEditor {
                                                 return `
                                                     <div class="value-chip chip-triple" onclick="window.state.openTripleEditor('${id.toString()}')" 
                                                         data-id="${id.toString()}"
-                                                        data-kind="triple"
-                                                        style="display:inline-flex; align-items:center; gap:6px; background:rgba(139, 92, 246, 0.1); border:1px solid rgba(139, 92, 246, 0.3); padding:4px 10px; border-radius:6px; cursor:pointer;" 
-                                                        title="Click to view nested triple">
+                                                        data-node-id="${id.toString()}"
+                                                        data-kind="entity"
+                                                        style="display:inline-flex; align-items:center; gap:6px; background:rgba(139, 92, 246, 0.1); border:1px solid rgba(139, 92, 246, 0.3); padding:4px 10px; border-radius:6px; cursor:pointer;">
                                                         <span style="font-size:10px; color:var(--accent-primary); opacity:0.7;">&lt;&lt;</span>
                                                         <span style="font-size:11px; font-weight:600; color:var(--accent-primary);">Triple</span>
                                                         <span style="font-size:10px; color:var(--accent-primary); opacity:0.7;">&gt;&gt;</span>
@@ -464,9 +464,9 @@ export class TripleEditor {
                                                 <div class="value-chip chip-entity" 
                                                     onclick="window.openEntity('${term.value}')"
                                                     data-id="${id.toString()}"
+                                                    data-node-id="${id.toString()}"
                                                     data-kind="entity"
-                                                    style="display:inline-flex; align-items:center; gap:6px; background:rgba(59, 130, 246, 0.1); border:1px solid rgba(59, 130, 246, 0.3); padding:2px 8px; border-radius:6px; cursor:pointer; transition:all 0.2s;"
-                                                    title="${term.value}">
+                                                    style="display:inline-flex; align-items:center; gap:6px; background:rgba(59, 130, 246, 0.1); border:1px solid rgba(59, 130, 246, 0.3); padding:2px 8px; border-radius:6px; cursor:pointer; transition:all 0.2s;">
                                                     <div style="width:6px; height:6px; border-radius:50%; background:var(--accent-primary); box-shadow:0 0 4px var(--accent-primary);"></div>
                                                     <span style="font-size:11px; font-weight:700; color:var(--text-main);">${label}</span>
                                                 </div>

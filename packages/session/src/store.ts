@@ -107,6 +107,11 @@ export class DraftStore implements IQuadStore {
         return found;
     }
 
+    isInferred(subject: NodeID, predicate: NodeID, object: NodeID, graph: NodeID = 0n): boolean {
+        const key = this.hash(subject, predicate, object, graph);
+        return this.inferredAdditions.has(key);
+    }
+
     match(subject: NodeID | null, predicate: NodeID | null, object: NodeID | null, graph?: NodeID | null): Iterable<[NodeID, NodeID, NodeID, NodeID]> {
         return this.additions.match(subject, predicate, object, graph);
     }

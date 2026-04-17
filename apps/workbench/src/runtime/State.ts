@@ -1562,7 +1562,10 @@ export class AppState {
                 let dataType: string | undefined = undefined;
                 let lang: string | undefined = undefined;
 
-                if (semantic?.uri) {
+                if (semantic?.nodeId) {
+                    kind = 'entity';
+                    idOrValue = semantic.nodeId;
+                } else if (semantic?.uri) {
                     kind = 'entity';
                     idOrValue = semantic.uri;
                 } else if (semantic?.literal) {
@@ -1579,7 +1582,7 @@ export class AppState {
                     // Fallback for nodes without structured semantic data
                     const isUriLink = nodeId.startsWith('http') || nodeId.includes('://') || nodeId.startsWith('urn:');
                     kind = isUriLink ? 'entity' : 'literal';
-                    idOrValue = node?.label || nodeId;
+                    idOrValue = nodeId;
                 }
 
                 setTimeout(() => {

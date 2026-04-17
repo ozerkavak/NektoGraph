@@ -207,7 +207,7 @@ export class SearchComponent {
 
             return `
                 ${prefix}
-                <div class="unified-item" data-index="${index}" data-id="${kg.uri}">
+                <div class="unified-item" data-index="${index}" data-id="${kg.uri}" data-node-id="${kg.id.toString()}" data-kind="entity">
                     <div class="item-main">
                         <div class="item-label">
                             ${label}

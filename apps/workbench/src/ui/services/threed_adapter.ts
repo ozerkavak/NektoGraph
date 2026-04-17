@@ -22,7 +22,7 @@ export class Entity3DAdapter {
             neighbors: [],
             color: '#ffffff',
             position: [0, 0, 0],
-            semanticData: { uri: entity.uri }
+            semanticData: { uri: entity.uri, nodeId: focusId }
         });
 
         // Helper: Add Edge
@@ -56,7 +56,10 @@ export class Entity3DAdapter {
                 color: '#88ccff',
                 position: [cx, cy, cz],
                 neighbors: [],
-                semanticData: { uri: typeof group.classID === 'bigint' ? state.factory.decode(group.classID).value : (group.classID as any).value || String(group.classID) }
+                semanticData: { 
+                    uri: typeof group.classID === 'bigint' ? state.factory.decode(group.classID).value : (group.classID as any).value || String(group.classID),
+                    nodeId: classId
+                }
             });
             addEdge(focusId, classId, 'type');
 
@@ -98,7 +101,10 @@ export class Entity3DAdapter {
                     color: '#88ff88',
                     position: [px, py, pz],
                     neighbors: [],
-                    semanticData: { uri: typeof prop.property === 'bigint' ? state.factory.decode(prop.property).value : (prop.property as any).value || String(prop.property) }
+                    semanticData: { 
+                        uri: typeof prop.property === 'bigint' ? state.factory.decode(prop.property).value : (prop.property as any).value || String(prop.property),
+                        nodeId: propId
+                    }
                 });
                 addEdge(classId, pNodeId, isInverse ? 'inv' : 'has', isInverse ? 'dashed' : 'solid');
 
@@ -156,7 +162,10 @@ export class Entity3DAdapter {
                                 dataType: term.datatype,
                                 lang: term.language
                             }
-                        } : { uri: (term as any).value }
+                        } : { 
+                            uri: (term as any).value,
+                            nodeId: typeof val.value === 'bigint' ? val.value.toString() : (val.value as any).id
+                        }
                     });
                     addEdge(pNodeId, valNodeId, 'val', isGhost ? 'dashed' : 'solid');
                 });

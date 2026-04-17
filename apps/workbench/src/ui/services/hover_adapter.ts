@@ -10,13 +10,31 @@ export interface HoverCardData {
 
 export class HoverAdapter {
 
-    static async resolveEntity(uri: string): Promise<HoverCardData | null> {
-        console.log('[HoverAdapter] Resolving:', uri);
+    static async resolveEntity(idOrUri: string): Promise<HoverCardData | null> {
+        console.log('[HoverAdapter] Resolving:', idOrUri);
         try {
-            const kg = await KGEntity.ensure(state.factory.namedNode(uri), 'metadata');
+            // NODEID PRIORITY: Use BigInt IDs directly for maximum performance
+            let id: bigint;
+            
+            // If it's a numeric string, it's already a NodeID
+            if (/^\d+$/.test(idOrUri)) {
+                id = BigInt(idOrUri);
+            } else {
+                // It's a URI, resolve it to NodeID
+                const resolved = state.factory.namedNode(idOrUri);
+                // The factory returns the BigInt directly, not an object with .id
+                id = typeof resolved === 'bigint' ? resolved : (resolved as any).id;
+            }
+
+            if (!id) return null;
+
+            // Fetch KGEntity (metadata only for hover)
+            const kg = await KGEntity.ensure(id, 'metadata');
+            if (!kg) return null;
+
             return this.renderEntityLogic(kg);
         } catch (e) {
-            console.error("Hover Adapter Error", e);
+            console.warn('[HoverAdapter] Failed to resolve entity:', idOrUri, e);
             return null;
         }
     }
@@ -42,8 +60,8 @@ export class HoverAdapter {
         }
 
         // --- Schema Inference Engine ---
-        const schema = state.schemaIndex.getPropertySchema(kg.id);
-        const classSchema = state.schemaIndex.getSchemaForClass(kg.id);
+        const schema = state.schemaIndex.getPropertySchema(kg.id as bigint);
+        const classSchema = state.schemaIndex.getSchemaForClass(kg.id as bigint);
 
         if (!isClass && !isProp && subTitle === 'Entity') {
             if (schema) subTitle = 'Property';

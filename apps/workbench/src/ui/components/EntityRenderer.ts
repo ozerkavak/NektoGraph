@@ -222,7 +222,7 @@ export class EntityRenderer {
             if (v.source === 'inference') chipClass += ' src-inf';
 
             // Base Attributes
-            let attrs = `data-id="${valToken.value}"`;
+            let attrs = `data-id="${v.value.toString()}" data-node-id="${v.value.toString()}"`;
             if (isTriple) attrs += ` data-kind="triple"`;
             else if (isRef) attrs += ` data-kind="entity"`;
             else {
@@ -295,7 +295,7 @@ export class EntityRenderer {
         return `
             <div class="prop-row" id="row_${winId}_${propIdVal}" style="display:flex; border-bottom:1px solid rgba(255,255,255,0.03); padding:6px 0;">
                 <div class="prop-label" style="width:200px; min-width:200px; font-size:11px; color:#10b981; display:flex; align-items:center; justify-content:flex-start; padding-left:14px;">
-                    <span data-id="${propIdVal}" data-kind="entity" style="text-align:left;">${propLabel}</span>
+                    <span data-id="${propIdVal}" data-node-id="${prop.property.toString()}" data-kind="entity" style="text-align:left;">${propLabel}</span>
                     ${addTrigger}
                     ${infoBtn}
                 </div>
@@ -312,7 +312,7 @@ export class EntityRenderer {
         return `
             <div class="mention-card" style="margin-bottom:16px; background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:6px; padding:12px;">
                 <div style="text-align:left; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.03); display:flex; align-items:center; gap:12px;">
-                    <span class="chip chip-triple chip-compound" data-id="${tripleID}" data-kind="triple">${tripleHTML}</span>
+                    <span class="chip chip-triple chip-compound" data-id="${tripleID}" data-node-id="${tripleID.toString()}" data-kind="triple">${tripleHTML}</span>
                     <span class="link-view" style="font-size:10px; color:var(--accent-primary); cursor:pointer; opacity:0.7; font-weight:700; transition:opacity 0.2s;" 
                           onclick="event.stopPropagation(); window.state.openTripleEditor('${tripleID.toString()}')"
                           onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
@@ -330,7 +330,7 @@ export class EntityRenderer {
                                     const t = state.factory.decode(v.value);
                                     const isRef = t.termType === 'NamedNode';
                                     const display = isRef ? KGEntity.get(v.value).getDisplayName() : t.value;
-                                    return `<span class="chip" data-id="${v.value.toString()}">${display}</span>`;
+                                    return `<span class="chip" data-id="${v.value.toString()}" data-node-id="${v.value.toString()}">${display}</span>`;
                                 }).join('')}
                             </div>
                         </div>
@@ -400,10 +400,10 @@ export class EntityRenderer {
             const isRef = t.termType === 'NamedNode';
             const label = isRef ? KGEntity.get(unwrapped).getDisplayName() : t.value;
             const click = isRef ? `onclick="event.stopPropagation(); window.openEntity('${t.value}')"` : '';
-            return `<span class="triple-part ${kind} ${isRef ? 'link' : ''}" ${click} data-id="${t.value}" data-kind="${isRef ? 'entity' : 'literal'}">${label}</span>`;
+            return `<span class="triple-part ${kind} ${isRef ? 'link' : ''}" ${click} data-id="${unwrapped.toString()}" data-node-id="${unwrapped.toString()}" data-kind="${isRef ? 'entity' : 'literal'}">${label}</span>`;
         };
         return `
-            <span class="chip-triple" title="${triple.value || id.toString()}" onclick="event.stopPropagation(); window.state.openTripleEditor('${id.toString()}')">
+            <span class="chip-triple" onclick="window.state.openTripleEditor('${id.toString()}')">
                 ${renderPart(triple.subject, 's')}
                 <span class="triple-sep"></span>
                 ${renderPart(triple.predicate, 'p')}
@@ -491,7 +491,8 @@ export class EntityRenderer {
 
                             return `
                                 <span class="chip src-ont clickable-chip" style="height:18px; font-size:10px; background:rgba(59, 130, 246, 0.1); color:#93c5fd; position:relative; margin-top:2px;"
-                                      oncontextmenu="window.ChipMenu.show({event: event, subject: '${kg.id.toString()}', predicate: '${f.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type').toString()}', object: '${t.value.toString()}', tripleID: '${(tId as any).toString()}', quads: JSON.parse('${allQuadsData}')})">
+                                      oncontextmenu="window.ChipMenu.show({event: event, subject: '${kg.id.toString()}', predicate: '${f.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type').toString()}', object: '${t.value.toString()}', tripleID: '${(tId as any).toString()}', quads: JSON.parse('${allQuadsData}')})"
+                                      data-id="${t.value.toString()}" data-node-id="${t.value.toString()}" data-kind="entity">
                                     ${KGEntity.get(t.value).getDisplayName()}${dupeText}
                                 </span>`;
                         }).join('')}
