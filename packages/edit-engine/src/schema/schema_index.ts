@@ -1,5 +1,6 @@
 import { NodeID, IDataFactory, IQuadStore } from '@triplestore/core';
 import { Vocabulary } from './vocabulary';
+import { STANDARD_PROPERTIES } from './standard_schemas';
 
 export interface PropertySchema {
     property: NodeID;
@@ -16,6 +17,7 @@ export interface PropertySchema {
     inverseOf?: NodeID;
     type: 'Object' | 'Data' | 'Annotation' | 'Unknown';
     labels: Record<string, string>;
+    comments?: Record<string, string>;
 }
 
 export interface ClassSchema {
@@ -46,6 +48,8 @@ export class SchemaIndex {
         this.propertyMap.clear();
         this.subClassMap.clear();
         this.parentMap.clear();
+
+        this.injectStandardProperties();
 
         const v = this.vocab;
 
@@ -346,5 +350,28 @@ export class SchemaIndex {
         }
 
         return result;
+    }
+
+    private injectStandardProperties() {
+        for (const [uri, schema] of Object.entries(STANDARD_PROPERTIES)) {
+            const propID = this.factory.namedNode(uri);
+            this.propertyMap.set(propID, {
+                property: propID,
+                ranges: [],
+                minCount: 0,
+                maxCount: Infinity,
+                isFunctional: false,
+                isInverseFunctional: false,
+                isSymmetric: false,
+                isTransitive: false,
+                isReflexive: false,
+                isIrreflexive: false,
+                isAsymmetric: false,
+                type: (schema.type as PropertySchema['type']) || 'Unknown',
+                labels: schema.labels || {},
+                comments: schema.comments || {},
+                ...schema
+            });
+        }
     }
 }

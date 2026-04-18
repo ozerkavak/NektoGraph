@@ -184,6 +184,7 @@ export declare class IDGenerator {
     constructor(config: any);
     generate(count: number): string[];
     createUniqueId(): Promise<string>;
+    checkUniqueness(id: string): Promise<boolean>;
 }
 
 // 8. Window Manager

@@ -40,6 +40,7 @@ export class EditorView {
         g.removeEntityClass = this.removeEntityClass.bind(this);
         g.updateEntityBaseURI = this.updateEntityBaseURI.bind(this);
         g.generateNewIDForWindow = this.generateNewIDForWindow.bind(this);
+        g.updateNewEntityIdentity = this.updateNewEntityIdentity.bind(this);
         g.saveTripleIdentityShift = this.saveTripleIdentityShift.bind(this);
         g.addTripleAnnotation = this.addTripleAnnotation.bind(this);
         g.removeTripleAnnotation = this.removeTripleAnnotation.bind(this);
@@ -213,9 +214,6 @@ export class EditorView {
 
     private static async createNewEntity() {
         try {
-            const targetGraphURI = await this.requestTargetGraph();
-            if (targetGraphURI === null) return;
-
             const newUri = await state.generator.createUniqueId();
 
             state.windowManager.create(newUri, 'New Entity', (container, winId) => {
@@ -224,7 +222,7 @@ export class EditorView {
                 EntityRenderer.renderEntityInWindow(currentNode, container, winId);
             }, {
                 isNew: true,
-                targetGraph: targetGraphURI
+                targetGraph: undefined
             }, 'editor');
 
             uiState.currentDashboardActive = false;
@@ -240,12 +238,13 @@ export class EditorView {
         
         let targetGraphForSubject: string | undefined;
         let subjectLabel = "this entity";
+        let targetWin: any = null;
         
         if (subjectUri) {
             try {
                 const sUriStr = subjectUri.startsWith('http') ? subjectUri : state.factory.decode(BigInt(subjectUri)).value;
-                const win = Array.from(state.windowManager.windows.values()).find(w => w.state.entityId === sUriStr);
-                targetGraphForSubject = win?.state.metadata?.targetGraph;
+                targetWin = Array.from(state.windowManager.windows.values()).find(w => w.state.entityId === sUriStr);
+                targetGraphForSubject = targetWin?.state.metadata?.targetGraph;
                 subjectLabel = KGEntity.get(state.factory.namedNode(sUriStr)).getDisplayName();
             } catch(e) {
                 // Fallback
@@ -273,13 +272,61 @@ export class EditorView {
             });
 
 
-        return GraphSelector.request({
+        const result = await GraphSelector.request({
             title: 'Select Destination Graph',
             description: "Choose where to store your changes. Note that system or inferred graphs are excluded for data integrity.",
             options
         });
+
+        if (result && targetWin) {
+            if (!targetWin.state.metadata) targetWin.state.metadata = {};
+            targetWin.state.metadata.targetGraph = result;
+        }
+
+        return result;
     }
 
+    private static async updateNewEntityIdentity(winId: string) {
+        const baseSel = document.getElementById(`new_entity_base_${winId}`) as HTMLSelectElement;
+        const baseCustom = document.getElementById(`new_entity_base_custom_${winId}`) as HTMLInputElement;
+        const idInp = document.getElementById(`new_entity_id_${winId}`) as HTMLInputElement;
+        const statusEl = document.getElementById(`new_entity_status_${winId}`);
+        const fullUriEl = document.getElementById(`new_entity_uri_full_${winId}`);
+
+        if (!baseSel || !idInp) return;
+
+        let base = baseSel.value;
+        if (base === 'custom') {
+            baseCustom.style.display = 'block';
+            base = baseCustom.value;
+        } else {
+            baseCustom.style.display = 'none';
+        }
+
+        if (!base.endsWith('/') && !base.endsWith('#') && base.length > 0) {
+            // Suggesting hash or slash based on common patterns
+            // For now just taking what is provided
+        }
+
+        const newUri = base + idInp.value;
+        if (fullUriEl) fullUriEl.textContent = newUri;
+
+        // Rename window logic (No session!)
+        const win = state.windowManager.getWindow(winId);
+        if (win && win.state.entityId !== newUri) {
+            state.windowManager.renameWindow(winId, newUri);
+            win.setTitle(idInp.value); // Only show local ID in title
+        }
+
+        // Uniqueness check
+        if (statusEl) {
+            statusEl.innerHTML = '<span style="opacity:0.5; font-size:10px;">⏳</span>';
+            const isUnique = await state.generator.checkUniqueness(newUri);
+            statusEl.innerHTML = isUnique 
+                ? '<span style="color:#10b981;" title="URI is unique">✓</span>' 
+                : '<span style="color:#ef4444;" title="URI already exists!">⚠</span>';
+        }
+    }
 
     private static closeWin(id: string) {
         const w = state.windowManager.getWindow(id);
@@ -406,13 +453,16 @@ export class EditorView {
     private static addEntityLabel(_winId: string, sUri: string) {
         state.ensureSession();
         uiState.currentSession = state.currentSession;
+        
+        const win = state.windowManager.getWindow(_winId);
+        const actualUri = win?.state.entityId || sUri;
+
         const val = prompt("Enter Label:");
         if (val) {
-            const w = state.windowManager.getWindow(_winId);
-            const targetGraph = w?.state.metadata?.targetGraph;
-            state.addTripleLiteral(sUri, 'http://www.w3.org/2000/01/rdf-schema#label', val, state.language, targetGraph);
-            KGEntity.get(state.factory.namedNode(sUri)).invalidate();
-            if (w) w.setTitle(val);
+            const targetGraph = win?.state.metadata?.targetGraph;
+            state.addTripleLiteral(actualUri, 'http://www.w3.org/2000/01/rdf-schema#label', val, state.language, targetGraph);
+            KGEntity.get(state.factory.namedNode(actualUri)).invalidate();
+            if (win) win.setTitle(val);
             this.refreshSessionUI();
         }
     }
@@ -420,12 +470,14 @@ export class EditorView {
     private static addEntityComment(_winId: string, sUri: string) {
         state.ensureSession();
         uiState.currentSession = state.currentSession;
+
+        const win = state.windowManager.getWindow(_winId);
+        const actualUri = win?.state.entityId || sUri;
+
         const val = prompt("Enter Comment:");
         if (val) {
-            const w = state.windowManager.getWindow(_winId);
-            const targetGraph = w?.state.metadata?.targetGraph;
-            state.addTripleLiteral(sUri, 'http://www.w3.org/2000/01/rdf-schema#comment', val, state.language, targetGraph);
-            // Redundant manual refreshes removed: State.ts handles syncDirtyEntities
+            const targetGraph = win?.state.metadata?.targetGraph;
+            state.addTripleLiteral(actualUri, 'http://www.w3.org/2000/01/rdf-schema#comment', val, state.language, targetGraph);
         }
     }
 
@@ -495,25 +547,28 @@ export class EditorView {
         const input = document.getElementById(inputId) as HTMLInputElement;
         if (!input || !input.value) return;
 
-        const sNode = state.factory.namedNode(sUri);
+        const win = state.windowManager.getWindow(winId);
+        const actualUri = win?.state.entityId || sUri;
+
+        const sNode = state.factory.namedNode(actualUri);
         const kg = KGEntity.get(sNode);
         if (kg.hasValue(pUri, input.value)) {
             alert("This value already exists (or is being added).");
             return;
         }
 
-        const targetGraph = await EditorView.requestTargetGraph(sUri);
+        const targetGraph = await EditorView.requestTargetGraph(actualUri);
         if (targetGraph === null) return;
 
         state.ensureSession();
         uiState.currentSession = state.currentSession;
 
         if (isObject) {
-            state.addTriple(sUri, pUri, input.value, targetGraph);
+            state.addTriple(actualUri, pUri, input.value, targetGraph);
         } else {
             const ranges = input.getAttribute('data-ranges');
             const range = ranges ? ranges.split(',')[0] : undefined;
-            state.addTripleLiteral(sUri, pUri, input.value.trim(), undefined, targetGraph, range);
+            state.addTripleLiteral(actualUri, pUri, input.value.trim(), undefined, targetGraph, range);
         }
 
         input.value = '';
@@ -525,23 +580,25 @@ export class EditorView {
         const input = document.getElementById(`new_label_${winId}`) as HTMLInputElement;
         const langSelect = document.getElementById(`new_label_lang_${winId}`) as HTMLSelectElement;
 
+        const win = state.windowManager.getWindow(winId);
+        const actualUri = win?.state.entityId || idVal;
+
         if (input && input.value) {
-            const kg = KGEntity.get(state.factory.namedNode(idVal));
+            const kg = KGEntity.get(state.factory.namedNode(actualUri));
             if (kg.structured && kg.structured.allLabels.some((l: any) => l.lang === langSelect.value)) {
                 alert(`A label in ${langSelect.value.toUpperCase()} already exists for this entity.`);
                 return;
             }
 
-            const targetGraph = await EditorView.requestTargetGraph(idVal);
+            const targetGraph = await EditorView.requestTargetGraph(actualUri);
             if (targetGraph === null) return;
 
             state.ensureSession();
             uiState.currentSession = state.currentSession;
             
-            state.addTripleLiteral(idVal, 'http://www.w3.org/2000/01/rdf-schema#label', input.value, langSelect.value, targetGraph);
+            state.addTripleLiteral(actualUri, 'http://www.w3.org/2000/01/rdf-schema#label', input.value, langSelect.value, targetGraph);
             
-            const w = state.windowManager.getWindow(winId);
-            if (w) w.setTitle(input.value);
+            if (win) win.setTitle(input.value);
             
             input.value = '';
             // Manual refresh removed: DataSync handles incremental update
@@ -552,23 +609,26 @@ export class EditorView {
         const input = document.getElementById(`new_comment_${winId}`) as HTMLTextAreaElement;
         const langSelect = document.getElementById(`new_comment_lang_${winId}`) as HTMLSelectElement;
 
+        const win = state.windowManager.getWindow(winId);
+        const actualUri = win?.state.entityId || idVal;
+
         if (input && input.value) {
-            const kg = KGEntity.get(state.factory.namedNode(idVal));
+            const kg = KGEntity.get(state.factory.namedNode(actualUri));
             if (kg.structured && kg.structured.allComments.some((c: any) => c.lang === langSelect.value)) {
                 alert(`A description in ${langSelect.value.toUpperCase()} already exists for this entity.`);
                 return;
             }
 
-            const targetGraph = await EditorView.requestTargetGraph(idVal);
+            const targetGraph = await EditorView.requestTargetGraph(actualUri);
             if (targetGraph === null) return;
 
             state.ensureSession();
             uiState.currentSession = state.currentSession;
             
-            state.addTripleLiteral(idVal, 'http://www.w3.org/2000/01/rdf-schema#comment', input.value, langSelect.value, targetGraph);
-            KGEntity.get(state.factory.namedNode(idVal)).invalidate();
+            state.addTripleLiteral(actualUri, 'http://www.w3.org/2000/01/rdf-schema#comment', input.value, langSelect.value, targetGraph);
+            KGEntity.get(state.factory.namedNode(actualUri)).invalidate();
             input.value = '';
-            state.windowManager.getWindow(winId)?.refresh();
+            win?.refresh();
             this.refreshSessionUI();
         }
     }
@@ -576,26 +636,33 @@ export class EditorView {
     private static async addEntityClass(winId: string, entityURI: string, classURI: string) {
         if (!classURI) return;
 
-        const targetGraph = await EditorView.requestTargetGraph(entityURI);
+        const win = state.windowManager.getWindow(winId);
+        const actualUri = win?.state.entityId || entityURI;
+
+        const targetGraph = await EditorView.requestTargetGraph(actualUri);
         if (targetGraph === null) return;
 
         state.ensureSession();
         uiState.currentSession = state.currentSession;
         
-        state.addTriple(entityURI, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', classURI, targetGraph);
-        KGEntity.get(state.factory.namedNode(entityURI)).invalidate();
+        state.addTriple(actualUri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', classURI, targetGraph);
+        KGEntity.get(state.factory.namedNode(actualUri)).invalidate();
         
-        state.windowManager.getWindow(winId)?.refresh();
+        win?.refresh();
         this.refreshSessionUI();
     }
 
     private static removeEntityClass(winId: string, entityURI: string, classURI: string) {
         if (!confirm('Remove this class from the entity? Properties will persist but be marked as missing/orphan.')) return;
+        
+        const win = state.windowManager.getWindow(winId);
+        const actualUri = win?.state.entityId || entityURI;
+
         state.ensureSession();
         uiState.currentSession = state.currentSession;
-        state.removeTriple(entityURI, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', classURI, '');
-        KGEntity.get(state.factory.namedNode(entityURI)).invalidate();
-        state.windowManager.getWindow(winId)?.refresh();
+        state.removeTriple(actualUri, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', classURI, '');
+        KGEntity.get(state.factory.namedNode(actualUri)).invalidate();
+        win?.refresh();
         this.refreshSessionUI();
     }
 

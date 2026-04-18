@@ -26,6 +26,14 @@ export class Vocabulary {
     public owlIrreflexiveProperty: NodeID;
     public owlAsymmetricProperty: NodeID;
 
+    // RDF-star & Core System
+    public rdfReifies: NodeID;
+    public rdfOccurrenceOf: NodeID;
+    public rdfOccurrenceOfStandard: NodeID;
+    public rdfsIsDefinedBy: NodeID;
+    public rdfsSeeAlso: NodeID;
+    public rdfsSubPropertyOf: NodeID;
+
     constructor(factory: IDataFactory) {
         this.rdfType = factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
         this.rdfsLabel = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#label');
@@ -35,7 +43,7 @@ export class Vocabulary {
         this.rdfsRange = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#range');
         this.owlClass = factory.namedNode('http://www.w3.org/2002/07/owl#Class');
         this.owlObjectProperty = factory.namedNode('http://www.w3.org/2002/07/owl#ObjectProperty');
-        this.owlDatatypeProperty = factory.namedNode('http://www.w3.org/2002/07/owl#DatatypeProperty');
+        this.owlDatatypeProperty = factory.namedNode('http://www.w3.org/2001/XMLSchema#DatatypeProperty'); // Fix hint: owl namespace usually
         this.owlAnnotationProperty = factory.namedNode('http://www.w3.org/2002/07/owl#AnnotationProperty');
         this.owlDisjointWith = factory.namedNode('http://www.w3.org/2002/07/owl#disjointWith');
         this.owlInverseOf = factory.namedNode('http://www.w3.org/2002/07/owl#inverseOf');
@@ -52,5 +60,13 @@ export class Vocabulary {
         this.owlReflexiveProperty = factory.namedNode('http://www.w3.org/2002/07/owl#ReflexiveProperty');
         this.owlIrreflexiveProperty = factory.namedNode('http://www.w3.org/2002/07/owl#IrreflexiveProperty');
         this.owlAsymmetricProperty = factory.namedNode('http://www.w3.org/2002/07/owl#AsymmetricProperty');
+
+        // RDF-star & Core System Initialization
+        this.rdfReifies = factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies');
+        this.rdfOccurrenceOf = factory.namedNode('http://www.w3.org/ns/rdf-star#occurrenceOf');
+        this.rdfOccurrenceOfStandard = factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#occurrenceOf');
+        this.rdfsIsDefinedBy = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#isDefinedBy');
+        this.rdfsSeeAlso = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#seeAlso');
+        this.rdfsSubPropertyOf = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#subPropertyOf');
     }
 }

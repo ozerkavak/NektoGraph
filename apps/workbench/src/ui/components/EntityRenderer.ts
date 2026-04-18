@@ -416,12 +416,16 @@ export class EntityRenderer {
 
     static renderHeader(kg: KGEntity, winId: string): string {
         const _s = state as any;
+        const win = state.windowManager.getWindow(winId);
         const entity = kg.structured;
-        if (!entity) return '';
+        if (!entity || !win) return '';
+        
         const decodedId = kg.uri;
         const f = _s.factory;
         const decoded = f.decode(kg.id) as any;
         const isBNode = decoded.termType === 'BlankNode';
+        const isNew = !!win.state.metadata?.isNew && kg.isEmpty;
+
         const langOpts = ['en', 'tr', 'de', 'fr'].map(l => `<option value="${l}" ${_s.language === l ? 'selected' : ''}>${l.toUpperCase()}</option>`).join('');
 
         if (isBNode) {
@@ -458,22 +462,66 @@ export class EntityRenderer {
                 </header>`;
         }
 
+        // --- Standard URI Section ---
+        let uriContent = '';
+        if (isNew) {
+            // Interactive Mode for New Entities
+            const currentBase = kg.baseUri;
+            const currentLocal = kg.localId;
+            const prefixes = Object.values(state.prefixes);
+            const baseURIs = state.baseURIs;
+            const allNamespaces = Array.from(new Set([...prefixes, ...baseURIs, 'http://example.org/resource/']));
+            
+            const nsOptions = allNamespaces.map(ns => {
+                const selected = currentBase === ns || (currentBase + '#' === ns) || (currentBase + '/' === ns);
+                return `<option value="${ns}" ${selected ? 'selected' : ''}>${ns}</option>`;
+            }).join('');
+
+            uriContent = `
+                <div style="display:flex; flex-direction:column; gap:4px; padding:6px; background:rgba(59, 130, 246, 0.04); border:1px solid rgba(59, 130, 246, 0.2); border-radius:6px; margin-top:2px; box-sizing: border-box;">
+                    <div style="display:flex; align-items:center; gap:2px; height:24px; box-sizing: border-box;">
+                        <div style="flex:2; height:24px; position:relative; overflow:hidden; border-radius:4px; border:1px solid rgba(59,130,246,0.3); background:rgba(20,20,30,1);">
+                            <select id="new_entity_base_${winId}" class="form-input" style="width:105%; height:100%; border:none; background:transparent; color:#fff; font-size:10px; padding:0 24px 0 6px; cursor:pointer;" onchange="window.updateNewEntityIdentity('${winId}')">
+                                <option value="custom">Custom URI Prefix...</option>
+                                ${nsOptions}
+                            </select>
+                        </div>
+                        <input id="new_entity_base_custom_${winId}" type="text" placeholder="Custom prefix..." class="form-input" style="display:none; flex:2; height:24px; font-size:10px; padding:0 6px; border:1px solid rgba(59,130,246,0.3);" oninput="window.updateNewEntityIdentity('${winId}')">
+                        <span style="font-weight:900; opacity:0.3; color:var(--accent-primary); padding:0 1px;">/</span>
+                        <input id="new_entity_id_${winId}" type="text" value="${currentLocal}" class="form-input" style="flex:1; height:24px; font-size:10px; font-weight:800; color:#fff; padding:0 6px; border:1px solid rgba(59,130,246,0.3);" oninput="window.updateNewEntityIdentity('${winId}')">
+                        <div id="new_entity_status_${winId}" style="width:20px; display:flex; align-items:center; justify-content:center; font-size:12px; height:24px;" title="Uniqueness Check">
+                             <span style="color:#10b981;">✓</span>
+                        </div>
+                    </div>
+                    <div style="font-size:9px; color:var(--text-muted); padding-left:2px; display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                        <span>Assign a unique identity. Changes take effect immediately.</span>
+                        <span id="new_entity_uri_full_${winId}" style="font-family:var(--font-mono); opacity:0.6; color:var(--accent-primary); font-size:9px; letter-spacing:-0.02em;">${decodedId}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            uriContent = `
+                <div style="display:flex; align-items:center; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:4px; overflow:hidden; font-family:var(--font-mono); height:24px;">
+                    <input type="text" value="${kg.baseUri}" disabled 
+                        style="background:transparent; color:var(--text-muted); border:none; border-right:1px solid var(--border-subtle); padding:0 6px; flex:2; height:100%; font-size:11px; font-weight:600;">
+                    <input type="text" value="${kg.localId}" disabled 
+                        style="background:transparent; color:var(--text-main); border:none; padding:0 6px; flex:1; font-weight:700; height:100%; font-size:9px; opacity:0.8;">
+                </div>
+            `;
+        }
+
         return `
             <header class="entity-header-v2" style="display:grid; grid-template-columns:1fr 1.3fr; gap:12px; padding:12px 14px; background:var(--bg-panel); border-bottom:1px solid var(--border-subtle); backdrop-filter:blur(20px);">
                 <div class="header-cell uri-section">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; opacity:0.8;">
-                        <span style="font-size:11px; font-weight:700; color:var(--text-muted);">URI</span>
+                        <span style="font-size:11px; font-weight:700; color:var(--text-muted);">URI ${isNew ? '<span style="color:var(--accent-amber); margin-left:8px;">[PENDING IDENTITY]</span>' : ''}</span>
+                        ${!isNew ? `
                         <a href="#" onclick="window.state.open3DEntity('${decodedId}')" style="font-size:10px; color:#60a5fa; text-decoration:none; display:flex; align-items:center; gap:4px; cursor:pointer;" title="Open 3D Voyager">
                             <span>View Entity in 3D</span>
                             <span style="background:rgba(96, 165, 250, 0.1); padding:2px 4px; border-radius:3px;">🏙️</span>
-                        </a>
+                        </a>` : ''}
                     </div>
-                    <div style="display:flex; align-items:center; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:4px; overflow:hidden; font-family:var(--font-mono); height:24px;">
-                        <input type="text" value="${kg.baseUri}" onchange="window.updateEntityBaseURI('${winId}', '${decodedId}', this.value)" 
-                            style="background:transparent; color:var(--text-muted); border:none; border-right:1px solid var(--border-subtle); padding:0 6px; flex:2; height:100%; font-size:11px; font-weight:600;">
-                        <input type="text" value="${kg.localId}" disabled 
-                            style="background:transparent; color:var(--text-main); border:none; padding:0 6px; flex:1; font-weight:700; height:100%; font-size:9px; opacity:0.8;">
-                    </div>
+                    ${uriContent}
                 </div>
                 <div class="header-cell types-section" style="padding-left:10px; border-left:1px solid var(--bg-card); text-align:left;">
                     <div style="font-size:9px; font-weight:700; color:var(--text-muted); margin-bottom:4px; opacity:0.8;">Classes</div>
@@ -523,7 +571,7 @@ export class EntityRenderer {
                             return `
                             <div class="clickable-chip-inline" style="display:flex; align-items:center; gap:8px; font-size:11px; margin-bottom:3px; justify-content:flex-start; cursor:default;"
                                  oncontextmenu="window.ChipMenu.show({event: event, subject: '${kg.id.toString()}', predicate: '${f.namedNode('http://www.w3.org/2000/01/rdf-schema#label').toString()}', object: '${l.quad.object.toString()}', tripleID: '${lTripleID}', quads: JSON.parse('${allQuadsData}')})">
-                                <span style="font-size:8px; font-weight:700; color:var(--text-muted); opacity:0.7; min-width:18px;">${l.lang.toUpperCase()}</span>
+                                 <span style="font-size:8px; font-weight:700; color:var(--text-muted); opacity:0.7; min-width:18px;">${l.lang.toUpperCase()}</span>
                                 <span style="flex:1; overflow:hidden; text-overflow:ellipsis; text-align:left;">${l.value}${dupeText}</span>
                                 ${warningIcon}
                             </div>`;

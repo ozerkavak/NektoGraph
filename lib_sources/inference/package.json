@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/inference",
-  "version": "1.0.1-beta",
+  "version": "1.0.2-beta",
   "description": "Modular Inference Engine for Antigravity Triplestore",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

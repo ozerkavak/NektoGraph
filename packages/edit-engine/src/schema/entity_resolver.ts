@@ -240,6 +240,20 @@ export class EntityResolver {
             sources.add(this.determineSource({ subject: raw[0], predicate: raw[1], object: raw[2], graph: raw[3] }, session));
         }
 
+        // SchemaIndex Fallback for System Predicates (Labels & Comments)
+        if (this.schemaIndex) {
+            const propSchema = this.schemaIndex.getPropertySchema(id);
+            if (propSchema) {
+                Object.entries(propSchema.labels || {}).forEach(([lang, val]) => {
+                    if (!labels[lang]) labels[lang] = val as string;
+                });
+                const commentsMap = (propSchema as any).comments || {};
+                Object.entries(commentsMap).forEach(([lang, val]) => {
+                    if (!comments[lang]) comments[lang] = val as string;
+                });
+            }
+        }
+
         return { labels, comments, types, sources: Array.from(sources) };
     }
 

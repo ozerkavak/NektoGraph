@@ -1,6 +1,6 @@
 {
   "name": "rdf-factory",
-  "version": "1.0.1-beta",
+  "version": "1.0.2-beta",
   "description": "Minimal RDFJS-compliant DataFactory for system interoperability.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@triplestore/window-manager",
-  "version": "1.0.1-beta",
+  "version": "1.0.2-beta",
   "main": "dist/window-manager.js",
   "module": "dist/window-manager.js",
   "types": "dist/index.d.ts",

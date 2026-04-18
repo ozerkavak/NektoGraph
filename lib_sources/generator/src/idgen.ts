@@ -49,7 +49,7 @@ export class IDGenerator {
      * Orchestrates uniqueness checks across configured validation backends.
      * Returns true if the ID is confirmed unique (not present in any store).
      */
-    protected async checkUniqueness(id: string): Promise<boolean> {
+    public async checkUniqueness(id: string): Promise<boolean> {
         let localUnique = true;
 
         // Validation Tier 1: Local In-Memory Store

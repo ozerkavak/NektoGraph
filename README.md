@@ -1,6 +1,6 @@
 # 🚀 NektoGraph
 
-**NektoGraph** is a professional-grade **Knowledge Graph Editor** ecosystem powered by an integrated, high-performance **Quadstore database engine** with native **RDF-star (RDF-star)** support. A lightweight, standalone data con-nektor and knowledge graph quad-storer, it is engineered for the modern web, providing a comprehensive knowledge engineering suite featuring reactive RDFS/OWL RL reasoning, immersive 3D graph visualization, and granular named graph orchestration. 
+**NektoGraph** is a **Knowledge Graph Editor** ecosystem powered by an integrated, high-performance **Quadstore database engine** with native **RDF-star (RDF-star)** support. A lightweight, standalone data con-nektor and knowledge graph quad-storer, it is engineered for the modern web, providing a comprehensive knowledge engineering suite featuring reactive RDFS/OWL RL reasoning, immersive 3D graph visualization, and granular named graph orchestration. 
 
 NektoGraph empowers developers with full **SPARQL-star** (SPARQL 1.2) Query and Update compliance, robust session isolation for transactional editing, and a high-speed I/O layer supporting multi-format data synchronization between local files and remote SPARQL endpoints. Built on a zero-dependency*, vectorized **Structure-of-Arrays (SoA)** architecture, it delivers high performance directly in the browser or Web Worker.
 
