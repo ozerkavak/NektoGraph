@@ -23,6 +23,7 @@ export interface PropertySchema {
 export interface ClassSchema {
     classID: NodeID;
     properties: PropertySchema[];
+    explicitProperties: Set<bigint>; // Track properties defined explicitly for this class
     subClasses: NodeID[];
     disjointWith: NodeID[];
     labels: Record<string, string>;
@@ -34,8 +35,10 @@ export class SchemaIndex {
     private propertyMap = new Map<bigint, PropertySchema>();
     private subClassMap = new Map<bigint, bigint[]>();
     private parentMap = new Map<bigint, bigint[]>();
+    private uriToID = new Map<string, bigint>(); // URI String -> Official BigID
 
     constructor(private store: IQuadStore, private factory: IDataFactory) {
+        console.log(">>> SCHEMA_INDEX_V2 AKTIF <<<");
         this.vocab = new Vocabulary(factory);
     }
 
@@ -48,26 +51,43 @@ export class SchemaIndex {
         this.propertyMap.clear();
         this.subClassMap.clear();
         this.parentMap.clear();
+        this.uriToID.clear();
 
         this.injectStandardProperties();
 
         const v = this.vocab;
 
         const allClasses = new Set<bigint>();
+        allClasses.add(v.owlThing);
+        allClasses.add(v.rdfsResource);
+
         for (const [s] of this.store.match(null, v.rdfType, v.owlClass)) allClasses.add(s);
         for (const [s] of this.store.match(null, v.rdfType, this.factory.namedNode('http://www.w3.org/2000/01/rdf-schema#Class'))) allClasses.add(s);
 
         // 2. Init Class Schemas
-        for (const classID of allClasses) {
-            // Filter: Only NamedNodes should be in the class list (avoid blank nodes like n3-x)
+        for (const rawClassID of allClasses) {
+            let classID = rawClassID;
             try {
-                const term = this.factory.decode(classID);
-                if (term.termType !== 'NamedNode') {
-                    continue;
+                const term = this.factory.decode(rawClassID);
+                if (term.termType !== 'NamedNode') continue;
+                const uri = term.value;
+                
+                // Normalizasyon: Bu URI için daha önce bir ID belirledik mi?
+                if (this.uriToID.has(uri)) {
+                    classID = this.uriToID.get(uri)!;
+                } else {
+                    this.uriToID.set(uri, rawClassID);
                 }
             } catch { continue; }
 
+            // Eğer bu sınıf için zaten bir şema oluşturduysak (farklı graph'lardan gelen aynı URI) atla
+            if (this.classMap.has(classID)) continue;
+
             const labels: Record<string, string> = {};
+            // Root etiketleri
+            if (classID === v.owlThing) { labels['en'] = 'Entity'; labels['tr'] = 'Varlık'; }
+            if (classID === v.rdfsResource) { labels['en'] = 'Resource'; labels['tr'] = 'Kaynak'; }
+
             for (const [, , o] of this.store.match(classID, this.factory.namedNode('http://www.w3.org/2000/01/rdf-schema#label'), null)) {
                 try {
                     const term = this.factory.decode(o);
@@ -81,25 +101,32 @@ export class SchemaIndex {
             // Disjoint Classes
             const disjointWith: bigint[] = [];
             for (const [, , o] of this.store.match(classID, v.owlDisjointWith, null)) {
-                disjointWith.push(o);
+                disjointWith.push(this.resolveOfficialID(o));
             }
 
-            this.classMap.set(classID, { classID, properties: [], subClasses: [], disjointWith, labels });
+            this.classMap.set(classID, { classID, properties: [], explicitProperties: new Set(), subClasses: [], disjointWith, labels });
         }
 
-        // 3. Find SubClass Hierarchy
+        // 3. Find SubClass Hierarchy (URI-Aware)
         for (const [s, , o] of this.store.match(null, v.rdfsSubClassOf, null)) {
-            if (this.classMap.has(o)) {
-                // s (Child) is subclasses of o (Parent)
-                const parent = this.classMap.get(o)!;
-                parent.subClasses.push(s);
+            const officialChild = this.resolveOfficialID(s);
+            const officialParent = this.resolveOfficialID(o);
 
-                if (!this.subClassMap.has(o)) this.subClassMap.set(o, []);
-                this.subClassMap.get(o)!.push(s);
+            if (this.classMap.has(officialParent)) {
+                const parentSchema = this.classMap.get(officialParent)!;
+                if (!parentSchema.subClasses.includes(officialChild)) {
+                    parentSchema.subClasses.push(officialChild);
+                }
 
-                // Track Parent
-                if (!this.parentMap.has(s)) this.parentMap.set(s, []);
-                this.parentMap.get(s)!.push(o);
+                if (!this.subClassMap.has(officialParent)) this.subClassMap.set(officialParent, []);
+                if (!this.subClassMap.get(officialParent)!.includes(officialChild)) {
+                    this.subClassMap.get(officialParent)!.push(officialChild);
+                }
+
+                if (!this.parentMap.has(officialChild)) this.parentMap.set(officialChild, []);
+                if (!this.parentMap.get(officialChild)!.includes(officialParent)) {
+                    this.parentMap.get(officialChild)!.push(officialParent);
+                }
             }
         }
 
@@ -132,29 +159,58 @@ export class SchemaIndex {
             inverseMap.set(o, s); // Bidirectional
         }
 
-        // Helper for Graph-Agnostic Check
+        // 2. Pre-calculate URI-based types for EVERYTHING in the store (Global URI-Type Map)
+        const uriToTypes = new Map<string, Set<string>>();
+        // Scan ALL rdf:type triples in the store to build a URI-to-URI type map
+        for (const [s, , o] of this.store.match(null, v.rdfType, null)) {
+            try {
+                const sTerm = this.factory.decode(s);
+                const oTerm = this.factory.decode(o);
+                if (sTerm.termType === 'NamedNode' && oTerm.termType === 'NamedNode') {
+                    const sURI = sTerm.value;
+                    const oURI = oTerm.value;
+                    if (!uriToTypes.has(sURI)) uriToTypes.set(sURI, new Set());
+                    uriToTypes.get(sURI)!.add(oURI);
+                    
+                    // Also track s as a property if it has a property-like type
+                    if (oURI.includes('Property')) {
+                        allPropertyIDs.add(s);
+                    }
+                }
+            } catch { }
+        }
+
+        // Helper for URI-Aware Type Check
         const hasType = (prop: bigint, type: bigint) => {
-            // match(s, p, o, null) -> null graph wildcard
-            for (const _ of this.store.match(prop, v.rdfType, type)) return true;
-            return false;
+            try {
+                const pURI = this.factory.decode(prop).value;
+                const tURI = this.factory.decode(type).value;
+                return uriToTypes.get(pURI)?.has(tURI) ?? false;
+            } catch { return false; }
         };
 
-        // 2. From Types (Object, Datatype, Annotation, Functional, etc.)
-        const propTypes = [
-            v.owlObjectProperty, v.owlDatatypeProperty, v.owlAnnotationProperty,
-            v.owlFunctionalProperty, v.owlInverseFunctionalProperty,
-            v.owlSymmetricProperty, v.owlTransitiveProperty
-        ];
-
-        for (const type of propTypes) {
-            for (const [s] of this.store.match(null, v.rdfType, type)) {
-                allPropertyIDs.add(s);
-            }
+        // Properties from domains also added to discovery
+        for (const [p] of propDomains) {
+            allPropertyIDs.add(p);
         }
 
         // Process properties
-        for (const propID of allPropertyIDs) {
-            const domains = propDomains.get(propID) || [];
+        for (const rawPropID of allPropertyIDs) {
+            let propID = rawPropID;
+            try {
+                const term = this.factory.decode(rawPropID);
+                if (term.termType !== 'NamedNode') continue;
+                const uri = term.value;
+                if (this.uriToID.has(uri)) {
+                    propID = this.uriToID.get(uri)!;
+                } else {
+                    this.uriToID.set(uri, rawPropID);
+                }
+            } catch { continue; }
+
+            if (this.propertyMap.has(propID)) continue;
+
+            const domains = (propDomains.get(rawPropID) || []).map(d => this.resolveOfficialID(d));
             const uniqueRanges = new Set<bigint>();
             for (const [, , r] of this.store.match(propID, v.rdfsRange, null)) {
                 // If the range is a blank node, it might be a union
@@ -162,12 +218,12 @@ export class SchemaIndex {
                 if (term.termType === 'BlankNode') {
                     const unionMembers = this.resolveUnion(r);
                     if (unionMembers.length > 0) {
-                        unionMembers.forEach(m => uniqueRanges.add(m));
+                        unionMembers.forEach(m => uniqueRanges.add(this.resolveOfficialID(m)));
                     } else {
-                        uniqueRanges.add(r);
+                        uniqueRanges.add(this.resolveOfficialID(r));
                     }
                 } else {
-                    uniqueRanges.add(r);
+                    uniqueRanges.add(this.resolveOfficialID(r));
                 }
             }
             const ranges = Array.from(uniqueRanges);
@@ -186,8 +242,17 @@ export class SchemaIndex {
             if (hasType(propID, v.owlObjectProperty)) type = 'Object';
             else if (hasType(propID, v.owlDatatypeProperty)) type = 'Data';
             else if (hasType(propID, v.owlAnnotationProperty)) type = 'Annotation';
+            
+            // HEURISTIC: Infer from ranges if type is unknown
+            if (type === 'Unknown' && ranges.length > 0) {
+                const isProbablyData = ranges.some(r => {
+                    const uri = this.factory.decode(r).value;
+                    return uri.includes('XMLSchema') || uri.includes('rdf-schema#Literal') || uri.includes('rdf-syntax-ns#langString');
+                });
+                type = isProbablyData ? 'Data' : 'Object';
+            }
 
-            const inverseId = inverseMap.get(propID); // Get inverse ID if exists
+            const inverseId = inverseMap.has(propID) ? this.resolveOfficialID(inverseMap.get(propID)!) : undefined;
 
             const labels: Record<string, string> = {};
             for (const [, , o] of this.store.match(propID, this.factory.namedNode('http://www.w3.org/2000/01/rdf-schema#label'), null)) {
@@ -218,10 +283,30 @@ export class SchemaIndex {
             };
 
             this.propertyMap.set(propID, propSchema);
-
+            
+            // Link to classes (explicit domains)
             for (const domain of domains) {
                 if (this.classMap.has(domain)) {
-                    this.classMap.get(domain)!.properties.push(propSchema);
+                    const classSchema = this.classMap.get(domain)!;
+                    classSchema.properties.push(propSchema);
+                    classSchema.explicitProperties.add(propID);
+                }
+            }
+        }
+
+        // 4. Inheritance Pass: Propagate properties down to subclasses
+        // Logic: For each class, find all properties defined for its parents (recursively)
+        for (const [classID, schema] of this.classMap.entries()) {
+            const parents = this.getSuperClassesRecursive(classID);
+            for (const parentID of parents) {
+                const parentSchema = this.classMap.get(parentID);
+                if (parentSchema) {
+                    for (const parentProp of parentSchema.properties) {
+                        // Avoid duplicates if a property is already explicitly defined for the subclass
+                        if (!schema.properties.some(p => p.property === parentProp.property)) {
+                            schema.properties.push(parentProp);
+                        }
+                    }
                 }
             }
         }
@@ -259,15 +344,13 @@ export class SchemaIndex {
         });
     }
 
-    getSchemaForClass(classID: NodeID): ClassSchema | undefined { return this.classMap.get(classID); }
-    getPropertySchema(propertyID: NodeID): PropertySchema | undefined { return this.propertyMap.get(propertyID); }
+    getSchemaForClass(classID: NodeID): ClassSchema | undefined { return this.classMap.get(this.resolveOfficialID(classID)); }
+    getPropertySchema(propertyID: NodeID): PropertySchema | undefined { return this.propertyMap.get(this.resolveOfficialID(propertyID)); }
     getDomainsForProperty(propertyID: NodeID): NodeID[] {
-        // Reverse lookup: iterate classes using this property
-        // Optimization: Should assume built index is faster, but we didn't index this direction explicitly.
-        // However, we populated local class maps with the prop schema.
+        const officialP = this.resolveOfficialID(propertyID);
         const domains: NodeID[] = [];
         for (const schema of this.classMap.values()) {
-            if (schema.properties.some(p => p.property === propertyID)) {
+            if (schema.explicitProperties.has(officialP)) {
                 domains.push(schema.classID);
             }
         }
@@ -277,10 +360,11 @@ export class SchemaIndex {
     // Calculates depth from root (0 = Root). Handles multiple inheritance by taking max depth? Or min?
     // "Thing" should be 0.
     getDepth(classID: NodeID, visited = new Set<bigint>()): number {
-        if (visited.has(classID)) return 0; // Cycle protection
-        visited.add(classID);
+        const official = this.resolveOfficialID(classID);
+        if (visited.has(official)) return 0; // Cycle protection
+        visited.add(official);
 
-        const parents = this.parentMap.get(classID);
+        const parents = this.parentMap.get(official);
         if (!parents || parents.length === 0) return 0;
 
         let maxParentDepth = 0;
@@ -295,9 +379,45 @@ export class SchemaIndex {
         return this.classMap.get(rootClass);
     }
 
+    /**
+     * Identifies the most specific classes (leaves) in a provided set of class IDs.
+     * A class is a leaf if none of its subclasses are present in the set.
+     */
+    getLeafTypes(types: NodeID[]): NodeID[] {
+        if (types.length <= 1) return types;
+        
+        const typeSet = new Set(types);
+        const leaves: NodeID[] = [];
+
+        for (const typeID of types) {
+            // Check if any OTHER type in the set is a subclass of this typeID
+            const allSubs = this.getSubClassesRecursive(typeID);
+            const hasMoreSpecific = allSubs.some(sub => typeSet.has(sub));
+            
+            if (!hasMoreSpecific) {
+                leaves.push(typeID);
+            }
+        }
+
+        return leaves;
+    }
+
+    // Get direct subclasses
+    getSubClasses(classID: NodeID): NodeID[] {
+        return this.subClassMap.get(this.resolveOfficialID(classID)) || [];
+    }
+
     // Get Parents
     getSuperClasses(classID: NodeID): NodeID[] {
-        return this.parentMap.get(classID) || [];
+        return this.parentMap.get(this.resolveOfficialID(classID)) || [];
+    }
+
+    isSubClassOf(childID: NodeID, parentID: NodeID): boolean {
+        const officialChild = this.resolveOfficialID(childID);
+        const officialParent = this.resolveOfficialID(parentID);
+        if (officialChild === officialParent) return true;
+        const parents = this.getSuperClassesRecursive(officialChild);
+        return parents.includes(officialParent);
     }
 
     // Get all children recursively
@@ -308,6 +428,18 @@ export class SchemaIndex {
         const result = [...direct];
         for (const sub of direct) {
             result.push(...this.getSubClassesRecursive(sub, seen));
+        }
+        return result;
+    }
+
+    // Get all parents recursively
+    getSuperClassesRecursive(classID: NodeID, seen = new Set<bigint>()): NodeID[] {
+        if (seen.has(classID)) return [];
+        seen.add(classID);
+        const direct = this.getSuperClasses(classID);
+        const result = [...direct];
+        for (const parent of direct) {
+            result.push(...this.getSuperClassesRecursive(parent, seen));
         }
         return result;
     }
@@ -350,6 +482,17 @@ export class SchemaIndex {
         }
 
         return result;
+    }
+
+    private resolveOfficialID(id: NodeID): NodeID {
+        try {
+            const term = this.factory.decode(id);
+            if (term.termType === 'NamedNode') {
+                const official = this.uriToID.get(term.value);
+                if (official !== undefined) return official;
+            }
+        } catch { }
+        return id;
     }
 
     private injectStandardProperties() {

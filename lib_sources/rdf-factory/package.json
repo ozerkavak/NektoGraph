@@ -1,17 +1,15 @@
 {
-  "name": "rdf-factory",
-  "version": "1.0.2-beta",
-  "description": "Minimal RDFJS-compliant DataFactory for system interoperability.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "vite build"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.0.0"
-  }
+    "name": "rdf-factory",
+    "version": "1.0.3-beta",
+    "description": "Minimal RDFJS-compliant DataFactory for system interoperability.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "vite": "^5.0.0",
+        "vite-plugin-dts": "^3.0.0"
+    }
 }
-
-

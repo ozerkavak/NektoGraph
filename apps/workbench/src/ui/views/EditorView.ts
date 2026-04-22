@@ -47,6 +47,9 @@ export class EditorView {
         g.addTripleAnnotationNew = this.addTripleAnnotationNew.bind(this);
         g.requestTargetGraph = this.requestTargetGraph.bind(this);
         g.loadEntityReferences = this.loadEntityReferences.bind(this);
+        g.toggleInheritance = this.toggleInheritance.bind(this);
+        g.toggleAvailable = this.toggleAvailable.bind(this);
+        g.addEntityProperty = this.addEntityProperty.bind(this);
 
         state.dataSync.on('sync:complete', () => {
             this.refreshSessionUI();
@@ -783,5 +786,48 @@ export class EditorView {
     private static addTripleAnnotationNew(tripleId: string, pUri: string, oVal: string) {
         if (!pUri || !oVal) return;
         this.addTripleAnnotation(tripleId, pUri, oVal);
+    }
+
+    private static toggleInheritance(winId: string) {
+        const win = state.windowManager.getWindow(winId);
+        if (!win) return;
+        if (!win.state.metadata) win.state.metadata = {};
+        win.state.metadata.showInheritance = !win.state.metadata.showInheritance;
+        win.refresh();
+    }
+
+    private static toggleAvailable(winId: string) {
+        const win = state.windowManager.getWindow(winId);
+        if (!win) return;
+        if (!win.state.metadata) win.state.metadata = {};
+        win.state.metadata.showAvailable = !win.state.metadata.showAvailable;
+        win.refresh();
+    }
+
+    private static async addEntityProperty(winId: string, _entityURI: string, propertyURI: string, _isObject: boolean) {
+        if (!propertyURI) return;
+        const win = state.windowManager.getWindow(winId);
+        if (!win) return;
+        
+        if (!win.state.metadata) win.state.metadata = {};
+        if (!win.state.metadata.forcedProperties) win.state.metadata.forcedProperties = [];
+        
+        if (!win.state.metadata.forcedProperties.includes(propertyURI)) {
+            win.state.metadata.forcedProperties.push(propertyURI);
+        }
+        
+        win.refresh();
+
+        // After refresh, the property row should exist. Try to open it.
+        setTimeout(() => {
+            const propIdVal = state.factory.decode(state.factory.namedNode(propertyURI)).value;
+            const containerId = `add_box_${winId}_${propIdVal}`;
+            const inputId = `input_${winId}_${propIdVal}`;
+            const el = document.getElementById(containerId);
+            if (el) {
+                el.style.display = 'block';
+                document.getElementById(inputId)?.focus();
+            }
+        }, 100);
     }
 }

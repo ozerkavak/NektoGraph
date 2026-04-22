@@ -64,9 +64,23 @@ export class EntityRenderer {
 
             const sidebarHtml = `
                 <div class="sidebar" style="width:220px; background:rgba(0,0,0,0.2); border-right:1px solid var(--border-subtle); display:flex; flex-direction:column; overflow:hidden;">
-                    <div class="sidebar-header" style="display:flex; justify-content:space-between; align-items:center; padding:10px 15px; border-bottom:1px solid var(--border-subtle);">
-                        <span style="font-weight:700; color:var(--text-muted); font-size:10px; letter-spacing:0.05em;">Classes</span>
-                        <button style="background:none; border:none; color:var(--accent-primary); font-size:11px; cursor:pointer;" onclick="const el = document.getElementById('class_add_box_${winId}'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; if(el.style.display==='block') document.getElementById('new_class_input_${winId}').focus();" title="Add Class">+Class</button>
+                    <div class="sidebar-header" style="padding:10px 15px; border-bottom:1px solid var(--border-subtle); background:rgba(255,255,255,0.02);">
+                        <!-- Row 1: Action Links -->
+                        <div style="display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-bottom:8px;">
+                             <a href="#" style="color:var(--accent-primary); font-size:10px; text-decoration:none; font-weight:700; opacity:0.8;" onclick="const el = document.getElementById('class_add_box_${winId}'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; if(el.style.display==='block') document.getElementById('new_class_input_${winId}').focus(); return false;">+Class</a>
+                             <a href="#" style="color:var(--accent-primary); font-size:10px; text-decoration:none; font-weight:700; opacity:0.8;" onclick="const el = document.getElementById('prop_add_box_${winId}'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; if(el.style.display==='block') document.getElementById('new_prop_input_${winId}').focus(); return false;">+Property</a>
+                        </div>
+                        <!-- Row 2: Keşif Checkboxes -->
+                        <div style="display:flex; gap:12px; align-items:center;">
+                            <label style="display:flex; align-items:center; gap:5px; font-size:9px; font-weight:600; color:var(--text-muted); cursor:pointer; user-select:none;">
+                                <input type="checkbox" ${win?.state.metadata?.showInheritance ? 'checked' : ''} onchange="window.toggleInheritance('${winId}')" style="margin:0; width:10px; height:10px; cursor:pointer;">
+                                Inherit
+                            </label>
+                            <label style="display:flex; align-items:center; gap:5px; font-size:9px; font-weight:600; color:var(--text-muted); cursor:pointer; user-select:none;">
+                                <input type="checkbox" ${win?.state.metadata?.showAvailable ? 'checked' : ''} onchange="window.toggleAvailable('${winId}')" style="margin:0; width:10px; height:10px; cursor:pointer;">
+                                Available
+                            </label>
+                        </div>
                     </div>
                     <div id="class_add_box_${winId}" style="display:none; padding:8px 15px; background:rgba(0,0,0,0.1); border-bottom:1px solid var(--border-subtle);">
                         <div style="position:relative;">
@@ -78,22 +92,49 @@ export class EntityRenderer {
                         </div>
                         <button id="btn_save_class_${winId}" class="btn-primary" style="width:100%; margin-top:4px; height:20px; font-size:10px; display:none;" onclick="const inp = document.getElementById('new_class_input_${winId}'); window.addEntityClass('${winId}', '${kg.uri}', inp.value)">Save</button>
                     </div>
+                    <div id="prop_add_box_${winId}" style="display:none; padding:8px 15px; background:rgba(0,0,0,0.1); border-bottom:1px solid var(--border-subtle);">
+                        <div style="position:relative;">
+                            <input type="text" id="new_prop_input_${winId}" class="prop-lookup-input form-input" 
+                                style="width:100%; height:24px; font-size:11px; padding:2px 6px; border:1px solid var(--border-subtle); background:rgba(0,0,0,0.2);"
+                                placeholder="Search Properties..." autocomplete="off"
+                                data-subject="${kg.uri}"
+                            />
+                            <div id="res_prop_input_${winId}" class="unified-dropdown" style="display:none; position:absolute; top:28px; left:0; width:100%; z-index:100;"></div>
+                        </div>
+                    </div>
                     <div class="sidebar-content" style="flex:1; overflow-y:auto; padding:8px 0;">
-                        ${entity.classGroups.map((group: any) => `
+                        ${entity.classGroups.filter((g: any) => {
+                            if (g.isInherited && !win?.state.metadata?.showInheritance) return false;
+                            if (g.isAvailable && !win?.state.metadata?.showAvailable) return false;
+                            return true;
+                        }).map((group: any) => `
                             <details open style="margin-bottom:2px;">
-                                <summary class="tree-node" style="padding:4px 15px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:6px;">
-                                    <span class="tree-icon" style="opacity:0.6; font-size:10px;">${group.isMissing ? '⚠️' : '📂'}</span>
-                                    <span style="font-size:11px; font-weight:600; color:${group.isMissing ? 'var(--accent-red)' : 'var(--accent-primary)'};">${KGEntity.get(group.classID).getDisplayName()}</span>
+                                 <summary class="tree-node" style="padding:4px 15px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:6px; justify-content:space-between;">
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span class="tree-icon" style="opacity:0.6; font-size:10px;">${group.isAvailable ? '✨' : (group.isMissing ? '⚠️' : (group.isInherited ? '🔗' : '📂'))}</span>
+                                        <span style="font-size:11px; font-weight:600; color:${(group.isAvailable || group.isInherited || group.isMissing) ? 'var(--accent-red)' : 'var(--accent-primary)'};">${KGEntity.get(group.classID).getDisplayName()}</span>
+                                    </div>
+                                    ${(group.isInherited || group.isAvailable) ? `
+                                        <a href="#" style="color:#60a5fa; font-size:9px; text-decoration:none; font-weight:700;" onclick="event.stopPropagation(); window.addEntityClass('${winId}', '${kg.uri}', '${state.factory.decode(group.classID).value}'); return false;">+class</a>
+                                    ` : ''}
                                 </summary>
                                 <div class="tree-children" style="padding-left:15px;">
                                     ${[...group.dataProperties, ...group.objectProperties].map((p: any) => `
-                                        <div class="tree-item" style="padding:3px 0 3px 28px; font-size:10px; opacity:0.8; cursor:pointer; text-align:left;" onclick="document.getElementById('row_${winId}_${state.factory.decode(p.property).value}')?.scrollIntoView({behavior:'smooth', block:'center'})">
+                                        <div class="tree-item" style="padding:3px 0 3px 28px; font-size:10px; opacity:0.8; cursor:pointer; text-align:left; color:${group.isAvailable ? '#c084fc' : (group.isInherited ? '#93c5fd' : 'inherit')}" onclick="document.getElementById('row_${winId}_${state.factory.decode(p.property).value}')?.scrollIntoView({behavior:'smooth', block:'center'})">
                                             • ${KGEntity.get(p.property).getDisplayName()}
                                         </div>
                                     `).join('')}
                                 </div>
                             </details>
                         `).join('')}
+                        ${(win?.state.metadata?.forcedProperties || []).map((pUri: string) => {
+                            const pNode = state.factory.namedNode(pUri);
+                            const pIdVal = state.factory.decode(pNode).value;
+                            return `
+                                <div class="tree-item" style="padding:4px 15px; font-size:10px; opacity:0.9; cursor:pointer; text-align:left; color:var(--accent-amber);" onclick="document.getElementById('row_${winId}_${pIdVal}')?.scrollIntoView({behavior:'smooth', block:'center'})">
+                                    ✦ ${KGEntity.get(pNode).getDisplayName()}
+                                </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
 
@@ -102,13 +143,25 @@ export class EntityRenderer {
                     <div class="entity-canvas" style="padding:12px 16px;">
                         <div class="section-container">
                             <h3 style="font-size:10px; color:var(--text-muted); margin-bottom:12px; border-bottom:1px solid var(--border-subtle); padding:6px 14px; letter-spacing:0.1em; background:rgba(255,255,255,0.03); text-align:left; font-weight:700;">DIRECT PROPERTIES</h3>
-                            ${entity.classGroups.map((g: any, idx: number) => {
+                            ${entity.classGroups.filter((g: any) => {
+                                if (g.isInherited && !win?.state.metadata?.showInheritance) return false;
+                                if (g.isAvailable && !win?.state.metadata?.showAvailable) return false;
+                                return true;
+                            }).map((g: any, idx: number) => {
                                 const totalProps = g.dataProperties.length + g.objectProperties.length;
+                                const isInherited = g.isInherited;
+                                const isAvailable = g.isAvailable;
+                                
                                 return `
-                                <div id="sec_${winId}_${idx}" class="group-section" style="margin-bottom:${totalProps === 0 ? '0' : '16px'};">
-                                    <div class="group-header" style="font-size:12px; font-weight:700; color:var(--accent-primary); margin:0; padding:8px 14px; background:rgba(59, 130, 246, 0.08); display:flex; align-items:center; gap:8px;">
-                                        ${KGEntity.get(g.classID).getDisplayName()}
-                                        <span style="font-weight:400; font-size:10px; opacity:0.5;">(${totalProps} items)</span>
+                                 <div id="sec_${winId}_${idx}" class="group-section" style="margin-bottom:${totalProps === 0 && !isAvailable ? '0' : '16px'};">
+                                    <div class="group-header" style="font-size:12px; font-weight:700; color:${(isAvailable || isInherited) ? 'var(--accent-red)' : 'var(--accent-primary)'}; margin:0; padding:8px 14px; background:${isAvailable ? 'rgba(239, 68, 68, 0.05)' : (isInherited ? 'rgba(239, 68, 68, 0.03)' : 'rgba(59, 130, 246, 0.08)')}; display:flex; align-items:center; gap:8px; justify-content:space-between;">
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            ${KGEntity.get(g.classID).getDisplayName()}
+                                            <span style="font-weight:400; font-size:10px; opacity:0.5;">(${totalProps} items)${isAvailable ? ' [Available Suggestion]' : (isInherited ? ' [Inherited]' : '')}</span>
+                                        </div>
+                                        ${(isInherited || isAvailable) ? `
+                                            <a href="#" style="color:#60a5fa; font-size:10px; text-decoration:none; font-weight:700;" onclick="window.addEntityClass('${winId}', '${kg.uri}', '${state.factory.decode(g.classID).value}'); return false;">+class</a>
+                                        ` : ''}
                                     </div>
                                     <div style="padding:0 12px; border-bottom:1px solid transparent;">
                                         ${g.dataProperties.map((p: any) => renderUnique(p, false)).join('')}
@@ -128,6 +181,31 @@ export class EntityRenderer {
                                     </div>
                                 </div>
                             ` : ''}
+                             ${(win?.state.metadata?.forcedProperties || []).length > 0 ? `
+                                <div id="sec_forced_${winId}" class="group-section" style="margin-top:16px;">
+                                    <div class="group-header" style="font-size:12px; font-weight:700; color:var(--accent-amber); margin:0; padding:8px 14px; background:rgba(245, 158, 11, 0.1); display:flex; align-items:center; gap:8px;">
+                                        USER DEFINED PROPERTIES
+                                        <span style="font-weight:400; font-size:10px; opacity:0.5;">(${(win?.state.metadata?.forcedProperties || []).length} items)</span>
+                                    </div>
+                                    <div style="padding:0 12px;">
+                                        ${(win?.state.metadata?.forcedProperties || []).map((pUri: string) => {
+                                            const pNode = state.factory.namedNode(pUri);
+                                            
+                                            // Create a fake StructuredProperty for rendering
+                                            const ps = state.schemaIndex.getPropertySchema(pNode);
+                                            const sp: any = {
+                                                property: pNode,
+                                                values: [],
+                                                allQuads: [],
+                                                isInherited: false,
+                                                schema: ps
+                                            };
+                                            const isObj = ps ? (ps.type !== 'Data') : true;
+                                            return renderUnique(sp, isObj);
+                                        }).join('')}
+                                    </div>
+                                </div>
+                             ` : ''}
                         </div>
 
                         ${entity.incomings.length > 0 ? `
@@ -271,7 +349,7 @@ export class EntityRenderer {
             }
         });
 
-        const isObjectProp = isObjectPropOverride !== undefined ? isObjectPropOverride : (prop.schema?.type === 'Object' || (prop.schema?.ranges.length || 0) > 0);
+        const isObjectProp = isObjectPropOverride !== undefined ? isObjectPropOverride : (prop.schema ? (prop.schema.type !== 'Data') : true);
         const rangeStr = prop.schema ? prop.schema.ranges.map((r: any) => state.factory.decode(r).value).join(',') : '';
         const sUri = state.factory.decode(subject).value;
         const inputId = `input_${winId}_${propIdVal}`;
@@ -294,7 +372,7 @@ export class EntityRenderer {
 
         return `
             <div class="prop-row" id="row_${winId}_${propIdVal}" style="display:flex; border-bottom:1px solid rgba(255,255,255,0.03); padding:6px 0;">
-                <div class="prop-label" style="width:200px; min-width:200px; font-size:11px; color:#10b981; display:flex; align-items:center; justify-content:flex-start; padding-left:14px;">
+                <div class="prop-label" style="width:200px; min-width:200px; font-size:11px; color:${prop.isInherited ? '#60a5fa' : '#10b981'}; display:flex; align-items:center; justify-content:flex-start; padding-left:14px;">
                     <span data-id="${propIdVal}" data-node-id="${prop.property.toString()}" data-kind="entity" style="text-align:left;">${propLabel}</span>
                     ${addTrigger}
                     ${infoBtn}
@@ -382,6 +460,47 @@ export class EntityRenderer {
                     el.value = id;
                     const btn = document.getElementById(`btn_save_class_${winId}`);
                     if (btn) btn.style.display = 'block';
+                }
+            }, resDiv);
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const inp = document.getElementById(`new_class_input_${winId}`) as HTMLInputElement;
+                    const kg = (container as any)._kg as KGEntity;
+                    (window as any).addEntityClass(winId, kg.uri, inp.value);
+                }
+            });
+        });
+
+        container.querySelectorAll('.prop-lookup-input').forEach((input: Element) => {
+            const el = input as HTMLInputElement;
+            const resId = `res_prop_input_${winId}`;
+            const resDiv = document.getElementById(resId);
+            const sUri = el.getAttribute('data-subject')!;
+            if (!resDiv) return;
+            new SearchComponent(el, {
+                preferredClassURI: 'http://www.w3.org/2002/07/owl#ObjectProperty',
+                strictTypes: false,
+                suppressDescription: true,
+                onSelect: (id) => {
+                    el.value = '';
+                    const box = document.getElementById(`prop_add_box_${winId}`);
+                    if (box) box.style.display = 'none';
+
+                    // Find if property is Object or Datatype
+                    const ps = state.schemaIndex.getPropertySchema(state.factory.namedNode(id));
+                    const isObj = ps ? (ps.type !== 'Data') : true;
+
+                    // This will refresh UI and since we are adding a value, 
+                    // the property will now appear in the structered view
+                    // (EditorView.addEntityProperty could be simplified to just opening the add box)
+                    
+                    // Direct Action: In theory, if we want it to "Appear" without values, 
+                    // we might need to inject it into the structured result.
+                    // But standard way: Just open the add box for it if possible.
+                    
+                    // Manual Implementation: Just open the add box for it if possible.
+                    // We call a new method in EditorView that ensures it appears.
+                    (window as any).addEntityProperty(winId, sUri, id, isObj);
                 }
             }, resDiv);
         });
@@ -524,7 +643,9 @@ export class EntityRenderer {
                     ${uriContent}
                 </div>
                 <div class="header-cell types-section" style="padding-left:10px; border-left:1px solid var(--bg-card); text-align:left;">
-                    <div style="font-size:9px; font-weight:700; color:var(--text-muted); margin-bottom:4px; opacity:0.8;">Classes</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <div style="font-size:9px; font-weight:700; color:var(--text-muted); opacity:0.8;">Classes</div>
+                    </div>
                     <div style="display:flex; flex-wrap:wrap; gap:8px;">
                         ${entity.allTypes.map(t => {
                             // @ts-ignore

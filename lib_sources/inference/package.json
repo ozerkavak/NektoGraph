@@ -1,17 +1,15 @@
 {
-  "name": "@triplestore/inference",
-  "version": "1.0.2-beta",
-  "description": "Modular Inference Engine for Antigravity Triplestore",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "vite build"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.0.0"
-  }
+    "name": "@triplestore/inference",
+    "version": "1.0.3-beta",
+    "description": "Modular Inference Engine for Antigravity Triplestore",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "vite": "^5.0.0",
+        "vite-plugin-dts": "^3.0.0"
+    }
 }
-
-

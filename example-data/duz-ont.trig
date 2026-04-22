@@ -1,0 +1,116 @@
+@prefix : <http://www.40nodes.net/ontologies/ngo#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+<http://www.40nodes.net/ontologies/ngo/graphs/ontology> {
+
+    <http://www.40nodes.net/ontologies/ngo> a owl:Ontology ;
+        rdfs:label "NGO Knowledge Graph Ontology v8.2"@en, "STK Bilgi Grafı Ontolojisi v8.2"@tr ;
+        rdfs:comment "OWL 2 DL compliant ontology optimized for RDF-star. Transitivity and Disjointness conflicts resolved."@en,
+                     "RDF-star için optimize edilmiş, OWL 2 DL uyumlu ontoloji. Geçişlilik ve ayrıklık çakışmaları çözülmüştür."@tr .
+
+    ### ==========================================
+    ### 1. ZİRVE AYRIKLIK (DISJOINTNESS)
+    ### ==========================================
+    [] a owl:AllDisjointClasses ;
+        owl:members ( :Place :Person :OrganizationUnit :Occurrence :WorkItem ) .
+
+    ### ==========================================
+    ### 2. SINIFLAR (CLASSES)
+    ### ==========================================
+    :Place a owl:Class ; rdfs:label "Place"@en, "Yer"@tr .
+    :Country a owl:Class ; rdfs:subClassOf :Place ; rdfs:label "Country"@en, "Ülke"@tr .
+    :Region a owl:Class ; rdfs:subClassOf :Place ; rdfs:label "Region"@en, "Bölge"@tr .
+    :Province a owl:Class ; rdfs:subClassOf :Place ; rdfs:label "Province"@en, "İl"@tr .
+    :District a owl:Class ; rdfs:subClassOf :Place ; rdfs:label "District"@en, "İlçe"@tr .
+
+    :Person a owl:Class ; rdfs:label "Person"@en, "Kişi"@tr .
+
+    :Occurrence a owl:Class ; rdfs:label "Occurrence"@en, "Olay / Dönem"@tr .
+    :MembershipOccurrence a owl:Class ; rdfs:subClassOf :Occurrence ; rdfs:label "Membership Occurrence"@en, "Üyelik Dönemi"@tr .
+    :AssignmentOccurrence a owl:Class ; rdfs:subClassOf :Occurrence ; rdfs:label "Assignment Occurrence"@en, "Görevlendirme Ataması"@tr .
+    :LifecycleOccurrence a owl:Class ; rdfs:subClassOf :Occurrence ; rdfs:label "Lifecycle Occurrence"@en, "Yaşam Döngüsü Olayı"@tr .
+    :Suspension a owl:Class ; rdfs:subClassOf :Occurrence ; rdfs:label "Suspension"@en, "Askıya Alınma"@tr .
+
+    :OrganizationUnit a owl:Class ; rdfs:label "Organization Unit"@en, "Teşkilat Birimi"@tr .
+    :OfficialUnit a owl:Class ; rdfs:subClassOf :OrganizationUnit ; owl:disjointWith :UnofficialUnit ; rdfs:label "Official Unit"@en, "Resmi Birim"@tr .
+    :UnofficialUnit a owl:Class ; rdfs:subClassOf :OrganizationUnit ; owl:disjointWith :OfficialUnit ; rdfs:label "Unofficial Unit"@en, "Gayrı-Resmi Birim"@tr .
+
+    :Headquarters a owl:Class ; rdfs:subClassOf :OfficialUnit ; rdfs:label "Headquarters"@en, "Genel Merkez"@tr .
+    :DepartmentOfOrganization a owl:Class ; rdfs:subClassOf :OfficialUnit ; rdfs:label "Department of Organization"@en, "Teşkilatlanma Başkanlığı"@tr .
+    
+    :Presidency a owl:Class ; rdfs:subClassOf :OfficialUnit ; rdfs:label "Presidency"@en, "Başkanlık"@tr .
+    :CountryPresidency a owl:Class ; rdfs:subClassOf :Presidency ; rdfs:label "Country Presidency"@en, "Ülke Başkanlığı"@tr .
+    :ProvincePresidency a owl:Class ; rdfs:subClassOf :Presidency ; rdfs:label "Province Presidency"@en, "İl Başkanlığı"@tr .
+    :DistrictPresidency a owl:Class ; rdfs:subClassOf :Presidency ; rdfs:label "District Presidency"@en, "İlçe Başkanlığı"@tr .
+
+    :Representation a owl:Class ; rdfs:subClassOf :UnofficialUnit ; rdfs:label "Representation"@en, "Temsilcilik"@tr .
+    :InternationalRepresentation a owl:Class ; rdfs:subClassOf :Representation ; rdfs:label "International Rep."@en, "Yurtdışı Temsilciliği"@tr .
+    :CountryRepresentation a owl:Class ; rdfs:subClassOf :Representation ; rdfs:label "Country Rep."@en, "Ülke Temsilciliği"@tr .
+    :RegionalRepresentation a owl:Class ; rdfs:subClassOf :Representation ; rdfs:label "Regional Rep."@en, "Bölge Temsilciliği"@tr .
+    :ProvinceRepresentation a owl:Class ; rdfs:subClassOf :Representation ; rdfs:label "Province Rep."@en, "İl Temsilciliği"@tr .
+    :DistrictRepresentation a owl:Class ; rdfs:subClassOf :Representation ; rdfs:label "District Rep."@en, "İlçe Temsilciliği"@tr .
+
+    :WorkItem a owl:Class ; rdfs:label "Work Item"@en, "İş Öğesi"@tr .
+    :Project a owl:Class ; rdfs:subClassOf :WorkItem ; rdfs:label "Project"@en, "Proje"@tr .
+    :Task a owl:Class ; rdfs:subClassOf :WorkItem ; rdfs:label "Task"@en, "Görev"@tr .
+
+    ### ==========================================
+    ### 3. NESNE ÖZELLİKLERİ (OBJECT PROPERTIES)
+    ### ==========================================
+    
+    # H1 Düzeltmesi: Asymmetric ve Irreflexive kaldırıldı, OWL unsatisfiable önlendi.
+    :isSubUnitOf a owl:ObjectProperty, owl:TransitiveProperty ; 
+        rdfs:domain :OrganizationUnit ; rdfs:range :OrganizationUnit ; owl:inverseOf :hasSubUnit ; rdfs:label "is sub-unit of"@en, "alt birimidir"@tr .
+    :hasSubUnit a owl:ObjectProperty, owl:TransitiveProperty ; 
+        rdfs:label "has sub-unit"@en, "alt birimi vardır"@tr .
+
+    :reportsTo a owl:ObjectProperty, owl:TransitiveProperty ;
+        rdfs:domain :OrganizationUnit ; rdfs:range :OrganizationUnit ; rdfs:label "reports to"@en, "bağlıdır / raporlar"@tr .
+
+    # U3 Uyarısı Dikkate Alındı: isLocationOf functional DEĞİLDİR.
+    :representsLocation a owl:ObjectProperty, owl:FunctionalProperty ;
+        rdfs:domain :OrganizationUnit ; rdfs:range :Place ; owl:inverseOf :isLocationOf ; rdfs:label "represents location"@en, "sorumlu olduğu yer"@tr .
+    :isLocationOf a owl:ObjectProperty ; rdfs:label "is location of"@en, "yeridir"@tr .
+
+    :memberOf a owl:ObjectProperty ; 
+        rdfs:domain :Person ; rdfs:range :OrganizationUnit ; owl:inverseOf :hasMember ; rdfs:label "is member of"@en, "üyesidir"@tr .
+    :hasMember a owl:ObjectProperty ; rdfs:label "has member"@en, "üyesi vardır"@tr .
+
+    # H3 Düzeltmesi: Çift Reify Sorununu Aşmak İçin Yeni Mülk
+    :suspendedFrom a owl:ObjectProperty ;
+        rdfs:domain :Person ; rdfs:range :OrganizationUnit ; rdfs:label "suspended from"@en, "biriminden uzaklaştırıldı"@tr .
+
+    # --- Yönetici Rolleri ---
+    :hasManager a owl:ObjectProperty ; rdfs:domain :OrganizationUnit ; rdfs:range :Person ; rdfs:label "has manager"@en, "yöneticisidir"@tr .
+    :hasPresident a owl:ObjectProperty ; rdfs:subPropertyOf :hasManager ; rdfs:domain :Presidency ; rdfs:label "has president"@en, "başkanıdır"@tr .
+    :hasSecretary a owl:ObjectProperty ; rdfs:subPropertyOf :hasManager ; rdfs:domain :Presidency ; rdfs:label "has secretary"@en, "sekreteridir"@tr .
+    :hasTreasurer a owl:ObjectProperty ; rdfs:subPropertyOf :hasManager ; rdfs:domain :Presidency ; rdfs:label "has treasurer"@en, "saymanıdır"@tr .
+    :hasRepresentative a owl:ObjectProperty ; rdfs:subPropertyOf :hasManager ; rdfs:domain :Representation ; rdfs:label "has representative"@en, "temsilcisidir"@tr .
+    
+    # U2 Düzeltmesi: Domain OfficialUnit olarak genişletildi.
+    :hasVicePresident a owl:ObjectProperty ; rdfs:subPropertyOf :hasManager ; rdfs:domain :OfficialUnit ; rdfs:label "has vice president"@en, "başkan yardımcısıdır"@tr .
+
+    # --- Olay Meta-Verileri ---
+    :membershipLevel a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:domain :Occurrence ; rdfs:range skos:Concept ; rdfs:label "membership level"@en, "üyelik seviyesi"@tr .
+    :endReason a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:domain :Occurrence ; rdfs:range skos:Concept ; rdfs:label "end reason"@en, "bitiş nedeni"@tr .
+    :assignedBy a owl:ObjectProperty ; rdfs:domain [ owl:unionOf (:Occurrence :WorkItem) ] ; rdfs:range :Person ; rdfs:label "assigned by"@en, "tarafından atandı"@tr .
+    :requestedBy a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:domain :Occurrence ; rdfs:range :Person ; rdfs:label "requested by"@en, "talep eden"@tr .
+    :approvedBy a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:domain :Occurrence ; rdfs:range :Person ; rdfs:label "approved by"@en, "onaylayan"@tr .
+
+    ### ==========================================
+    ### 4. VERİ ÖZELLİKLERİ (DATATYPE PROPERTIES)
+    ### ==========================================
+    
+    :startDate a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:date ; rdfs:label "start date"@en, "başlangıç tarihi"@tr .
+    :endDate a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:date ; rdfs:label "end date"@en, "bitiş tarihi"@tr .
+    :requestDate a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:date ; rdfs:label "request date"@en, "talep tarihi"@tr .
+    :approvalDate a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:date ; rdfs:label "approval date"@en, "onay tarihi"@tr .
+    :deadline a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:date ; rdfs:label "deadline"@en, "teslim tarihi"@tr .
+    :reasonDescription a owl:DatatypeProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:string ; rdfs:label "reason description"@en, "gerekçe detayı"@tr .
+    :statusDescription a owl:DatatypeProperty ; rdfs:domain owl:Thing ; rdfs:range xsd:string ; rdfs:label "status description"@en, "durum açıklaması"@tr .
+}

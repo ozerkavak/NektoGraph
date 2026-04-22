@@ -1,18 +1,16 @@
 {
-  "name": "@triplestore/search",
-  "version": "1.0.2-beta",
-  "description": "Unified Search Engine for Nektograph",
-  "type": "module",
-  "main": "./dist/index.js",
-  "browser": "./dist/search.browser.js",
-  "scripts": {
-    "build": "vite build"
-  },
-  "devDependencies": {
-    "vite": "^5.0.0",
-    "typescript": "^5.0.0",
-    "vite-plugin-dts": "^3.0.0"
-  }
+    "name": "@triplestore/search",
+    "version": "1.0.3-beta",
+    "description": "Unified Search Engine for Nektograph",
+    "type": "module",
+    "main": "./dist/index.js",
+    "browser": "./dist/search.browser.js",
+    "scripts": {
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0",
+        "typescript": "^5.0.0",
+        "vite-plugin-dts": "^3.0.0"
+    }
 }
-
-

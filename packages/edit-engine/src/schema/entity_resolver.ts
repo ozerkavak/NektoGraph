@@ -15,6 +15,7 @@ export interface StructuredProperty {
     }[];
     schema?: PropertySchema;
     isInverse?: boolean;
+    isInherited?: boolean; // New: Marks if property came from a parent class
     label?: string;
     hasMentions?: boolean; 
 }
@@ -22,6 +23,8 @@ export interface StructuredProperty {
 export interface StructuredClassGroup {
     classID: NodeID;
     isMissing: boolean;
+    isInherited?: boolean; // New: Marks if the class itself is an ancestor
+    isAvailable?: boolean; // New: Marks if the class is a suggested subclass refinement
     dataProperties: StructuredProperty[];
     objectProperties: StructuredProperty[];
     unclassifiedProperties: StructuredProperty[];
@@ -66,7 +69,9 @@ export interface RichEntity {
 }
 
 export class EntityResolver {
-    constructor(private _store: IQuadStore, private factory: IDataFactory, private schemaIndex?: SchemaIndex) { }
+    constructor(private _store: IQuadStore, private factory: IDataFactory, private schemaIndex?: SchemaIndex) {
+        console.log(">>> ENTITY_RESOLVER_V2 AKTIF <<<");
+    }
 
     public getLabel(id: NodeID, lang: 'en' | 'tr' = 'en', session?: DraftStore): string | undefined {
         if (this.schemaIndex) {
@@ -292,7 +297,7 @@ export class EntityResolver {
         return current;
     }
 
-    resolveStructured(id: NodeID, lang: 'en' | 'tr' = 'en', session?: DraftStore): RichEntityStructured {
+    resolveStructured(id: NodeID, lang: 'en' | 'tr' = 'en', session?: DraftStore, options?: { showAvailable?: boolean }): RichEntityStructured {
         const typePred = this.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
         const labelPred = this.factory.namedNode('http://www.w3.org/2000/01/rdf-schema#label');
         const commentPred = this.factory.namedNode('http://www.w3.org/2000/01/rdf-schema#comment');
@@ -335,16 +340,16 @@ export class EntityResolver {
             const unwrappedS = this.unwrap(s, session);
             const unwrappedO = this.unwrap(o, session);
             
-            let isSTriple = false; try { isSTriple = this.factory.decode(unwrappedS).termType === 'Triple'; } catch {}
-            let isOTriple = false; try { isOTriple = this.factory.decode(unwrappedO).termType === 'Triple'; } catch {}
+            const potentialTriples = new Set<bigint>();
+            try { if (this.factory.decode(unwrappedS).termType === 'Triple') potentialTriples.add(unwrappedS); } catch {}
+            try { if (this.factory.decode(unwrappedO).termType === 'Triple') potentialTriples.add(unwrappedO); } catch {}
 
-            const tripleID = isSTriple ? unwrappedS : (isOTriple ? unwrappedO : null);
-            if (!tripleID) continue;
-
-            const tripleToken = this.factory.decode(tripleID) as any;
-            if (tripleToken.subject === id || tripleToken.object === id || tripleToken.predicate === id) {
-                // A. Promotion
-                if (isSTriple && tripleToken.subject === id) {
+            for (const tripleID of potentialTriples) {
+                const tripleToken = this.factory.decode(tripleID) as any;
+                
+                // A. Promotion (Virtual SPO)
+                // Outgoing Promotion (Subject Match)
+                if (tripleToken.subject === id) {
                     const tp = tripleToken.predicate;
                     const to = tripleToken.object;
                     const alreadyAsserted = outgoingProps.get(tp)?.some(aq => aq.object === to);
@@ -353,50 +358,62 @@ export class EntityResolver {
                         outgoingProps.get(tp)!.push({ subject: id, predicate: tp, object: to, graph: g, isReifiedPromotion: true } as any);
                     }
                 }
-
-                // B. Annotations/Mentions
-                if (!mentions.some(m => m.tripleID === tripleID)) {
-                    const annGroups = new Map<bigint, Quad[]>();
-                    const queue = [tripleID];
-                    const visited = new Set<NodeID>();
-                    
-                    while (queue.length > 0) {
-                        const cur = queue.shift()!;
-                        if (visited.has(cur)) continue;
-                        visited.add(cur);
-
-                        for (const mq of composite.match(cur, null, null, null)) {
-                            const mp = mq[1];
-                            const mpURI = this.factory.decode(mp).value;
-                            if (reificationPreds.includes(mpURI) || mpURI.endsWith('#type')) {
-                                if (reificationPreds.includes(mpURI)) queue.push(mq[2]);
-                                continue;
-                            }
-                            if (!annGroups.has(mp)) annGroups.set(mp, []);
-                            annGroups.get(mp)!.push({ subject: mq[0], predicate: mq[1], object: mq[2], graph: mq[3] });
-                        }
-                        for (const rq of composite.match(null, null, cur, null)) {
-                            const rpURI = this.factory.decode(rq[1]).value;
-                            if (reificationPreds.includes(rpURI)) queue.push(rq[0]);
-                        }
+                // Incoming Promotion (Object Match)
+                if (tripleToken.object === id) {
+                    const tp = tripleToken.predicate;
+                    const ts = tripleToken.subject;
+                    const alreadyAsserted = incomingProps.get(tp)?.some(aq => aq.subject === ts);
+                    if (!alreadyAsserted) {
+                        if (!incomingProps.has(tp)) incomingProps.set(tp, []);
+                        const finalS = this.unwrap(ts, session);
+                        incomingProps.get(tp)!.push({ subject: finalS, predicate: tp, object: id, graph: g, isReifiedPromotion: true } as any);
                     }
+                }
 
-                    if (annGroups.size > 0) {
-                        const annotations: StructuredProperty[] = [];
-                        for (const [ap, aqs] of annGroups) {
-                            annotations.push({
-                                property: ap,
-                                values: this.deduplicateValues(aqs.map(aq => ({ value: aq.object, quad: aq, source: this.determineSource(aq, session) })))
+                // B. Annotations/Mentions (Detailed Discovery)
+                if (tripleToken.subject === id || tripleToken.object === id || tripleToken.predicate === id) {
+                    if (!mentions.some(m => m.tripleID === tripleID)) {
+                        const annGroups = new Map<bigint, Quad[]>();
+                        const queue = [tripleID];
+                        const visited = new Set<NodeID>();
+                        
+                        while (queue.length > 0) {
+                            const cur = queue.shift()!;
+                            if (visited.has(cur)) continue;
+                            visited.add(cur);
+
+                            for (const mq of composite.match(cur, null, null, null)) {
+                                const mp = mq[1];
+                                const mpURI = this.factory.decode(mp).value;
+                                if (reificationPreds.includes(mpURI) || mpURI.endsWith('#type')) {
+                                    if (reificationPreds.includes(mpURI)) queue.push(mq[2]);
+                                    continue;
+                                }
+                                if (!annGroups.has(mp)) annGroups.set(mp, []);
+                                annGroups.get(mp)!.push({ subject: mq[0], predicate: mq[1], object: mq[2], graph: mq[3] });
+                            }
+                            for (const rq of composite.match(null, null, cur, null)) {
+                                const rpURI = this.factory.decode(rq[1]).value;
+                                if (reificationPreds.includes(rpURI)) queue.push(rq[0]);
+                            }
+                        }
+
+                        if (annGroups.size > 0) {
+                            const annotations: StructuredProperty[] = [];
+                            for (const [ap, aqs] of annGroups) {
+                                annotations.push({
+                                    property: ap,
+                                    values: this.deduplicateValues(aqs.map(aq => ({ value: aq.object, quad: aq, source: this.determineSource(aq, session) })))
+                                });
+                            }
+                            mentions.push({ 
+                                tripleID, 
+                                subject: this.unwrap(tripleToken.subject, session), 
+                                predicate: this.unwrap(tripleToken.predicate, session), 
+                                object: this.unwrap(tripleToken.object, session), 
+                                annotations 
                             });
                         }
-                        // RECURSIVE COMPONENT UNWRAP: Ensure internal BNode proxies (like n3-5) are also promoted!
-                        mentions.push({ 
-                            tripleID, 
-                            subject: this.unwrap(tripleToken.subject, session), 
-                            predicate: this.unwrap(tripleToken.predicate, session), 
-                            object: this.unwrap(tripleToken.object, session), 
-                            annotations 
-                        });
                     }
                 }
             }
@@ -441,56 +458,160 @@ export class EntityResolver {
                 const cidVal = this.factory.decode(classID).value;
                 const isExplicit = types.some(t => this.factory.decode(t).value === cidVal);
                 const classSchema = this.schemaIndex?.getSchemaForClass(classID);
-                classUsage.set(classID, { classID, isMissing: !isExplicit, dataProperties: [], objectProperties: [], unclassifiedProperties: [],
-                    label: classSchema ? this.getBestLabel(classSchema.labels, lang) : undefined, labels: classSchema?.labels
+                classUsage.set(classID, { 
+                    classID, 
+                    isMissing: !isExplicit, 
+                    isInherited: !isExplicit, // If not explicitly in 'types', it's inherited
+                    dataProperties: [], 
+                    objectProperties: [], 
+                    unclassifiedProperties: [],
+                    label: classSchema ? this.getBestLabel(classSchema.labels, lang) : undefined, 
+                    labels: classSchema?.labels
                 });
+                return classUsage.get(classID)!;
             }
             return classUsage.get(classID)!;
         };
-        types.forEach(tid => getOrCreateGroup(tid));
-        const processedOutgoing = new Set<bigint>();
+        // 1. Upward Expansion: Parents (Inheritance)
+        const allRelevantClasses = new Set<bigint>(types);
+        if (this.schemaIndex) {
+            types.forEach(tid => {
+                this.schemaIndex!.getSuperClassesRecursive(tid).forEach(parent => allRelevantClasses.add(parent));
+            });
+        }
+        allRelevantClasses.forEach(tid => getOrCreateGroup(tid));
+        
+        // 2. Downward Expansion: Direct Subclasses of Leaves (Available Refinements)
+        if (this.schemaIndex && options?.showAvailable && types.length > 0) {
+            const leaves = this.schemaIndex.getLeafTypes(types);
+            for (const leaf of leaves) {
+                const subClasses = this.schemaIndex.getSubClasses(leaf);
+                for (const subID of subClasses) {
+                    if (!allRelevantClasses.has(subID)) {
+                        const group = getOrCreateGroup(subID);
+                        group.isAvailable = true;
+                        group.isInherited = false; // It's a potential child, not a parent
+                        // Ensure it's treated as missing so it shows up even without properties yet
+                        group.isMissing = true; 
+                    }
+                }
+            }
+        }
+
+        const orphanProperties: StructuredProperty[] = [];
+        const processedOutgoing = new Set<string>(); // Use URI string for robust deduplication
         for (const [p, quads] of outgoingProps) {
-            if (p === typePred || p === labelPred || p === commentPred) { processedOutgoing.add(p); continue; }
+            const pURI = this.factory.decode(p).value;
+            if (p === typePred || p === labelPred || p === commentPred) { processedOutgoing.add(pURI); continue; }
+            
             const propSchema = this.schemaIndex?.getPropertySchema(p);
             if (propSchema && this.schemaIndex) {
-                const validDomains = this.schemaIndex.getDomainsForProperty(p);
-                if (validDomains.length > 0) {
-                    processedOutgoing.add(p);
-                    validDomains.forEach(domainID => {
-                        const group = getOrCreateGroup(domainID);
-                        const structuredProp: StructuredProperty = { 
-                            property: p, 
-                            values: this.deduplicateValues(quads.map(q => ({ value: q.object, quad: q, source: getSource(q) }))), 
-                            schema: propSchema, 
-                            label: propSchema ? this.getBestLabel(propSchema.labels, lang) : undefined 
-                        };
-                        
-                        // DEEP MENTION DETECTION
-                        structuredProp.hasMentions = structuredProp.values.some(v => {
-                            if ((v as any).isReifiedPromotion) return true;
-                            try {
-                                const tVal = (this.factory as any).triple(id, p, v.value);
-                                const q2 = [tVal]; const v2 = new Set<NodeID>();
-                                while (q2.length > 0) {
-                                    const cur = q2.shift()!; if (v2.has(cur)) continue; v2.add(cur);
-                                    for (const mq of composite.match(null, null, cur, null)) {
-                                        const mURI = this.factory.decode(mq[1]).value;
-                                        if (reificationPreds.includes(mURI)) {
-                                            const parent = mq[0];
-                                            for (const raw of composite.match(parent, null, null, null)) {
-                                                const prURI = this.factory.decode(raw[1]).value;
-                                                if (!reificationPreds.includes(prURI) && !prURI.endsWith('#type')) return true;
-                                            }
-                                            q2.push(parent);
+                const si = this.schemaIndex!;
+                const validDomains = si.getDomainsForProperty(p);
+                const pURI = this.factory.decode(p).value;
+                
+                // Filter domains: current classes that match the property's domains (BigInt OR URI String fallback)
+                // If validDomains is empty OR contains owl:Thing/Resource, all classes match
+                const hierarchyDomains = [...allRelevantClasses].filter(cls => {
+                    const clsURI = this.factory.decode(cls).value;
+                    
+                    // Root Check: If property domain is owl:Thing or rdfs:Resource, it matches every class
+                    const isGlobal = validDomains.length === 0 || validDomains.some(dom => {
+                        const dURI = this.factory.decode(dom).value;
+                        return dURI === 'http://www.w3.org/2002/07/owl#Thing' || dURI === 'http://www.w3.org/2000/01/rdf-schema#Resource';
+                    });
+                    if (isGlobal) return true;
+                    
+                    return validDomains.some(dom => 
+                        cls === dom || 
+                        this.factory.decode(dom).value === clsURI || 
+                        si.isSubClassOf(cls, dom)
+                    );
+                });
+                
+                if (hierarchyDomains.length > 0) {
+                    processedOutgoing.add(pURI);
+
+                    // SELECT WINNING DOMAIN (The "Sahiplendirme" Logic)
+                    // Rule 1 & 2: Prefer original domain(s) if explicitly present in the entity's current hierarchy
+                    const validDomainURIs = validDomains.map(d => this.factory.decode(d).value);
+                    let winner = hierarchyDomains.find(d => validDomainURIs.includes(this.factory.decode(d).value));
+                    
+                    // Rule 3: Pick the HIGHEST matching class (Minimum Depth) to keep properties at their definition level
+                    if (!winner) {
+                        winner = hierarchyDomains.reduce((prev, curr) => 
+                            si.getDepth(curr) < si.getDepth(prev) ? curr : prev
+                        , hierarchyDomains[0]);
+                    }
+
+                    const group = getOrCreateGroup(winner);
+                    const structuredProp: StructuredProperty = { 
+                        property: p, 
+                        values: this.deduplicateValues(quads.map(q => ({ value: q.object, quad: q, source: getSource(q) }))), 
+                        schema: propSchema, 
+                        isInherited: group.isInherited,
+                        label: propSchema ? this.getBestLabel(propSchema.labels, lang) : undefined 
+                    };
+                    
+                    // DEEP MENTION DETECTION
+                    structuredProp.hasMentions = structuredProp.values.some(v => {
+                        if ((v as any).isReifiedPromotion) return true;
+                        try {
+                            const tVal = (this.factory as any).triple(id, p, v.value);
+                            const q2 = [tVal]; const v2 = new Set<NodeID>();
+                            while (q2.length > 0) {
+                                const cur = q2.shift()!; if (v2.has(cur)) continue; v2.add(cur);
+                                for (const mq of composite.match(null, null, cur, null)) {
+                                    const mURI = this.factory.decode(mq[1]).value;
+                                    if (reificationPreds.includes(mURI)) {
+                                        const parent = mq[0];
+                                        for (const raw of composite.match(parent, null, null, null)) {
+                                            const prURI = this.factory.decode(raw[1]).value;
+                                            if (!reificationPreds.includes(prURI) && !prURI.endsWith('#type')) return true;
                                         }
+                                        q2.push(parent);
                                     }
                                 }
-                            } catch { }
-                            return false;
-                        });
-                        if (propSchema.type === 'Object' || propSchema.ranges.length > 0) group.objectProperties.push(structuredProp);
-                        else group.dataProperties.push(structuredProp);
+                            }
+                        } catch { }
+                        return false;
                     });
+
+                    if (propSchema && propSchema.type === 'Data') {
+                        group.dataProperties.push(structuredProp);
+                    } else if (propSchema && propSchema.type === 'Object') {
+                        group.objectProperties.push(structuredProp);
+                    } else if (propSchema && propSchema.ranges.length > 0) {
+                        const isProbablyData = propSchema.ranges.some(r => {
+                            const uri = this.factory.decode(r).value;
+                            return uri.includes('XMLSchema') || uri.includes('rdf-schema#Literal') || uri.includes('rdf-syntax-ns#langString');
+                        });
+                        if (isProbablyData) group.dataProperties.push(structuredProp);
+                        else group.objectProperties.push(structuredProp);
+                    } else {
+                        // Default fallback
+                        group.dataProperties.push(structuredProp);
+                    }
+                } else if (quads.length > 0) {
+                    // Property has no domain in our hierarchy, but has values -> Orphan
+                    processedOutgoing.add(pURI);
+                    const structuredProp: StructuredProperty = {
+                        property: p,
+                        values: this.deduplicateValues(quads.map(q => ({ value: q.object, quad: q, source: getSource(q) }))),
+                        schema: propSchema,
+                        label: propSchema ? this.getBestLabel(propSchema.labels, lang) : undefined
+                    };
+                    
+                    // Deep Mentions for Orphans too
+                    structuredProp.hasMentions = structuredProp.values.some(v => {
+                        try {
+                            const tVal = (this.factory as any).triple(id, p, v.value);
+                            for (const _mq of composite.match(null, null, tVal, null)) return true;
+                        } catch {}
+                        return false;
+                    });
+
+                    orphanProperties.push(structuredProp);
                 }
             }
         }
@@ -501,9 +622,8 @@ export class EntityResolver {
             incomings.push({ property: p, values: this.deduplicateValues(quads.map(q => ({ value: q.subject, quad: q, source: getSource(q) }))), schema: ps, isInverse: true, label: ps ? this.getBestLabel(ps.labels, lang) : undefined });
         }
 
-        const orphanProperties: StructuredProperty[] = [];
         for (const [p, quads] of outgoingProps) {
-            if (!processedOutgoing.has(p)) {
+            if (!processedOutgoing.has(this.factory.decode(p).value)) {
                 const ps = this.schemaIndex?.getPropertySchema(p);
                 orphanProperties.push({ property: p, values: this.deduplicateValues(quads.map(q => ({ value: q.object, quad: q, source: getSource(q) }))), schema: ps, label: ps ? this.getBestLabel(ps.labels, lang) : undefined });
             }
@@ -512,11 +632,20 @@ export class EntityResolver {
         if (this.schemaIndex) {
             classUsage.forEach((group, classID) => {
                 this.schemaIndex!.getSchemaForClass(classID)?.properties.forEach(ps => {
+                    const pURI = this.factory.decode(ps.property).value;
+                    if (processedOutgoing.has(pURI)) return;
+
                     const isObj = ps.type === 'Object' || ps.ranges.length > 0;
                     const list = isObj ? group.objectProperties : group.dataProperties;
                     const other = isObj ? group.dataProperties : group.objectProperties;
                     if (!list.some(e => e.property === ps.property) && !other.some(e => e.property === ps.property)) {
-                        list.push({ property: ps.property, values: [], schema: ps, label: this.getBestLabel(ps.labels, lang) });
+                        list.push({ 
+                            property: ps.property, 
+                            values: [], 
+                            schema: ps, 
+                            isInherited: group.isInherited,
+                            label: this.getBestLabel(ps.labels, lang) 
+                        });
                     }
                 });
             });

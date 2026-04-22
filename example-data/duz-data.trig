@@ -1,0 +1,183 @@
+@prefix : <http://www.40nodes.net/ontologies/ngo#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://www.40nodes.net/ontologies/ngo/data/main-data> {
+
+    ### ==========================================
+    ### 1. LOKASYONLAR (PLACES)
+    ### ==========================================
+    :id_xL8a2B a :Country ; rdfs:label "Türkiye"@tr .
+    :id_yT4k9P a :Country ; rdfs:label "Almanya"@tr .
+    :id_mN1b7C a :Country ; rdfs:label "ABD"@tr .
+    :id_qR5v3Z a :Region ; rdfs:label "Marmara Bölgesi"@tr .
+    :id_kL9m4X a :Province ; rdfs:label "Isparta"@tr .
+    :id_jH2p8W a :Province ; rdfs:label "Antalya"@tr .
+    :id_vC7d1F a :Province ; rdfs:label "İstanbul"@tr .
+    :id_bN3x5G a :Province ; rdfs:label "Kırklareli"@tr .
+    :id_pQ6t2Y a :Province ; rdfs:label "Aydın"@tr .
+    :id_zW4f9S a :District ; rdfs:label "Kuşadası"@tr .
+    :id_rM1y6H a :District ; rdfs:label "Maltepe"@tr .
+    :id_hK8n3D a :District ; rdfs:label "Kırklareli Merkez"@tr .
+
+    ### ==========================================
+    ### 2. TEŞKİLAT BİRİMLERİ (ORGANIZATION UNITS)
+    ### ==========================================
+    :id_uH4q1L a :Headquarters ; rdfs:label "NGO Genel Merkez"@tr ; :representsLocation :id_xL8a2B .
+    :id_uT7z9K a :DepartmentOfOrganization ; rdfs:label "Teşkilatlanma Başkanlığı"@tr ; :isSubUnitOf :id_uH4q1L .
+
+    :id_uD2m5N a :CountryRepresentation ; rdfs:label "Almanya Temsilciliği"@tr ; :representsLocation :id_yT4k9P ; :reportsTo :id_uT7z9K .
+    :id_uA8p3R a :CountryRepresentation ; rdfs:label "ABD Temsilciliği"@tr ; :representsLocation :id_mN1b7C ; :reportsTo :id_uT7z9K .
+    :id_uM6b1V a :RegionalRepresentation ; rdfs:label "Marmara Bölge Temsilciliği"@tr ; :representsLocation :id_qR5v3Z ; :reportsTo :id_uT7z9K .
+
+    :id_uI5x9C a :ProvinceRepresentation ; rdfs:label "Isparta İl Temsilciliği"@tr ; :representsLocation :id_kL9m4X ; :reportsTo :id_uT7z9K .
+    :id_uN2f7S a :ProvinceRepresentation ; rdfs:label "Antalya İl Temsilciliği"@tr ; :representsLocation :id_jH2p8W ; :reportsTo :id_uT7z9K .
+
+    :id_uS1w8J a :ProvincePresidency ; rdfs:label "İstanbul İl Başkanlığı"@tr ; :representsLocation :id_vC7d1F ; :reportsTo :id_uM6b1V .
+    :id_uK9c4D a :ProvincePresidency ; rdfs:label "Kırklareli İl Başkanlığı"@tr ; :representsLocation :id_bN3x5G ; :reportsTo :id_uM6b1V .
+
+    :id_uL3g6P a :DistrictPresidency ; rdfs:label "Maltepe İlçe Başkanlığı"@tr ; :representsLocation :id_rM1y6H ; :isSubUnitOf :id_uS1w8J .
+    :id_uR7t2M a :DistrictPresidency ; rdfs:label "Kırklareli Merkez İlçe Başkanlığı"@tr ; :representsLocation :id_hK8n3D ; :isSubUnitOf :id_uK9c4D .
+
+    # --- Aydın Hattı (Düzeltmeler Uygulandı) ---
+    :id_uY8h1Q a :ProvinceRepresentation ; rdfs:label "Aydın İl Temsilciliği"@tr ; :representsLocation :id_pQ6t2Y ; :reportsTo :id_uT7z9K . # U4 Düzeltmesi (reportsTo eklendi)
+    
+    # H2 Düzeltmesi İçin Eksik Olan Aydın İl Başkanlığı Eklendi
+    :id_uAydinPr a :ProvincePresidency ; rdfs:label "Aydın İl Başkanlığı"@tr ; :representsLocation :id_pQ6t2Y ; :reportsTo :id_uT7z9K . 
+
+    :id_uZ4j5E a :DistrictRepresentation ; rdfs:label "Kuşadası İlçe Temsilciliği"@tr ; :representsLocation :id_zW4f9S ; :isSubUnitOf :id_uY8h1Q .
+    
+    # H2 Düzeltmesi: DistrictPresidency (Official) olduğu için ProvincePresidency'ye (Official) bağlandı
+    :id_uW9v2X a :DistrictPresidency ; rdfs:label "Kuşadası İlçe Başkanlığı"@tr ; :representsLocation :id_zW4f9S ; :isSubUnitOf :id_uAydinPr . 
+
+
+    ### ==========================================
+    ### 3. YÖNETİCİLER VE KİŞİLER
+    ### ==========================================
+    :id_pA1b2C a :Person ; rdfs:label "Ali Yılmaz"@tr .
+    :id_uT7z9K :hasVicePresident :id_pA1b2C .
+    
+    :id_pD3e4F a :Person ; rdfs:label "Hasan Bölgeci"@tr .
+    :id_uM6b1V :hasRepresentative :id_pD3e4F .
+
+    :id_pG5h6I a :Person ; rdfs:label "Hans Schmidt"@tr .
+    :id_uD2m5N :hasRepresentative :id_pG5h6I .
+    
+    :id_pJ7k8L a :Person ; rdfs:label "John Doe"@tr .
+    :id_uA8p3R :hasRepresentative :id_pJ7k8L .
+
+    :id_pM9n0O a :Person ; rdfs:label "Fatma Güller"@tr .
+    :id_uI5x9C :hasRepresentative :id_pM9n0O .
+    
+    :id_pP1q2R a :Person ; rdfs:label "Mehmet Sıcak"@tr .
+    :id_uN2f7S :hasRepresentative :id_pP1q2R .
+
+    :id_pS3t4U a :Person ; rdfs:label "Burak Yılmaz"@tr .
+    :id_pV5w6X a :Person ; rdfs:label "Zeynep Kaya"@tr .
+    :id_pY7z8A a :Person ; rdfs:label "Ahmet Demir"@tr .
+    :id_uS1w8J :hasPresident :id_pS3t4U ; :hasSecretary :id_pV5w6X ; :hasTreasurer :id_pY7z8A .
+
+    :id_pB9c0D a :Person ; rdfs:label "Elif Trakya"@tr .
+    :id_pE1f2G a :Person ; rdfs:label "Can Kır"@tr .
+    :id_pH3i4J a :Person ; rdfs:label "Ayşe Sınır"@tr .
+    :id_uK9c4D :hasPresident :id_pB9c0D ; :hasSecretary :id_pE1f2G ; :hasTreasurer :id_pH3i4J .
+
+    :id_pK5l6M a :Person ; rdfs:label "Cem Sahil"@tr .
+    :id_pN7o8P a :Person ; rdfs:label "Selin Yalı"@tr .
+    :id_pQ9r0S a :Person ; rdfs:label "Kemal Park"@tr .
+    :id_uL3g6P :hasPresident :id_pK5l6M ; :hasSecretary :id_pN7o8P ; :hasTreasurer :id_pQ9r0S .
+
+    :id_pT1u2V a :Person ; rdfs:label "Oğuz Merkez"@tr .
+    :id_pW3x4Y a :Person ; rdfs:label "Derya Ova"@tr .
+    :id_pZ5a6B a :Person ; rdfs:label "Mert Tepe"@tr .
+    :id_uR7t2M :hasPresident :id_pT1u2V ; :hasSecretary :id_pW3x4Y ; :hasTreasurer :id_pZ5a6B .
+
+
+    ### ==========================================
+    ### 4. BİRİM ÜYELERİ (RDF-STAR OCCURRENCES)
+    ### ==========================================
+    :id_mDE1oF a :Person ; rdfs:label "Klaus Resmi"@tr .
+    :id_mDE2uN a :Person ; rdfs:label "Anna Gönüllü"@tr .
+    _:occ_de1 a :MembershipOccurrence ; rdf:reifies << :id_mDE1oF :memberOf :id_uD2m5N >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2022-01-01"^^xsd:date .
+    _:occ_de2 a :MembershipOccurrence ; rdf:reifies << :id_mDE2uN :memberOf :id_uD2m5N >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2023-05-10"^^xsd:date .
+
+    :id_mUS1oF a :Person ; rdfs:label "Michael Resmi"@tr .
+    :id_mUS2uN a :Person ; rdfs:label "Sarah Gönüllü"@tr .
+    _:occ_us1 a :MembershipOccurrence ; rdf:reifies << :id_mUS1oF :memberOf :id_uA8p3R >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2021-06-15"^^xsd:date .
+    _:occ_us2 a :MembershipOccurrence ; rdf:reifies << :id_mUS2uN :memberOf :id_uA8p3R >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2023-11-20"^^xsd:date .
+
+    :id_mIS1oF a :Person ; rdfs:label "Tarık Resmi"@tr .
+    :id_mIS2uN a :Person ; rdfs:label "Büşra Gönüllü"@tr .
+    _:occ_is1 a :MembershipOccurrence ; rdf:reifies << :id_mIS1oF :memberOf :id_uI5x9C >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2020-03-01"^^xsd:date .
+    _:occ_is2 a :MembershipOccurrence ; rdf:reifies << :id_mIS2uN :memberOf :id_uI5x9C >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2021-09-05"^^xsd:date .
+
+    :id_mAN1oF a :Person ; rdfs:label "Seda Resmi"@tr .
+    :id_mAN2uN a :Person ; rdfs:label "Hakan Gönüllü"@tr .
+    _:occ_an1 a :MembershipOccurrence ; rdf:reifies << :id_mAN1oF :memberOf :id_uN2f7S >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2019-12-10"^^xsd:date .
+    _:occ_an2 a :MembershipOccurrence ; rdf:reifies << :id_mAN2uN :memberOf :id_uN2f7S >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2022-04-18"^^xsd:date .
+
+    :id_mIST1o a :Person ; rdfs:label "Cenk Resmi"@tr .
+    :id_mIST2u a :Person ; rdfs:label "Aslı Gönüllü"@tr .
+    _:occ_ist1 a :MembershipOccurrence ; rdf:reifies << :id_mIST1o :memberOf :id_uS1w8J >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2018-07-22"^^xsd:date .
+    _:occ_ist2 a :MembershipOccurrence ; rdf:reifies << :id_mIST2u :memberOf :id_uS1w8J >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2020-10-30"^^xsd:date .
+
+    :id_mKIR1o a :Person ; rdfs:label "Koray Resmi"@tr .
+    :id_mKIR2u a :Person ; rdfs:label "Pelin Gönüllü"@tr .
+    _:occ_kir1 a :MembershipOccurrence ; rdf:reifies << :id_mKIR1o :memberOf :id_uK9c4D >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2015-05-05"^^xsd:date .
+    _:occ_kir2 a :MembershipOccurrence ; rdf:reifies << :id_mKIR2u :memberOf :id_uK9c4D >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2023-01-15"^^xsd:date .
+
+    :id_mMAL1o a :Person ; rdfs:label "Tolga Resmi"@tr .
+    :id_mMAL2u a :Person ; rdfs:label "İpek Gönüllü"@tr .
+    _:occ_mal1 a :MembershipOccurrence ; rdf:reifies << :id_mMAL1o :memberOf :id_uL3g6P >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2021-08-08"^^xsd:date .
+    _:occ_mal2 a :MembershipOccurrence ; rdf:reifies << :id_mMAL2u :memberOf :id_uL3g6P >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2023-03-03"^^xsd:date .
+
+    :id_mKRM1o a :Person ; rdfs:label "Fırat Resmi"@tr .
+    :id_mKRM2u a :Person ; rdfs:label "Eda Gönüllü"@tr .
+    _:occ_krm1 a :MembershipOccurrence ; rdf:reifies << :id_mKRM1o :memberOf :id_uR7t2M >> ; :membershipLevel :id_SKOS_LVL1 ; :startDate "2019-11-11"^^xsd:date .
+    _:occ_krm2 a :MembershipOccurrence ; rdf:reifies << :id_mKRM2u :memberOf :id_uR7t2M >> ; :membershipLevel :id_SKOS_LVL2 ; :startDate "2020-02-20"^^xsd:date .
+
+
+    ### ==========================================
+    ### 5. ÖZER'İN ZAMAN ÇİZELGESİ 
+    ### (H3 Düzeltmesi ve SKOS Kavramları Dahil)
+    ### ==========================================
+    :id_pOZ3r9 a :Person ; rdfs:label "Özer"@tr .
+
+    # Faz 1: Aydın İl Temsilciliği (Bitti)
+    _:occ_oz1 a :MembershipOccurrence ; 
+        rdf:reifies << :id_pOZ3r9 :memberOf :id_uY8h1Q >> ;
+        :membershipLevel :id_SKOS_LVL2 ;
+        :startDate "2001-05-15"^^xsd:date ;
+        :endDate "2003-08-10"^^xsd:date ;
+        :endReason :id_SKOS_END4 ; # MembershipTypeChange
+        :reasonDescription "Kuşadası temsilciliğinin açılmasıyla transfer oldu."^^xsd:string .
+
+    # Faz 2: Kuşadası Temsilciliği (Bitti)
+    _:occ_oz2 a :MembershipOccurrence ; 
+        rdf:reifies << :id_pOZ3r9 :memberOf :id_uZ4j5E >> ;
+        :membershipLevel :id_SKOS_LVL2 ;
+        :startDate "2003-08-11"^^xsd:date ;
+        :endDate "2004-12-30"^^xsd:date ;
+        :endReason :id_SKOS_END5 ; # StructuralUpgrade
+        :reasonDescription "Temsilcilik kapandı ve yerini resmi başkanlığa bıraktı."^^xsd:string .
+        
+    :id_uZ4j5E :hasRepresentative :id_pOZ3r9 .
+
+    # Faz 3: Kuşadası Başkanlığı (Aktif Üyelik)
+    _:occ_oz3 a :MembershipOccurrence ; 
+        rdf:reifies << :id_pOZ3r9 :memberOf :id_uW9v2X >> ;
+        :membershipLevel :id_SKOS_LVL1 ;
+        :startDate "2005-01-01"^^xsd:date . 
+        
+    :id_uW9v2X :hasSecretary :id_pOZ3r9 .
+
+    # Faz 4: Askıya Alınma 
+    # H3 Düzeltmesi: occ_oz3 ile aynı triple'ı reify etmemek için suspendedFrom mülkü kullanıldı
+    _:susp_oz1 a :Suspension ;
+        rdf:reifies << :id_pOZ3r9 :suspendedFrom :id_uW9v2X >> ;
+        :startDate "2007-03-01"^^xsd:date ;
+        :endDate "2007-11-15"^^xsd:date ;
+        :reasonDescription "Maddi imkansızlıklar nedeniyle aidat yatırılamaması."^^xsd:string .
+
+}

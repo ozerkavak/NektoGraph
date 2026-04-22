@@ -292,7 +292,7 @@ export class KGEntity {
 
     private static async fetchStructure(entity: KGEntity) {
         const session = state.currentSession || undefined;
-        entity.structured = await state.entityResolver.resolveStructured(entity.id, state.language, session);
+        entity.structured = await state.entityResolver.resolveStructured(entity.id, state.language, session, { showAvailable: true });
 
         // Sync metadata
         entity.labels = entity.structured.labels;

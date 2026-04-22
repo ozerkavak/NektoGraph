@@ -25,6 +25,8 @@ export class Vocabulary {
     public owlReflexiveProperty: NodeID;
     public owlIrreflexiveProperty: NodeID;
     public owlAsymmetricProperty: NodeID;
+    public owlThing: NodeID;
+    public rdfsResource: NodeID;
 
     // RDF-star & Core System
     public rdfReifies: NodeID;
@@ -43,7 +45,7 @@ export class Vocabulary {
         this.rdfsRange = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#range');
         this.owlClass = factory.namedNode('http://www.w3.org/2002/07/owl#Class');
         this.owlObjectProperty = factory.namedNode('http://www.w3.org/2002/07/owl#ObjectProperty');
-        this.owlDatatypeProperty = factory.namedNode('http://www.w3.org/2001/XMLSchema#DatatypeProperty'); // Fix hint: owl namespace usually
+        this.owlDatatypeProperty = factory.namedNode('http://www.w3.org/2002/07/owl#DatatypeProperty'); // Fix hint: owl namespace usually
         this.owlAnnotationProperty = factory.namedNode('http://www.w3.org/2002/07/owl#AnnotationProperty');
         this.owlDisjointWith = factory.namedNode('http://www.w3.org/2002/07/owl#disjointWith');
         this.owlInverseOf = factory.namedNode('http://www.w3.org/2002/07/owl#inverseOf');
@@ -60,6 +62,8 @@ export class Vocabulary {
         this.owlReflexiveProperty = factory.namedNode('http://www.w3.org/2002/07/owl#ReflexiveProperty');
         this.owlIrreflexiveProperty = factory.namedNode('http://www.w3.org/2002/07/owl#IrreflexiveProperty');
         this.owlAsymmetricProperty = factory.namedNode('http://www.w3.org/2002/07/owl#AsymmetricProperty');
+        this.owlThing = factory.namedNode('http://www.w3.org/2002/07/owl#Thing');
+        this.rdfsResource = factory.namedNode('http://www.w3.org/2000/01/rdf-schema#Resource');
 
         // RDF-star & Core System Initialization
         this.rdfReifies = factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies');

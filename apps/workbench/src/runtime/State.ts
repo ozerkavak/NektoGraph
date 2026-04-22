@@ -1221,7 +1221,9 @@ export class AppState {
                             },
                             onToggleEmptyProps: (show: boolean) => {
                                 if (kg.structured) {
-                                    const data = Entity3DAdapter.adapt(kg.structured, show, uiState.showOrphansIn3D);
+                                    const editorWin = this.windowManager.getWindow(id);
+                                    const showInherit = editorWin?.state.metadata?.showInheritance !== false;
+                                    const data = Entity3DAdapter.adapt(kg.structured, show, uiState.showOrphansIn3D, showInherit);
                                     container.updateGraph(data);
                                 }
                             }
@@ -1235,7 +1237,9 @@ export class AppState {
 
                     if (kg.structured) {
                         const showEmpty = (container as any).showEmptyProps || false;
-                        const data = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D);
+                        const editorWin = this.windowManager.getWindow(id);
+                        const showInherit = editorWin?.state.metadata?.showInheritance !== false;
+                        const data = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D, showInherit);
                         container.updateGraph(data);
                     } else {
                         content.innerHTML += `<div style="position:absolute; top:10px; left:10px; color:white;">No Data</div>`;
@@ -1396,7 +1400,9 @@ export class AppState {
 
             // 1. Adapt new subgraph (centered at 0,0,0)
             const showEmpty = (container as any).showEmptyProps || false;
-            const subgraph = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D);
+            const editorWin = this.windowManager.getWindow(id);
+            const showInherit = editorWin?.state.metadata?.showInheritance !== false;
+            const subgraph = Entity3DAdapter.adapt(kg.structured, showEmpty, uiState.showOrphansIn3D, showInherit);
 
             // 2. Get current graph nodes (Uses pinned getNodes() method)
             const currentNodes = container.getNodes() as any[];

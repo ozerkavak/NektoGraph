@@ -1,31 +1,29 @@
 {
-  "name": "@triplestore/edit-engine",
-  "version": "1.0.2-beta",
-  "description": "Edit Engine and Session Management for Quadstore.",
-  "main": "./dist/edit-engine.umd.js",
-  "module": "./dist/edit-engine.es.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/edit-engine.es.js",
-      "require": "./dist/edit-engine.umd.js"
+    "name": "@triplestore/edit-engine",
+    "version": "1.0.3-beta",
+    "description": "Edit Engine and Session Management for Quadstore.",
+    "main": "./dist/edit-engine.umd.js",
+    "module": "./dist/edit-engine.es.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/edit-engine.es.js",
+            "require": "./dist/edit-engine.umd.js"
+        }
+    },
+    "scripts": {
+        "dev": "vite build --watch",
+        "build": "vite build",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@triplestore/core": "1.0.1-beta",
+        "@triplestore/inference": "1.0.1-beta",
+        "@triplestore/sparql": "1.0.1-beta",
+        "@triplestore/session": "1.0.1-beta"
+    },
+    "license": "ISC",
+    "devDependencies": {
+        "vitest": "^4.0.17"
     }
-  },
-  "scripts": {
-    "dev": "vite build --watch",
-    "build": "vite build",
-    "test": "vitest"
-  },
-  "dependencies": {
-    "@triplestore/core": "1.0.1-beta",
-    "@triplestore/inference": "1.0.1-beta",
-    "@triplestore/sparql": "1.0.1-beta",
-    "@triplestore/session": "1.0.1-beta"
-  },
-  "license": "ISC",
-  "devDependencies": {
-    "vitest": "^4.0.17"
-  }
 }
-
-
