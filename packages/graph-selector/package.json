@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/graph-selector",
-    "version": "1.0.3-beta",
+    "version": "1.0.4-beta",
     "description": "Standardized Target Graph Selection Modal",
     "main": "src/index.ts",
     "module": "src/index.ts",

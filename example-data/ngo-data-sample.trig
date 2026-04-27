@@ -1,0 +1,548 @@
+###############################################################################
+#  NGO SAMPLE DATA  —  ngo-data-sample.trig
+#  Amaç : Sorgu a–f için minimum yeterli örnek veri
+#  Format: TriG (RDF 1.2 / RDF-Star — rdf:reifies syntax)
+###############################################################################
+
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix ngo:   <https://w3id.org/ngo/ontology#> .
+@prefix ngod:  <https://w3id.org/ngo/data/> .        # data instance base
+@prefix ngog:  <https://w3id.org/ngo/graph/> .
+@prefix level: <https://w3id.org/ngo/skos/level/> .
+@prefix tr:    <https://w3id.org/ngo/skos/tr/> .
+
+###############################################################################
+#  GRAPH D1 — Örgütsel Birimler (Units)
+#
+#  Senaryo:
+#   Merkez
+#   ├── Ege Bölge Temsilciliği          (NonLegalUnit — henüz başkanlık değil)
+#   │    ├── İzmir İl Başkanlığı        (Presidency — tüzel kişi)
+#   │    │    ├── Kadifekale İlçe B.    (Presidency — tüzel kişi)
+#   │    │    └── Bornova İlçe B.       (Presidency — tüzel kişi)
+#   │    └── Aydın İl Temsilciliği      (NonLegalUnit — henüz başkanlık yok)
+#   │         └── Kuşadası İlçe Tem.    (NonLegalUnit)
+#   ├── Akdeniz Bölge Temsilciliği      (NonLegalUnit)
+#   │    ├── Antalya İl Başkanlığı      (Presidency — tüzel kişi)
+#   │    │    ├── Muratpaşa İlçe B.     (Presidency — tüzel kişi)
+#   │    │    └── Kepez İlçe Tem.       (NonLegalUnit — henüz başkanlık yok)
+#   │    └── Isparta İl Temsilciliği    (NonLegalUnit — henüz başkanlık yok)
+#   └── Batı Anadolu Bölge Tem.         (NonLegalUnit)
+#        └── Ankara İl Başkanlığı       (Presidency — tüzel kişi)
+#             └── Çankaya İlçe B.       (Presidency — tüzel kişi)
+###############################################################################
+
+ngog:units {
+
+    # ── Merkez ────────────────────────────────────────────────────────────────
+    ngod:Merkez
+        a ngo:Headquarter ;
+        rdfs:label      "Dernek Merkezi"@tr , "NGO Headquarters"@en ;
+        ngo:unitCode    "HQ-001" ;
+        ngo:foundingDate "2020-03-15"^^xsd:date ;
+        ngo:email       "merkez@dernek.org.tr" .
+
+    # ── Ege Bölgesi ───────────────────────────────────────────────────────────
+    ngod:EgeBolgesi
+        a ngo:Representation ;           # NonLegalUnit
+        rdfs:label    "Ege Bölgesi Temsilciliği"@tr ;
+        ngo:unitCode  "REP-EGE-001" ;
+        ngo:administrativeLevel level:Region ;
+        ngo:administrativeArea  tr:TR-NUTS1-3 ;
+        ngo:subUnitOf ngod:Merkez .
+
+    ngod:IzmirIlBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "İzmir İl Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-IZM-001" ;
+        ngo:administrativeLevel level:Province ;
+        ngo:administrativeArea  tr:prov-izmir ;
+        ngo:subUnitOf ngod:EgeBolgesi ;
+        ngo:foundingDate "2021-06-01"^^xsd:date .
+
+    ngod:IzmirIlBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "35-NGO-2021-0201" ;
+        ngo:startDate     "2021-06-01"^^xsd:date ;
+        ngo:legalBasis    "2911 Sayılı Kanun Md.7"
+    |} .
+
+    ngod:KadifekaleBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "Kadifekale İlçe Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-IZM-KDK-001" ;
+        ngo:administrativeLevel level:District ;
+        ngo:administrativeArea  tr:dist-kadikoy ;   # temsili — izmir ilçesi için ayrı dist tanımlanabilir
+        ngo:subUnitOf ngod:IzmirIlBaskanligi ;
+        ngo:foundingDate "2022-02-10"^^xsd:date .
+
+    ngod:KadifekaleBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "35-NGO-2022-0044" ;
+        ngo:startDate     "2022-02-10"^^xsd:date
+    |} .
+
+    ngod:BornovaBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "Bornova İlçe Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-IZM-BRN-001" ;
+        ngo:administrativeLevel level:District ;
+        ngo:subUnitOf ngod:IzmirIlBaskanligi ;
+        ngo:foundingDate "2022-05-20"^^xsd:date .
+
+    ngod:BornovaBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "35-NGO-2022-0089" ;
+        ngo:startDate     "2022-05-20"^^xsd:date
+    |} .
+
+    # Aydın — henüz başkanlık yok
+    ngod:AydinIlTemsilciligi
+        a ngo:Representation ;
+        rdfs:label    "Aydın İl Temsilciliği"@tr ;
+        ngo:unitCode  "REP-AYD-001" ;
+        ngo:administrativeLevel level:Province ;
+        ngo:administrativeArea  tr:prov-aydin ;
+        ngo:subUnitOf ngod:EgeBolgesi ;
+        ngo:foundingDate "2022-09-01"^^xsd:date .
+
+    ngod:AydinIlTemsilciligi a ngo:Representation {|
+        ngo:isLegalEntity false ;
+        ngo:startDate     "2022-09-01"^^xsd:date
+    |} .
+
+    ngod:KusadasiIlceTemsilciligi
+        a ngo:Representation ;
+        rdfs:label    "Kuşadası İlçe Temsilciliği"@tr ;
+        ngo:unitCode  "REP-AYD-KUS-001" ;
+        ngo:administrativeLevel level:District ;
+        ngo:subUnitOf ngod:AydinIlTemsilciligi ;
+        ngo:foundingDate "2023-01-15"^^xsd:date .
+
+    ngod:KusadasiIlceTemsilciligi a ngo:Representation {|
+        ngo:isLegalEntity false ;
+        ngo:startDate     "2023-01-15"^^xsd:date
+    |} .
+
+    # ── Akdeniz Bölgesi ───────────────────────────────────────────────────────
+    ngod:AkdenizBolgesi
+        a ngo:Representation ;
+        rdfs:label    "Akdeniz Bölgesi Temsilciliği"@tr ;
+        ngo:unitCode  "REP-AKD-001" ;
+        ngo:administrativeLevel level:Region ;
+        ngo:administrativeArea  tr:TR-NUTS1-6 ;
+        ngo:subUnitOf ngod:Merkez .
+
+    ngod:AntalyaIlBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "Antalya İl Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-ANT-001" ;
+        ngo:administrativeLevel level:Province ;
+        ngo:administrativeArea  tr:prov-antalya ;
+        ngo:subUnitOf ngod:AkdenizBolgesi ;
+        ngo:foundingDate "2021-11-01"^^xsd:date .
+
+    ngod:AntalyaIlBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "07-NGO-2021-0315" ;
+        ngo:startDate     "2021-11-01"^^xsd:date ;
+        ngo:legalBasis    "2911 Sayılı Kanun Md.7"
+    |} .
+
+    ngod:MuratpasaBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "Muratpaşa İlçe Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-ANT-MRT-001" ;
+        ngo:administrativeLevel level:District ;
+        ngo:administrativeArea  tr:dist-muratpasa ;
+        ngo:subUnitOf ngod:AntalyaIlBaskanligi ;
+        ngo:foundingDate "2022-04-01"^^xsd:date .
+
+    ngod:MuratpasaBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "07-NGO-2022-0042" ;
+        ngo:startDate     "2022-04-01"^^xsd:date
+    |} .
+
+    # Kepez — henüz başkanlık yok
+    ngod:KepezIlceTemsilciligi
+        a ngo:Representation ;
+        rdfs:label    "Kepez İlçe Temsilciliği"@tr ;
+        ngo:unitCode  "REP-ANT-KPZ-001" ;
+        ngo:administrativeLevel level:District ;
+        ngo:administrativeArea  tr:dist-kepez ;
+        ngo:subUnitOf ngod:AntalyaIlBaskanligi ;
+        ngo:foundingDate "2023-03-10"^^xsd:date .
+
+    ngod:KepezIlceTemsilciligi a ngo:Representation {|
+        ngo:isLegalEntity false ;
+        ngo:startDate "2023-03-10"^^xsd:date
+    |} .
+
+    # Isparta — henüz başkanlık yok
+    ngod:IspartaIlTemsilciligi
+        a ngo:Representation ;
+        rdfs:label    "Isparta İl Temsilciliği"@tr ;
+        ngo:unitCode  "REP-ISP-001" ;
+        ngo:administrativeLevel level:Province ;
+        ngo:administrativeArea  tr:prov-isparta ;
+        ngo:subUnitOf ngod:AkdenizBolgesi ;
+        ngo:foundingDate "2023-06-01"^^xsd:date .
+
+    ngod:IspartaIlTemsilciligi a ngo:Representation {|
+        ngo:isLegalEntity false ;
+        ngo:startDate "2023-06-01"^^xsd:date
+    |} .
+
+    # ── Batı Anadolu Bölgesi ──────────────────────────────────────────────────
+    ngod:BatiAnadoluBolgesi
+        a ngo:Representation ;
+        rdfs:label    "Batı Anadolu Bölgesi Temsilciliği"@tr ;
+        ngo:unitCode  "REP-BAN-001" ;
+        ngo:administrativeLevel level:Region ;
+        ngo:administrativeArea  tr:TR-NUTS1-5 ;
+        ngo:subUnitOf ngod:Merkez .
+
+    ngod:AnkaraIlBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "Ankara İl Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-ANK-001" ;
+        ngo:administrativeLevel level:Province ;
+        ngo:administrativeArea  tr:prov-ankara ;
+        ngo:subUnitOf ngod:BatiAnadoluBolgesi ;
+        ngo:foundingDate "2021-09-15"^^xsd:date .
+
+    ngod:AnkaraIlBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "06-NGO-2021-0178" ;
+        ngo:startDate     "2021-09-15"^^xsd:date
+    |} .
+
+    ngod:CankayaBaskanligi
+        a ngo:Presidency ;
+        rdfs:label    "Çankaya İlçe Başkanlığı"@tr ;
+        ngo:unitCode  "PRES-ANK-CNK-001" ;
+        ngo:administrativeLevel level:District ;
+        ngo:administrativeArea  tr:dist-cankaya ;
+        ngo:subUnitOf ngod:AnkaraIlBaskanligi ;
+        ngo:foundingDate "2022-01-20"^^xsd:date .
+
+    ngod:CankayaBaskanligi a ngo:Presidency {|
+        ngo:isLegalEntity true ;
+        ngo:legalRegNo    "06-NGO-2022-0011" ;
+        ngo:startDate     "2022-01-20"^^xsd:date
+    |} .
+
+    # ── transitiveSubUnitOf inference için explicit chain (opsiyonel) ─────────
+    # Reasoner bunu owl:TransitiveProperty + subUnitOf'tan çıkarır.
+    # Manuel test için birkaç örnek:
+    ngod:KadifekaleBaskanligi ngo:transitiveSubUnitOf ngod:IzmirIlBaskanligi .
+    ngod:KadifekaleBaskanligi ngo:transitiveSubUnitOf ngod:EgeBolgesi .
+    ngod:KadifekaleBaskanligi ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:BornovaBaskanligi    ngo:transitiveSubUnitOf ngod:IzmirIlBaskanligi .
+    ngod:BornovaBaskanligi    ngo:transitiveSubUnitOf ngod:EgeBolgesi .
+    ngod:IzmirIlBaskanligi    ngo:transitiveSubUnitOf ngod:EgeBolgesi .
+    ngod:IzmirIlBaskanligi    ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:AydinIlTemsilciligi  ngo:transitiveSubUnitOf ngod:EgeBolgesi .
+    ngod:AydinIlTemsilciligi  ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:KusadasiIlceTemsilciligi ngo:transitiveSubUnitOf ngod:AydinIlTemsilciligi .
+    ngod:KusadasiIlceTemsilciligi ngo:transitiveSubUnitOf ngod:EgeBolgesi .
+    ngod:AntalyaIlBaskanligi  ngo:transitiveSubUnitOf ngod:AkdenizBolgesi .
+    ngod:AntalyaIlBaskanligi  ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:MuratpasaBaskanligi  ngo:transitiveSubUnitOf ngod:AntalyaIlBaskanligi .
+    ngod:MuratpasaBaskanligi  ngo:transitiveSubUnitOf ngod:AkdenizBolgesi .
+    ngod:KepezIlceTemsilciligi ngo:transitiveSubUnitOf ngod:AntalyaIlBaskanligi .
+    ngod:KepezIlceTemsilciligi ngo:transitiveSubUnitOf ngod:AkdenizBolgesi .
+    ngod:IspartaIlTemsilciligi ngo:transitiveSubUnitOf ngod:AkdenizBolgesi .
+    ngod:IspartaIlTemsilciligi ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:AnkaraIlBaskanligi   ngo:transitiveSubUnitOf ngod:BatiAnadoluBolgesi .
+    ngod:AnkaraIlBaskanligi   ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:CankayaBaskanligi    ngo:transitiveSubUnitOf ngod:AnkaraIlBaskanligi .
+    ngod:CankayaBaskanligi    ngo:transitiveSubUnitOf ngod:BatiAnadoluBolgesi .
+    ngod:CankayaBaskanligi    ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:EgeBolgesi           ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:AkdenizBolgesi       ngo:transitiveSubUnitOf ngod:Merkez .
+    ngod:BatiAnadoluBolgesi   ngo:transitiveSubUnitOf ngod:Merkez .
+}
+
+###############################################################################
+#  GRAPH D2 — Kişiler (Persons)
+###############################################################################
+
+ngog:persons {
+
+    # ── Gönüllü Üyeler (sorgu a) ──────────────────────────────────────────────
+    ngod:p-zeynep
+        a ngo:Person ;
+        foaf:givenName  "Zeynep" ; foaf:familyName "Arslan" ;
+        foaf:mbox       <mailto:zeynep@example.com> ;
+        ngo:isFormalMember false .
+
+    ngod:p-burak
+        a ngo:Person ;
+        foaf:givenName  "Burak" ; foaf:familyName "Demir" ;
+        foaf:mbox       <mailto:burak@example.com> ;
+        ngo:isFormalMember false .
+
+    ngod:p-selin
+        a ngo:Person ;
+        foaf:givenName  "Selin" ; foaf:familyName "Yıldız" ;
+        foaf:mbox       <mailto:selin@example.com> ;
+        ngo:isFormalMember false .
+
+    # ── Resmi Olmayan Üyeler (sorgu c, d) ─────────────────────────────────────
+    ngod:p-emre
+        a ngo:Person ;
+        foaf:givenName  "Emre" ; foaf:familyName "Kaya" ;
+        ngo:isFormalMember false .
+
+    ngod:p-fatma
+        a ngo:Person ;
+        foaf:givenName  "Fatma" ; foaf:familyName "Çelik" ;
+        ngo:isFormalMember false .
+
+    ngod:p-mustafa
+        a ngo:Person ;
+        foaf:givenName  "Mustafa" ; foaf:familyName "Şahin" ;
+        ngo:isFormalMember false .
+
+    # ── Aday Üyeler (sorgu e, f) ──────────────────────────────────────────────
+    ngod:p-ahmet
+        a ngo:Person ;
+        foaf:givenName  "Ahmet" ; foaf:familyName "Yılmaz" ;
+        ngo:isFormalMember false .
+
+    ngod:p-ayse
+        a ngo:Person ;
+        foaf:givenName  "Ayşe" ; foaf:familyName "Öztürk" ;
+        ngo:isFormalMember false .
+
+    ngod:p-mehmet
+        a ngo:Person ;
+        foaf:givenName  "Mehmet" ; foaf:familyName "Koç" ;
+        ngo:isFormalMember false .
+
+    ngod:p-elif
+        a ngo:Person ;
+        foaf:givenName  "Elif" ; foaf:familyName "Aydın" ;
+        ngo:isFormalMember false .
+
+    ngod:p-can
+        a ngo:Person ;
+        foaf:givenName  "Can" ; foaf:familyName "Polat" ;
+        ngo:isFormalMember false .
+
+    # ── Resmi Üyeler (sorgu b) ────────────────────────────────────────────────
+    ngod:p-hakan
+        a ngo:Person ;
+        foaf:givenName  "Hakan" ; foaf:familyName "Kurt" ;
+        ngo:isFormalMember true .
+
+    ngod:p-derya
+        a ngo:Person ;
+        foaf:givenName  "Derya" ; foaf:familyName "Çetin" ;
+        ngo:isFormalMember true .
+
+    ngod:p-kemal
+        a ngo:Person ;
+        foaf:givenName  "Kemal" ; foaf:familyName "Doğan" ;
+        ngo:isFormalMember true .
+
+    ngod:p-nilufer
+        a ngo:Person ;
+        foaf:givenName  "Nilüfer" ; foaf:familyName "Arslan" ;
+        ngo:isFormalMember true .
+
+    ngod:p-baris
+        a ngo:Person ;
+        foaf:givenName  "Barış" ; foaf:familyName "Erdoğan" ;
+        ngo:isFormalMember true .
+
+    ngod:p-ozlem
+        a ngo:Person ;
+        foaf:givenName  "Özlem" ; foaf:familyName "Güneş" ;
+        ngo:isFormalMember true .
+}
+
+###############################################################################
+#  GRAPH D3 — Üyelik Bağları  (rdf:reifies ile RDF-Star)
+#
+#  Kural özeti:
+#   • Tek dönem, sabit bağlam  → annotation {| |}
+#   • Çoklu dönem / geçiş      → _:bnode rdf:reifies << S P O >>
+###############################################################################
+
+ngog:memberships {
+
+    # ════════════════════════════════════════════════════════════════════════
+    #  A. GÖNÜLLÜ ÜYELİKLER
+    #  Zeynep — Aydın'da gönüllü (tüzel kişi olmayan birimde)
+    #  Burak  — Kepez'de gönüllü (tüzel kişi olmayan birimde)
+    #  Selin  — Isparta'da gönüllü (tüzel kişi olmayan birimde)
+    # ════════════════════════════════════════════════════════════════════════
+
+    ngod:p-zeynep ngo:memberOf ngod:AydinIlTemsilciligi {|
+        ngo:status    ngo:VolunteerMember ;
+        ngo:startDate "2022-10-05"^^xsd:date ;
+        ngo:membershipNo "REP-AYD-VOL-001"
+    |} .
+
+    ngod:p-burak ngo:memberOf ngod:KepezIlceTemsilciligi {|
+        ngo:status    ngo:VolunteerMember ;
+        ngo:startDate "2023-04-20"^^xsd:date ;
+        ngo:membershipNo "REP-ANT-KPZ-VOL-001"
+    |} .
+
+    ngod:p-selin ngo:memberOf ngod:IspartaIlTemsilciligi {|
+        ngo:status    ngo:VolunteerMember ;
+        ngo:startDate "2023-07-11"^^xsd:date ;
+        ngo:membershipNo "REP-ISP-VOL-001"
+    |} .
+
+    # ════════════════════════════════════════════════════════════════════════
+    #  B. RESMİ OLMAYAN ÜYELİKLER  (InformalMember)
+    #  Emre   — Aydın İl Tem. (merkez başvurucusu aktarıldı)
+    #  Fatma  — Kuşadası İlçe Tem.
+    #  Mustafa — Kepez İlçe Tem.
+    # ════════════════════════════════════════════════════════════════════════
+
+    # Emre: önce merkeze başvurdu, sonra Aydın'a aktarıldı
+    _:emre-app rdf:reifies << ngod:p-emre ngo:memberOf ngod:Merkez >> ;
+        ngo:status    ngo:Applicant ;
+        ngo:startDate "2022-08-01"^^xsd:date ;
+        ngo:endDate   "2022-09-01"^^xsd:date ;
+        ngo:endReason ngo:TransferOut .
+
+    _:emre-inf rdf:reifies << ngod:p-emre ngo:memberOf ngod:AydinIlTemsilciligi >> ;
+        ngo:status       ngo:InformalMember ;
+        ngo:startDate    "2022-09-01"^^xsd:date ;
+        ngo:transferredFrom ngod:Merkez ;
+        ngo:membershipNo "REP-AYD-INF-001" .
+
+    # Fatma: doğrudan Kuşadası'na başvurdu
+    ngod:p-fatma ngo:memberOf ngod:KusadasiIlceTemsilciligi {|
+        ngo:status    ngo:InformalMember ;
+        ngo:startDate "2023-02-14"^^xsd:date ;
+        ngo:membershipNo "REP-AYD-KUS-INF-001"
+    |} .
+
+    # Mustafa: Kepez'de informal üye
+    ngod:p-mustafa ngo:memberOf ngod:KepezIlceTemsilciligi {|
+        ngo:status    ngo:InformalMember ;
+        ngo:startDate "2023-05-03"^^xsd:date ;
+        ngo:membershipNo "REP-ANT-KPZ-INF-001"
+    |} .
+
+    # ════════════════════════════════════════════════════════════════════════
+    #  C. ADAY ÜYELİKLER  (CandidateMember)
+    #
+    #  Ahmet  — Antalya / Muratpaşa (aktif aday — hâlâ sürüyor)
+    #  Ayşe   — Antalya / Muratpaşa (tamamlandı → FormalMember oldu)
+    #  Mehmet — Antalya / Kepez Tem. (aktif aday)
+    #  Elif   — Ankara / Çankaya (aktif aday)
+    #  Can    — Ankara / Çankaya (çıkış yaptı, geri döndü — 2 dönem)
+    # ════════════════════════════════════════════════════════════════════════
+
+    # Ahmet — Muratpaşa'da aktif aday (başlangıç: 2023-09-01, devam ediyor)
+    ngod:p-ahmet ngo:memberOf ngod:MuratpasaBaskanligi {|
+        ngo:status    ngo:CandidateMember ;
+        ngo:startDate "2023-09-01"^^xsd:date
+    |} .
+
+    # Ayşe — Muratpaşa'da aday dönemini tamamladı
+    _:ayse-cand rdf:reifies << ngod:p-ayse ngo:memberOf ngod:MuratpasaBaskanligi >> ;
+        ngo:status    ngo:CandidateMember ;
+        ngo:startDate "2023-06-15"^^xsd:date ;
+        ngo:endDate   "2024-01-10"^^xsd:date ;
+        ngo:endReason ngo:StatusUpgrade .
+
+    # Mehmet — Kepez'de aday (başlangıç: 2023-11-20, devam ediyor)
+    ngod:p-mehmet ngo:memberOf ngod:KepezIlceTemsilciligi {|
+        ngo:status    ngo:CandidateMember ;
+        ngo:startDate "2023-11-20"^^xsd:date
+    |} .
+
+    # Elif — Çankaya'da aktif aday (başlangıç: 2024-03-05)
+    ngod:p-elif ngo:memberOf ngod:CankayaBaskanligi {|
+        ngo:status    ngo:CandidateMember ;
+        ngo:startDate "2024-03-05"^^xsd:date
+    |} .
+
+    # Can — Çankaya'da İKİ dönem aday (ara çıkış yaptı)
+    _:can-cand1 rdf:reifies << ngod:p-can ngo:memberOf ngod:CankayaBaskanligi >> ;
+        ngo:status    ngo:CandidateMember ;
+        ngo:startDate "2023-04-01"^^xsd:date ;
+        ngo:endDate   "2023-08-31"^^xsd:date ;
+        ngo:endReason ngo:Resignation .
+
+    _:can-cand2 rdf:reifies << ngod:p-can ngo:memberOf ngod:CankayaBaskanligi >> ;
+        ngo:status    ngo:CandidateMember ;
+        ngo:startDate "2024-01-15"^^xsd:date .
+    # endDate yok → hâlâ aktif
+
+    # ════════════════════════════════════════════════════════════════════════
+    #  D. RESMİ ÜYELİKLER  (FormalMember)
+    #
+    #  Hakan  — Kadifekale (İzmir / Ege)
+    #  Derya  — Bornova    (İzmir / Ege)
+    #  Kemal  — Muratpaşa  (Antalya / Akdeniz)
+    #  Ayşe   — Muratpaşa  (adaylıktan geçti — Akdeniz)
+    #  Nilüfer — Çankaya   (Ankara / Batı Anadolu)
+    #  Barış  — Çankaya    (Ankara / Batı Anadolu)
+    #  Özlem  — Kadifekale (İzmir / Ege)
+    # ════════════════════════════════════════════════════════════════════════
+
+    ngod:p-hakan ngo:memberOf ngod:KadifekaleBaskanligi {|
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2022-03-10"^^xsd:date ;
+        ngo:membershipNo "TR-35-KDK-2022-0001" ;
+        ngo:feeAmount 200.00
+    |} .
+
+    ngod:p-derya ngo:memberOf ngod:BornovaBaskanligi {|
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2022-06-18"^^xsd:date ;
+        ngo:membershipNo "TR-35-BRN-2022-0003" ;
+        ngo:feeAmount 200.00
+    |} .
+
+    ngod:p-kemal ngo:memberOf ngod:MuratpasaBaskanligi {|
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2022-05-01"^^xsd:date ;
+        ngo:membershipNo "TR-07-MRT-2022-0001" ;
+        ngo:feeAmount 150.00
+    |} .
+
+    # Ayşe: adaylık sona erdi (yukarıda) → resmi üye oldu
+    _:ayse-formal rdf:reifies << ngod:p-ayse ngo:memberOf ngod:MuratpasaBaskanligi >> ;
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2024-01-10"^^xsd:date ;
+        ngo:membershipNo "TR-07-MRT-2024-0012" ;
+        ngo:feeAmount 150.00 .
+
+    ngod:p-nilufer ngo:memberOf ngod:CankayaBaskanligi {|
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2022-02-28"^^xsd:date ;
+        ngo:membershipNo "TR-06-CNK-2022-0001" ;
+        ngo:feeAmount 250.00
+    |} .
+
+    ngod:p-baris ngo:memberOf ngod:CankayaBaskanligi {|
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2022-07-04"^^xsd:date ;
+        ngo:membershipNo "TR-06-CNK-2022-0005" ;
+        ngo:feeAmount 250.00
+    |} .
+
+    ngod:p-ozlem ngo:memberOf ngod:KadifekaleBaskanligi {|
+        ngo:status    ngo:FormalMember ;
+        ngo:startDate "2023-01-22"^^xsd:date ;
+        ngo:membershipNo "TR-35-KDK-2023-0002" ;
+        ngo:feeAmount 200.00
+    |} .
+}

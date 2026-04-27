@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/generator",
-    "version": "1.0.3-beta",
+    "version": "1.0.4-beta",
     "description": "Value Generation Library for RDF: Unique IDs, Labels, and Comments.",
     "main": "./dist/generator.umd.js",
     "module": "./dist/generator.es.js",

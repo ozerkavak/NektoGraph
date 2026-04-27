@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/sparql",
-    "version": "1.0.3-beta",
+    "version": "1.0.4-beta",
     "description": "Streaming SPARQL Engine for BigInt Triplestore.",
     "main": "./dist/sparql.umd.js",
     "module": "./dist/sparql.es.js",

@@ -5,29 +5,141 @@
 
 <http://www.40nodes.net/ontologies/ngo/data/skos-data> {
 
-    # --- KONSEPT ŞEMALARI ---
-    :id_SKOS_SCH1 a skos:ConceptScheme ; rdfs:label "Membership Levels"@en, "Üyelik Seviyeleri"@tr .
-    :id_SKOS_SCH2 a skos:ConceptScheme ; rdfs:label "End Reasons"@en, "Bitiş Nedenleri"@tr .
+    ### ==========================================
+    ### KONSEPT ŞEMALARI (CONCEPT SCHEMES)
+    ### ==========================================
 
-    # --- ÜYELİK SEVİYELERİ ---
-    :id_SKOS_LVL1 a skos:Concept ; skos:inScheme :id_SKOS_SCH1 ; skos:topConceptOf :id_SKOS_SCH1 ;
-        rdfs:label "Official Member"@en, "Resmi Üye"@tr ; owl:differentFrom :id_SKOS_LVL2 .
-    :id_SKOS_LVL2 a skos:Concept ; skos:inScheme :id_SKOS_SCH1 ; skos:topConceptOf :id_SKOS_SCH1 ;
-        rdfs:label "Unofficial Member"@en, "Gayrı-Resmi Üye"@tr .
+    :id_SKOS_SCH1 a skos:ConceptScheme ;
+        rdfs:label "Membership Levels"@en, "Üyelik Seviyeleri"@tr ;
+        rdfs:comment "A controlled vocabulary defining the possible levels of membership within an organization unit."@en,
+                     "Bir teşkilat biriminde üyeliğin olası seviyelerini tanımlayan kontrollü sözvarlığı."@tr ;
+        skos:hasTopConcept :id_SKOS_LVL1, :id_SKOS_LVL2 .
 
-    # --- BİTİŞ NEDENLERİ (Ana Kategoriler) - U1 Düzeltmesi ---
-    :id_SKOS_END1 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:topConceptOf :id_SKOS_SCH2 ; rdfs:label "Neutral End"@en, "Nötr Bitiş"@tr .
-    :id_SKOS_END2 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:topConceptOf :id_SKOS_SCH2 ; rdfs:label "Voluntary End"@en, "Gönüllü Bitiş"@tr .
-    :id_SKOS_END3 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:topConceptOf :id_SKOS_SCH2 ; rdfs:label "Sanction End"@en, "Yaptırım/Cezai Bitiş"@tr .
+    :id_SKOS_SCH2 a skos:ConceptScheme ;
+        rdfs:label "End Reasons"@en, "Bitiş Nedenleri"@tr ;
+        rdfs:comment "A controlled vocabulary classifying the reasons why a membership, assignment, or other occurrence can end."@en,
+                     "Bir üyeliğin, atamanın veya başka bir olayın sona erebileceği nedenleri sınıflandıran kontrollü sözvarlığı."@tr ;
+        skos:hasTopConcept :id_SKOS_END1, :id_SKOS_END2, :id_SKOS_END3 .
 
-    # --- BİTİŞ NEDENLERİ (Alt Kategoriler) - inScheme Eksikliği Giderildi ---
-    :id_SKOS_END4 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END1 ; rdfs:label "Membership Type Change"@en, "Üyelik Tipi Değişikliği"@tr .
-    :id_SKOS_END5 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END1 ; rdfs:label "Structural Upgrade"@en, "Birim Statü Yükselmesi"@tr .
-    :id_SKOS_END6 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END1 ; rdfs:label "Mandatory Leave"@en, "Zorunlu Ayrılış"@tr .
-    :id_SKOS_END7 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END1 ; rdfs:label "Death"@en, "Vefat"@tr .
-    :id_SKOS_END8 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END1 ; rdfs:label "Dissolution/Merger"@en, "Fesih/Birleşme"@tr .
-    :id_SKOS_END9 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END1 ; rdfs:label "Transformation to Official Status"@en, "Resmi Statüye Dönüşüm"@tr .
-    :id_SKOS_END10 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END2 ; rdfs:label "Resignation"@en, "İstifa"@tr .
-    :id_SKOS_END11 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END3 ; rdfs:label "Temporary Expulsion"@en, "Geçici İhraç"@tr .
-    :id_SKOS_END12 a skos:Concept ; skos:inScheme :id_SKOS_SCH2 ; skos:broader :id_SKOS_END3 ; rdfs:label "Permanent Expulsion"@en, "Kalıcı İhraç"@tr .
+    ### ==========================================
+    ### ÜYELİK SEVİYELERİ (MEMBERSHIP LEVELS)
+    ### ==========================================
+
+    :id_SKOS_LVL1 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH1 ;
+        skos:topConceptOf :id_SKOS_SCH1 ;
+        owl:differentFrom :id_SKOS_LVL2 ;
+        rdfs:label "Official Member"@en, "Resmi Üye"@tr ;
+        rdfs:comment "A member who holds full official status within the organization, with all associated rights and responsibilities."@en,
+                     "Teşkilat içinde tüm ilgili hak ve sorumluluklarıyla tam resmi statüye sahip üye."@tr .
+
+    :id_SKOS_LVL2 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH1 ;
+        skos:topConceptOf :id_SKOS_SCH1 ;
+        owl:differentFrom :id_SKOS_LVL1 ;
+        rdfs:label "Unofficial Member"@en, "Gayrı-Resmi Üye"@tr ;
+        rdfs:comment "A member who participates in the organization without holding official registered status."@en,
+                     "Resmi kayıtlı statüye sahip olmaksızın teşkilata katılan üye."@tr .
+
+    ### ==========================================
+    ### BİTİŞ NEDENLERİ - ANA KATEGORİLER (TOP CONCEPTS)
+    ### ==========================================
+
+    :id_SKOS_END1 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:topConceptOf :id_SKOS_SCH2 ;
+        rdfs:label "Neutral End"@en, "Nötr Bitiş"@tr ;
+        rdfs:comment "An end reason that is neither voluntary nor punitive; typically caused by external circumstances or structural changes."@en,
+                     "Gönüllü veya cezai olmayan; genellikle dış koşullar ya da yapısal değişikliklerden kaynaklanan bitiş nedeni."@tr .
+
+    :id_SKOS_END2 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:topConceptOf :id_SKOS_SCH2 ;
+        rdfs:label "Voluntary End"@en, "Gönüllü Bitiş"@tr ;
+        rdfs:comment "An end reason initiated by the person's own choice and decision."@en,
+                     "Kişinin kendi iradesi ve kararıyla başlatılan bitiş nedeni."@tr .
+
+    :id_SKOS_END3 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:topConceptOf :id_SKOS_SCH2 ;
+        rdfs:label "Sanction End"@en, "Yaptırım / Cezai Bitiş"@tr ;
+        rdfs:comment "An end reason resulting from a disciplinary action or punitive sanction applied by the organization."@en,
+                     "Teşkilat tarafından uygulanan disiplin işlemi veya cezai yaptırımdan kaynaklanan bitiş nedeni."@tr .
+
+    ### ==========================================
+    ### BİTİŞ NEDENLERİ - ALT KATEGORİLER (NARROWER CONCEPTS)
+    ### ==========================================
+
+    :id_SKOS_END4 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END1 ;
+        skos:broaderTransitive :id_SKOS_END1 ;
+        rdfs:label "Membership Type Change"@en, "Üyelik Tipi Değişikliği"@tr ;
+        rdfs:comment "The occurrence ended because the person's membership type changed (e.g. transition from unofficial to official status)."@en,
+                     "Kişinin üyelik tipi değiştiği (ör: gayrı-resmi statüden resmi statüye geçiş) için olay sona erdi."@tr .
+
+    :id_SKOS_END5 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END1 ;
+        skos:broaderTransitive :id_SKOS_END1 ;
+        rdfs:label "Structural Upgrade"@en, "Birim Statü Yükselmesi"@tr ;
+        rdfs:comment "The occurrence ended because the organizational unit was upgraded to a higher structural status (e.g. representation became a presidency)."@en,
+                     "Teşkilat birimi daha yüksek yapısal bir statüye yükseltildiği (ör: temsilcilik başkanlığa dönüştü) için olay sona erdi."@tr .
+
+    :id_SKOS_END6 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END1 ;
+        skos:broaderTransitive :id_SKOS_END1 ;
+        rdfs:label "Mandatory Leave"@en, "Zorunlu Ayrılış"@tr ;
+        rdfs:comment "The occurrence ended due to a mandatory leave imposed by external regulations or internal rules not constituting a sanction."@en,
+                     "Yaptırım niteliği taşımayan dış düzenlemeler veya iç kurallar gereği zorunlu ayrılma nedeniyle olay sona erdi."@tr .
+
+    :id_SKOS_END7 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END1 ;
+        skos:broaderTransitive :id_SKOS_END1 ;
+        rdfs:label "Death"@en, "Vefat"@tr ;
+        rdfs:comment "The occurrence ended because the person passed away."@en,
+                     "Kişinin vefat etmesi nedeniyle olay sona erdi."@tr .
+
+    :id_SKOS_END8 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END1 ;
+        skos:broaderTransitive :id_SKOS_END1 ;
+        rdfs:label "Dissolution / Merger"@en, "Fesih / Birleşme"@tr ;
+        rdfs:comment "The occurrence ended because the organization unit was dissolved or merged with another unit."@en,
+                     "Teşkilat biriminin feshedilmesi veya başka bir birimle birleşmesi nedeniyle olay sona erdi."@tr .
+
+    :id_SKOS_END9 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END1 ;
+        skos:broaderTransitive :id_SKOS_END1 ;
+        rdfs:label "Transformation to Official Status"@en, "Resmi Statüye Dönüşüm"@tr ;
+        rdfs:comment "The occurrence ended because the unit or person transitioned from unofficial to fully official recognized status."@en,
+                     "Birim veya kişinin gayrı-resmi statüden tam resmi tanınan statüye geçmesi nedeniyle olay sona erdi."@tr .
+
+    :id_SKOS_END10 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END2 ;
+        skos:broaderTransitive :id_SKOS_END2 ;
+        rdfs:label "Resignation"@en, "İstifa"@tr ;
+        rdfs:comment "The occurrence ended because the person voluntarily resigned from their position or membership."@en,
+                     "Kişinin görevinden veya üyeliğinden gönüllü olarak istifa etmesi nedeniyle olay sona erdi."@tr .
+
+    :id_SKOS_END11 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END3 ;
+        skos:broaderTransitive :id_SKOS_END3 ;
+        rdfs:label "Temporary Expulsion"@en, "Geçici İhraç"@tr ;
+        rdfs:comment "The occurrence ended because the person was temporarily expelled from the organization as a disciplinary measure."@en,
+                     "Kişinin disiplin tedbiri olarak teşkilattan geçici olarak ihraç edilmesi nedeniyle olay sona erdi."@tr .
+
+    :id_SKOS_END12 a skos:Concept ;
+        skos:inScheme :id_SKOS_SCH2 ;
+        skos:broader :id_SKOS_END3 ;
+        skos:broaderTransitive :id_SKOS_END3 ;
+        rdfs:label "Permanent Expulsion"@en, "Kalıcı İhraç"@tr ;
+        rdfs:comment "The occurrence ended because the person was permanently expelled from the organization as a disciplinary measure."@en,
+                     "Kişinin disiplin tedbiri olarak teşkilattan kalıcı olarak ihraç edilmesi nedeniyle olay sona erdi."@tr .
+
 }

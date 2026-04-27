@@ -146,6 +146,7 @@ export class QuadLoader {
         // Branch B prunes ghost BNodes that have no metadata in the store.
         for (const link of pendingLinks) {
             let finalO = link.o;
+            let finalG = link.g;
 
             if (reificationMap.has(link.o)) {
                 // A. Double Indirection Collapse: O is a proxy BNode → resolve to real Triple
@@ -170,7 +171,16 @@ export class QuadLoader {
                 } catch { /* not a triple term, write normally */ }
             }
 
-            this.store.add(link.s, link.p, finalO, link.g);
+            // GRAPH AFFINITY (The "Magnet" Fix):
+            // If the reification link is in the default/fallback graph, but the BNode (link.s) 
+            // already has metadata in a specific named graph, 'snap' the link to that graph.
+            const existingQuads: any[] = Array.from(this.store.match(link.s, null, null, null));
+            if (existingQuads.length > 0) {
+                // Use the graph of the first metadata quad found for this BNode
+                finalG = existingQuads[0][3];
+            }
+
+            this.store.add(link.s, link.p, finalO, finalG);
             tripleCount++;
         }
 

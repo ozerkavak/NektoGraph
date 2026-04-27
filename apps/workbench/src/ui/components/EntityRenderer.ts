@@ -104,7 +104,10 @@ export class EntityRenderer {
                     </div>
                     <div class="sidebar-content" style="flex:1; overflow-y:auto; padding:8px 0;">
                         ${entity.classGroups.filter((g: any) => {
-                            if (g.isInherited && !win?.state.metadata?.showInheritance) return false;
+                            const hasValues = g.dataProperties.some((p: any) => p.values.length > 0) || 
+                                             g.objectProperties.some((p: any) => p.values.length > 0);
+                            
+                            if (g.isInherited && !win?.state.metadata?.showInheritance && !hasValues) return false;
                             if (g.isAvailable && !win?.state.metadata?.showAvailable) return false;
                             return true;
                         }).map((group: any) => `
@@ -144,7 +147,10 @@ export class EntityRenderer {
                         <div class="section-container">
                             <h3 style="font-size:10px; color:var(--text-muted); margin-bottom:12px; border-bottom:1px solid var(--border-subtle); padding:6px 14px; letter-spacing:0.1em; background:rgba(255,255,255,0.03); text-align:left; font-weight:700;">DIRECT PROPERTIES</h3>
                             ${entity.classGroups.filter((g: any) => {
-                                if (g.isInherited && !win?.state.metadata?.showInheritance) return false;
+                                const hasValues = g.dataProperties.some((p: any) => p.values.length > 0) || 
+                                                 g.objectProperties.some((p: any) => p.values.length > 0);
+                                
+                                if (g.isInherited && !win?.state.metadata?.showInheritance && !hasValues) return false;
                                 if (g.isAvailable && !win?.state.metadata?.showAvailable) return false;
                                 return true;
                             }).map((g: any, idx: number) => {
