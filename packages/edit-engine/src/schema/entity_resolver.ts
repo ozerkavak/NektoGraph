@@ -577,20 +577,11 @@ export class EntityResolver {
                         return false;
                     });
 
-                    if (propSchema && propSchema.type === 'Data') {
+                    const isObj = propSchema ? SchemaIndex.isObjectProperty(propSchema, this.factory) : false;
+                    if (!isObj) {
                         group.dataProperties.push(structuredProp);
-                    } else if (propSchema && propSchema.type === 'Object') {
-                        group.objectProperties.push(structuredProp);
-                    } else if (propSchema && propSchema.ranges.length > 0) {
-                        const isProbablyData = propSchema.ranges.some(r => {
-                            const uri = this.factory.decode(r).value;
-                            return uri.includes('XMLSchema') || uri.includes('rdf-schema#Literal') || uri.includes('rdf-syntax-ns#langString');
-                        });
-                        if (isProbablyData) group.dataProperties.push(structuredProp);
-                        else group.objectProperties.push(structuredProp);
                     } else {
-                        // Default fallback
-                        group.dataProperties.push(structuredProp);
+                        group.objectProperties.push(structuredProp);
                     }
                 } else if (quads.length > 0) {
                     // Property has no domain in our hierarchy, but has values -> Orphan
@@ -635,7 +626,8 @@ export class EntityResolver {
                     const pURI = this.factory.decode(ps.property).value;
                     if (processedOutgoing.has(pURI)) return;
 
-                    const isObj = ps.type === 'Object' || ps.ranges.length > 0;
+                    const isObj = ps ? SchemaIndex.isObjectProperty(ps, this.factory) : false;
+
                     const list = isObj ? group.objectProperties : group.dataProperties;
                     const other = isObj ? group.dataProperties : group.objectProperties;
                     if (!list.some(e => e.property === ps.property) && !other.some(e => e.property === ps.property)) {

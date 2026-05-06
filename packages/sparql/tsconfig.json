@@ -7,7 +7,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@triplestore/core": ["../../lib_sources/quadstore-core/src/index.ts"]
+      "@triplestore/core": ["../../lib_sources/quadstore-core/src/index.ts"],
+      "@triplestore/rdf-factory": ["../../lib_sources/rdf-factory/src/index.ts"]
     }
   },
   "include": ["src"]

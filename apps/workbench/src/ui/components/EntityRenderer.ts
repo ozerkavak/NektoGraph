@@ -1,7 +1,7 @@
 
 import { state } from '../../runtime/State';
 import { NodeID } from '@triplestore/core';
-import { StructuredProperty } from '@triplestore/edit-engine';
+import { StructuredProperty, SchemaIndex } from '@triplestore/edit-engine';
 import { SearchComponent } from './SearchComponent';
 import { KGEntity } from '../services/kg_entity';
 
@@ -206,7 +206,7 @@ export class EntityRenderer {
                                                 isInherited: false,
                                                 schema: ps
                                             };
-                                            const isObj = ps ? (ps.type !== 'Data') : true;
+                                            const isObj = ps ? SchemaIndex.isObjectProperty(ps, state.factory) : true;
                                             return renderUnique(sp, isObj);
                                         }).join('')}
                                     </div>
@@ -355,7 +355,7 @@ export class EntityRenderer {
             }
         });
 
-        const isObjectProp = isObjectPropOverride !== undefined ? isObjectPropOverride : (prop.schema ? (prop.schema.type !== 'Data') : true);
+        const isObjectProp = isObjectPropOverride !== undefined ? isObjectPropOverride : (prop.schema ? SchemaIndex.isObjectProperty(prop.schema, state.factory) : true);
         const rangeStr = prop.schema ? prop.schema.ranges.map((r: any) => state.factory.decode(r).value).join(',') : '';
         const sUri = state.factory.decode(subject).value;
         const inputId = `input_${winId}_${propIdVal}`;

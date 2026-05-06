@@ -268,6 +268,7 @@ export class SessionDiffView {
         if (term.termType === 'Triple') {
             return `<< ${this.termToTTL(term.subject, prefixer)} ${this.termToTTL(term.predicate, prefixer)} ${this.termToTTL(term.object, prefixer)} >>`;
         }
+        if (term.termType === 'BlankNode') return `_:${term.value}`;
         return term.value || '';
     }
 
@@ -279,6 +280,8 @@ export class SessionDiffView {
         prefixes.set('xsd', 'http://www.w3.org/2001/XMLSchema#');
         prefixes.set('rdf-star', 'http://www.w3.org/ns/rdf-star#');
 
+        const RDF_REIFIES = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies';
+
         const formatTTLTerm = (val: string): string => {
             if (val.startsWith('<<')) return val; // Recursively pre-formatted
             if (val.startsWith('_:')) return val; // Blank node
@@ -289,12 +292,8 @@ export class SessionDiffView {
             return `<${val}>`;
         };
 
-        // Redecode and reformat Triple URIs using the prefixer context
         const ensureTTL = (uri: string): string => {
             if (!uri.includes('<<')) return formatTTLTerm(uri);
-            // If it's already a TTL string but lacking prefixes, we'd need to re-parse.
-            // For now, quadToRow already provided termToTTL output.
-            // We'll leave it as is if it's already << >> because formatTTLTerm returns it.
             return uri; 
         };
 
@@ -311,14 +310,70 @@ export class SessionDiffView {
         const adds = rows.filter(r => r.type === 'add');
         if (adds.length > 0) {
             body += '# --- Additions ---\n';
-            const subjectMap = new Map<string, DiffRow[]>();
+            
+            // 1. Identify Reifiers and group their properties
+            const reifiers = new Map<string, { targetTriple: string, props: DiffRow[] }>();
+            const primaryAdditions: DiffRow[] = [];
+
+            // Pass 1: Find reifiers
             adds.forEach(r => {
+                if (r.s.uri.startsWith('_:') && r.p.uri === RDF_REIFIES) {
+                    reifiers.set(r.s.uri, { targetTriple: r.o.value, props: [] });
+                } else {
+                    primaryAdditions.push(r);
+                }
+            });
+
+            // Pass 2: Attach properties to reifiers
+            const finalAdds: DiffRow[] = [];
+            primaryAdditions.forEach(r => {
+                if (reifiers.has(r.s.uri)) {
+                    reifiers.get(r.s.uri)!.props.push(r);
+                } else {
+                    finalAdds.push(r);
+                }
+            });
+
+            // 2. Group by Subject
+            const subjectMap = new Map<string, DiffRow[]>();
+            finalAdds.forEach(r => {
                 if (!subjectMap.has(r.s.uri)) subjectMap.set(r.s.uri, []);
                 subjectMap.get(r.s.uri)!.push(r);
             });
 
+            // 3. Render
+            // We also want to make sure reified triples that are ONLY being annotated (not added) are shown
+            reifiers.forEach((val) => {
+                if (!subjectMap.has(val.targetTriple)) {
+                    // Check if the target triple is already being added as a standalone triple.
+                    // If not, we add it to subjectMap so it can be rendered with its annotations.
+                    // (But we mark it empty if it has no direct properties added in this session)
+                    subjectMap.set(val.targetTriple, []);
+                }
+            });
+
             subjectMap.forEach((sRows, sUri) => {
-                body += `${ensureTTL(sUri)} `;
+                // Find if this subject is a triple that has reifiers in this session
+                const relevantReifiers = Array.from(reifiers.entries())
+                    .filter(([_, v]) => v.targetTriple === sUri)
+                    .map(([_, v]) => v);
+
+                const hasAnnotations = relevantReifiers.length > 0 && relevantReifiers.some(r => r.props.length > 0);
+
+                // If this is a reified triple AND we are rendering it as a subject
+                // Check if it's a Quoted Triple string (<< ... >>)
+                let sOutput = ensureTTL(sUri);
+                if (sUri.startsWith('<<')) {
+                    // RDF 1.2: Quoted triples in subject position of an assertion 
+                    // should be rendered as Triple Terms (with parentheses) if they are reified.
+                    // But here we use the {| |} shorthand on the triple itself.
+                    // Wait, standard shorthand is on the TRIPLE, not the triple term.
+                    // "S P O {| ... |}"
+                    // Since sUri is already "S P O" (decoded from Triple ID), we just use it.
+                }
+
+                body += `${sOutput} `;
+
                 const pMap = new Map<string, DiffRow[]>();
                 sRows.forEach(r => {
                     if (!pMap.has(r.p.uri)) pMap.set(r.p.uri, []);
@@ -326,21 +381,52 @@ export class SessionDiffView {
                 });
 
                 const pKeys = Array.from(pMap.keys());
-                pKeys.forEach((pUri, pIdx) => {
-                    const objs = pMap.get(pUri)!;
-                    if (pIdx > 0) body += '    ';
-                    body += `${formatTTLTerm(pUri)} `;
-                    
-                    objs.forEach((o, oIdx) => {
-                        if (o.o.type === 'literal') {
-                            const dataType = o.o.datatype ? `^^${formatTTLTerm(o.o.datatype)}` : '';
-                            body += `"${o.o.value}"${o.o.lang ? `@${o.o.lang}` : dataType}`;
-                        } else {
-                            body += ensureTTL(o.o.value);
-                        }
-                        body += (oIdx < objs.length - 1) ? ', ' : (pIdx < pKeys.length - 1 ? ' ;\n' : ' .\n\n');
+                
+                if (pKeys.length === 0 && hasAnnotations) {
+                    // This triple is only being annotated, not added itself.
+                    // We need to render the triple + annotations.
+                    // We'll take the triple string and wrap it.
+                    // But wait, the shorthand {| |} follows a triple.
+                    // If the triple itself isn't being "added" (asserted), we should use the reifier explicitly.
+                    relevantReifiers.forEach(reifier => {
+                        body += `{| `;
+                        reifier.props.forEach((prop, pIdx) => {
+                            body += `${formatTTLTerm(prop.p.uri)} ${prop.o.type === 'literal' ? `"${this.escape(prop.o.value)}"` : ensureTTL(prop.o.value)}`;
+                            body += (pIdx < reifier.props.length - 1) ? ' ; ' : '';
+                        });
+                        body += ` |} .\n\n`;
                     });
-                });
+                } else {
+                    pKeys.forEach((pUri, pIdx) => {
+                        const objs = pMap.get(pUri)!;
+                        if (pIdx > 0) body += '    ';
+                        body += `${formatTTLTerm(pUri)} `;
+                        
+                        objs.forEach((o, oIdx) => {
+                            if (o.o.type === 'literal') {
+                                const dataType = o.o.datatype ? `^^${formatTTLTerm(o.o.datatype)}` : '';
+                                body += `"${o.o.value}"${o.o.lang ? `@${o.o.lang}` : dataType}`;
+                            } else {
+                                body += ensureTTL(o.o.value);
+                            }
+
+                            // Attach annotation shorthand if this is the last object of the last predicate
+                            // (Simplified grouping for preview)
+                            if (pIdx === pKeys.length - 1 && oIdx === objs.length - 1 && hasAnnotations) {
+                                body += ' {| ';
+                                relevantReifiers.forEach(reifier => {
+                                    reifier.props.forEach((prop, apIdx) => {
+                                        body += `${formatTTLTerm(prop.p.uri)} ${prop.o.type === 'literal' ? `"${this.escape(prop.o.value)}"` : ensureTTL(prop.o.value)}`;
+                                        if (apIdx < reifier.props.length - 1) body += ' ; ';
+                                    });
+                                });
+                                body += ' |}';
+                            }
+
+                            body += (oIdx < objs.length - 1) ? ', ' : (pIdx < pKeys.length - 1 ? ' ;\n' : ' .\n\n');
+                        });
+                    });
+                }
             });
         }
 

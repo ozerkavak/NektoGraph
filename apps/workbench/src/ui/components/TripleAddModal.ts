@@ -4,6 +4,7 @@ import { NodeID } from '@triplestore/core';
 import { GraphSelector, type GraphOption } from '@triplestore/graph-selector';
 import { SearchComponent } from './SearchComponent';
 import { KGEntity } from '../services/kg_entity';
+import { SchemaIndex } from '@triplestore/edit-engine';
 
 export type TripleAddMode = 'annotation' | 'occurrence';
 
@@ -297,7 +298,8 @@ export class TripleAddModal {
         // Determine data vs object property
         const propId = state.factory.namedNode(uri);
         const schema = state.schemaIndex.getPropertySchema(propId);
-        ms.isDataProperty = !schema || schema.type === 'Data' || schema.type === 'Annotation' || schema.type === 'Unknown';
+        const isObj = schema ? SchemaIndex.isObjectProperty(schema, state.factory) : false; 
+        ms.isDataProperty = !isObj;
 
         // Show object field for annotation mode
         if (ms.mode === 'annotation') {
@@ -505,7 +507,13 @@ export class TripleAddModal {
         await KGEntity.ensureMany(Array.from(new Set(allIds)), 'metadata');
 
         if (ms.mode === 'annotation') {
-            // <<focusTriple>> predicate object
+            // RDF 1.2 Compliant Reification: Use a BNode (Reifier) instead of Triple-as-Subject
+            const reifier = state.factory.blankNode();
+            const reifiesPred = state.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies');
+            
+            state.ensureSession();
+            state.currentSession!.add(reifier, reifiesPred, tripleNode, gNode);
+
             if (ms.isDataProperty) {
                 const litInput = document.getElementById('tam-obj-literal') as HTMLInputElement;
                 const langSel = document.getElementById('tam-obj-lang') as HTMLSelectElement;
@@ -514,23 +522,21 @@ export class TripleAddModal {
                 const lang = langSel.value || undefined;
                 const dtype = typeSel.value || undefined;
 
-                const sNode = tripleNode;
                 const pNode = state.factory.namedNode(pUri);
                 const oNode = state.factory.literal(val, dtype, lang);
 
-                state.ensureSession();
-                state.currentSession!.add(sNode, pNode, oNode, gNode);
+                state.currentSession!.add(reifier, pNode, oNode, gNode);
             } else {
                 const objUri = (ms as any).selectedObjectUri as string;
-                const sNode = tripleNode;
                 const pNode = state.factory.namedNode(pUri);
                 const oNode = state.factory.namedNode(objUri);
 
-                state.ensureSession();
-                state.currentSession!.add(sNode, pNode, oNode, gNode);
+                state.currentSession!.add(reifier, pNode, oNode, gNode);
             }
         } else {
-            // subject predicate <<focusTriple>>
+            // occurrence: subject predicate <<focusTriple>>
+            // Note: Keeping direct object reference for now as it's common for structural links, 
+            // but we could also reify this if needed by the standard.
             const sUri = ms.selectedSubjectUri!;
             const oNode = tripleNode;
             const pNode = state.factory.namedNode(pUri);

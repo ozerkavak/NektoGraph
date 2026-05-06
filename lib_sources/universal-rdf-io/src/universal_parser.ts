@@ -2,7 +2,7 @@ import * as N3 from 'n3';
 import { RdfXmlParser } from 'rdfxml-streaming-parser';
 import { JsonLdParser } from 'jsonld-streaming-parser';
 import { URI } from '@triplestore/uri';
-import { factory as rdfFactory } from '@triplestore/rdf-factory';
+import { factory as rdfFactory, RDFSyntax } from '@triplestore/rdf-factory';
 
 
 export type ParseFormat = 'Turtle' | 'N-Triples' | 'N-Quads' | 'TriG' | 'RDF/XML' | 'JSON-LD';
@@ -64,9 +64,8 @@ export class UniversalParser {
             
             let finalContent = content;
             if (needsPermissiveMode) {
-                // BUGFIX: Strip weird parentheses "<<( ... )>>" produced by some serializers (Experimental RDF 1.2 / N3.js Writer quirks)
-                // into standard RDF-star "<< ... >>" which N3.Parser prefers.
-                finalContent = finalContent.replace(/<<\s*\(\s*/g, '<< ').replace(/\s*\)\s*>>/g, ' >>');
+                // BUGFIX: Normalize RDF 1.2 syntax into standard RDF-star
+                finalContent = RDFSyntax.normalizeRdfStar(finalContent);
                 
                 // If it's N-Quads, we must shim it to TriG blocks so N3's TriG parser can handle the 4th term (Graph)
                 if (format === 'N-Quads') {

@@ -131,3 +131,4 @@ export class DataFactory {
 
 // Singleton export for easy use
 export const factory = DataFactory;
+export { RDFSyntax } from './syntax';

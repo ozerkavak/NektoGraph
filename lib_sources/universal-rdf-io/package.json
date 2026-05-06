@@ -1,6 +1,6 @@
 {
     "name": "universal-rdf-io",
-    "version": "1.0.4-beta",
+    "version": "1.0.5-beta",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {

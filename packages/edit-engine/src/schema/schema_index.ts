@@ -33,6 +33,20 @@ export class SchemaIndex {
     private vocab: Vocabulary;
     private classMap = new Map<bigint, ClassSchema>();
     private propertyMap = new Map<bigint, PropertySchema>();
+
+    public static isObjectProperty(ps: PropertySchema, factory: IDataFactory): boolean {
+        if (ps.type === 'Object') return true;
+        if (ps.type === 'Data' || ps.type === 'Annotation') return false;
+        
+        if (ps.ranges.length > 0) {
+            const isProbablyData = ps.ranges.some(r => {
+                const uri = factory.decode(r).value;
+                return uri.includes('XMLSchema') || uri.includes('rdf-schema#Literal') || uri.includes('rdf-syntax-ns#langString');
+            });
+            return !isProbablyData;
+        }
+        return false; // Default to Data
+    }
     private subClassMap = new Map<bigint, bigint[]>();
     private parentMap = new Map<bigint, bigint[]>();
     private uriToID = new Map<string, bigint>(); // URI String -> Official BigID

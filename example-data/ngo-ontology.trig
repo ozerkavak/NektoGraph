@@ -1,1026 +1,509 @@
 ###############################################################################
-#  NGO CORE ONTOLOGY  —  ngo-ontology.trig
+#  NGO CORE ONTOLOGY — Kurumsal Hiyerarşi Modülü
+#  Dosya    : NGO-ontology.trig
 #  Format   : TriG (RDF 1.2 / RDF-Star)
-#  Version  : 0.1.0
-#  Authors  : (generated via ontology engineering session)
-#  License  : CC BY 4.0
-#
-#  Namespace prefixes (declared once, valid for all named graphs below)
+#  Versiyon : 0.3.1
+#  Demand   : DEMAND-NGO-001
+#  Lisans   : CC BY 4.0
 ###############################################################################
 
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
-@prefix org:   <http://www.w3.org/ns/org#> .
-@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
-@prefix prov:  <http://www.w3.org/ns/prov#> .
 @prefix dct:   <http://purl.org/dc/terms/> .
-@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
-@prefix time:  <http://www.w3.org/2006/time#> .
-@prefix ngo:   <https://w3id.org/ngo/ontology#> .
-@prefix ngog:  <https://w3id.org/ngo/graph/> .
+@prefix ngo:   <http://40nodes.net/ngo#> .
+@prefix ngo40: <http://40nodes.net/ngo/> .
+
+
+GRAPH <http://40nodes.net/ngo/ontology> {
 
 ###############################################################################
-#  GRAPH 1 — Ontology Metadata
+#  GRAPH 1 — Ontoloji Metadata
 ###############################################################################
 
-ngog:metadata {
-
-    <https://w3id.org/ngo/ontology>
+    <http://40nodes.net/ngo/ontology>
         a owl:Ontology ;
-        rdfs:label        "NGO Çekirdek Ontolojisi"@tr ,
-                          "NGO Core Ontology"@en ;
-        rdfs:comment      "STK/Dernek yapılarını, hiyerarşik teşkilatlanmayı, üyelik yaşam döngüsünü, proje/iş birimlerini ve konu/ilgi alanlarını modelleyen OWL 2 ontolojisi."@tr ,
-                          "OWL 2 ontology modelling NGO structures, hierarchical organisation, membership lifecycle, project/work items and topic/interest areas."@en ;
-        owl:versionIRI    <https://w3id.org/ngo/ontology/0.1.0> ;
-        owl:versionInfo   "0.1.0" ;
-        dct:created       "2025-04-24"^^xsd:date ;
-        dct:modified      "2025-04-24"^^xsd:date ;
+        rdfs:label
+            "NGO Çekirdek Ontolojisi — Kurumsal Hiyerarşi + Kişi Modeli"@tr ,
+            "NGO Core Ontology — Organisational Hierarchy + Person Model"@en ;
+        rdfs:comment
+            "STK / siyasi parti yapılarının kurumsal hiyerarşisini, birim türlerini, coğrafi teşkilatlanmayı, koordinasyon katmanlarını ve kişi/üyelik modelini tanımlayan OWL 2 RL ontolojisi. Instance URI'leri ngo40: (<http://40nodes.net/ngo/>) prefix ile d+8char (data) veya v+8char (vocabulary) formatındadır. Sınıf ve property URI'leri ngo: (<http://40nodes.net/ngo#>) prefix'indedir."@tr ,
+            "OWL 2 RL ontology modelling the organisational hierarchy of NGOs and political parties, including unit types, territorial organisation, coordination layers, and the person/membership model. Instance IRIs use the ngo40: (<http://40nodes.net/ngo/>) prefix in d+8char (data) or v+8char (vocabulary) format. Class and property IRIs are in the ngo: (<http://40nodes.net/ngo#>) namespace."@en ;
+        owl:versionIRI    <http://40nodes.net/ngo/ontology/0.3.1> ;
+        owl:versionInfo   "0.3.1" ;
+        dct:created       "2026-04-27"^^xsd:date ;
+        dct:modified      "2026-04-29"^^xsd:date ;
         dct:language      "tr" , "en" ;
-        owl:imports
+        dct:license       <https://creativecommons.org/licenses/by/4.0/> ;
+        rdfs:seeAlso
             <http://www.w3.org/ns/org#> ,
-            <http://xmlns.com/foaf/0.1/> ,
             <http://www.w3.org/ns/prov#> ,
             <http://www.w3.org/2004/02/skos/core#> .
-}
+
 
 ###############################################################################
-#  GRAPH 2 — Annotation Properties  (evrensel, tüm graflarda kullanılır)
+#  GRAPH 2 — Annotation Properties
+#  RDF-Star triple annotation için kullanılan bağlam özellikleri.
+#  Değerleri reifier node'ları veya annotation sözdizimi üzerinde taşınır.
 ###############################################################################
 
-ngog:annotation-properties {
-
-    # ── Temporal ─────────────────────────────────────────────────────────────
+    # ── Temporal ──────────────────────────────────────────────────────────────
 
     ngo:startDate
         a owl:AnnotationProperty ;
         rdfs:label   "Başlangıç Tarihi"@tr , "Start Date"@en ;
-        rdfs:comment "Herhangi bir reify edilmiş veya annotate edilmiş triple'ın geçerlilik başlangıcı."@tr ,
-                     "Validity start of any reified or annotated triple."@en ;
+        rdfs:comment
+            "Reify edilmiş veya annotate edilmiş triple'ın geçerlilik başlangıcı. Bu tarih dahildir. Birim kuruluş tarihinden farklıdır; triple'ın (örn. hiyerarşik bağ veya tip) ne zaman geçerli olmaya başladığını belirtir.\nÖrnek: _:r1 rdf:reifies <<( ngo:KadikoyBirimi ngo:subUnitOf ngo:IstanbulIlBaskanligi )>> ; ngo:startDate \"2024-01-15\"^^xsd:date ."@tr ,
+            "Validity start of a reified or annotated triple. This date is inclusive. Distinct from unit founding date; indicates when the triple (e.g. a hierarchical link or type assertion) became valid.\nExample: _:r1 rdf:reifies <<( ngo:KadikoyBirimi ngo:subUnitOf ngo:IstanbulIlBaskanligi )>> ; ngo:startDate \"2024-01-15\"^^xsd:date ."@en ;
         rdfs:range   xsd:date .
 
     ngo:endDate
         a owl:AnnotationProperty ;
         rdfs:label   "Bitiş Tarihi"@tr , "End Date"@en ;
-        rdfs:comment "Geçerlilik bitişi; yoksa triple hâlâ aktif demektir."@tr ,
-                     "Validity end; absent means currently active."@en ;
+        rdfs:comment
+            "Reify edilmiş triple'ın geçerlilik sonu. Bu tarih dahildir. Yoksa triple hâlâ aktif demektir. Temsilciliğin başkanlığa dönüşümünde eski reifier node'una endDate eklenir.\nÖrnek: _:r1 ngo:endDate \"2023-12-31\"^^xsd:date ."@tr ,
+            "Validity end of a reified triple. This date is inclusive. Absent means currently active. When a representation converts to a presidency, the old reifier node receives an endDate.\nExample: _:r1 ngo:endDate \"2023-12-31\"^^xsd:date ."@en ;
         rdfs:range   xsd:date .
 
-    # ── Provenance / Bağlam ──────────────────────────────────────────────────
+    # ── Birim Bağlamı ──────────────────────────────────────────────────────────
+
+    ngo:isLegalEntity
+        a owl:DatatypeProperty , owl:FunctionalProperty ;
+        rdfs:label   "Tüzel Kişilik"@tr , "Legal Entity"@en ;
+        rdfs:domain  ngo:TerritorialUnit ;
+        rdfs:range   xsd:boolean ;
+        rdfs:comment
+            "Birimin tüzel kişiliğe sahip olup olmadığını belirtir. Temsilcilikler false, Başkanlıklar true değerini taşır. Temsilcilik kapanıp yeni Başkanlık kurulduğunda ayrı IRI'lar kullanılır.\nÖrnek: ngo40:dXXX ngo:isLegalEntity true . # Başkanlık"@tr ,
+            "Whether the unit holds legal personality. Representations carry false, Presidencies carry true. When a Representation closes and a new Presidency is established, separate IRIs are used.\nExample: ngo40:dXXX ngo:isLegalEntity true . # Presidency"@en .
 
     ngo:legalBasis
         a owl:AnnotationProperty ;
         rdfs:label   "Yasal Dayanak"@tr , "Legal Basis"@en ;
-        rdfs:comment "İlgili triple'ın dayandığı kanun maddesi, tüzük hükmü vb."@tr ,
-                     "Legal norm (statute article, bylaw clause) underpinning this triple."@en ;
+        rdfs:comment
+            "Triple'ın dayandığı kanun maddesi, tüzük hükmü veya resmi kararın metinsel referansı.\nÖrnek: ngo40:dXXX ngo:legalBasis \"Tüzük Md. 14 — İl Başkanlığı Kuruluşu\" ."@tr ,
+            "Textual reference to the statute article, bylaw clause, or formal decision underpinning the triple.\nExample: ngo40:dXXX ngo:legalBasis \"Bylaw Art. 14 — Establishment of Provincial Presidency\" ."@en ;
         rdfs:range   xsd:string .
-
-    ngo:decisionRef
-        a owl:AnnotationProperty ;
-        rdfs:label   "Karar Referansı"@tr , "Decision Reference"@en ;
-        rdfs:comment "Triple'ı doğuran resmi kurul kararının numarası veya URI'si."@tr ,
-                     "Reference number or URI of the governing body decision that produced this triple."@en ;
-        rdfs:range   xsd:string .
-
-    ngo:confidence
-        a owl:AnnotationProperty ;
-        rdfs:label   "Güven Skoru"@tr , "Confidence"@en ;
-        rdfs:comment "Triple'ın doğruluğuna ilişkin güven skoru (0.0–1.0)."@tr ,
-                     "Confidence score for the truth of this triple (0.0–1.0)."@en ;
-        rdfs:range   xsd:decimal .
-
-    ngo:source
-        a owl:AnnotationProperty ;
-        rdfs:subPropertyOf dct:source ;
-        rdfs:label   "Kaynak"@tr , "Source"@en ;
-        rdfs:comment "Triple'ı destekleyen belge veya sistem kaynağı."@tr ,
-                     "Document or system source supporting this triple."@en .
-
-    # ── Membership / Participation bağlamı ───────────────────────────────────
-
-    ngo:status
-        a owl:AnnotationProperty ;
-        rdfs:label   "Statü"@tr , "Status"@en ;
-        rdfs:comment "Reify edilmiş bir üyelik veya katılım triple'ının anlık statüsü."@tr ,
-                     "Current status of a reified membership or participation triple."@en .
 
     ngo:endReason
         a owl:AnnotationProperty ;
         rdfs:label   "Bitiş Nedeni"@tr , "End Reason"@en ;
-        rdfs:comment "Üyelik veya katılımın sona erme nedeni."@tr ,
-                     "Reason why a membership or participation ended."@en .
+        rdfs:comment
+            "Reify edilmiş triple'ın sona erme nedeni. Değer ngo:EndReasonScheme'den bir ngo:Concept'tir. endDate ile birlikte kullanılır; endDate yoksa bu property anlamsızdır.\nÖrnek: _:r1 ngo:endDate \"2025-03-01\"^^xsd:date ; ngo:endReason ngo40:ver2dth8 . # Death"@tr ,
+            "Reason why a reified triple ended. Value is an ngo:Concept from ngo:EndReasonScheme. Used alongside endDate; meaningless without it.\nExample: _:r1 ngo:endDate \"2025-03-01\"^^xsd:date ; ngo:endReason ngo40:ver2dth8 . # Death"@en ;
+        rdfs:range   ngo:EndReasonConcept .
 
-    ngo:membershipNo
+    ngo:officerRole
         a owl:AnnotationProperty ;
-        rdfs:label   "Üye Numarası"@tr , "Membership Number"@en ;
-        rdfs:range   xsd:string .
+        rdfs:label   "Görev Rolü"@tr , "Officer Role"@en ;
+        rdfs:range   ngo:OfficerRoleConcept ;
+        rdfs:comment
+            "ngo:hasOfficer triple'ını annotate ederek kişinin birimde üstlendiği rolü belirtir. Değer ngo:OfficerRoleScheme'den bir ngo:OfficerRoleConcept'tir. Basit durumda {||} kısa sözdizimi; aynı (birim, kişi) çifti için birden fazla rol veya dönem söz konusuysa rdf:reifies explicit formu kullanılır.\nÖrnek: ngo40:dBSK ngo:hasOfficer ngo40:dpXXX {| ngo:officerRole ngo40:vorf4ilb ; ngo:startDate \"2024-01-01\"^^xsd:date |} ."@tr ,
+            "Annotates the ngo:hasOfficer triple to specify the role held by the person in the unit. Value is an ngo:OfficerRoleConcept from ngo:OfficerRoleScheme. Use {||} shorthand for simple cases; use explicit rdf:reifies when the same (unit, person) pair has multiple roles or terms.\nExample: ngo40:dBSK ngo:hasOfficer ngo40:dpXXX {| ngo:officerRole ngo40:vorf4ilb ; ngo:startDate \"2024-01-01\"^^xsd:date |} ."@en .
 
-    ngo:feeAmount
-        a owl:AnnotationProperty ;
-        rdfs:label   "Aidat Tutarı"@tr , "Fee Amount"@en ;
-        rdfs:range   xsd:decimal .
-
-    ngo:transferredFrom
-        a owl:AnnotationProperty ;
-        rdfs:label   "Nakil Kaynağı"@tr , "Transferred From"@en ;
-        rdfs:comment "Üyeliğin aktarıldığı önceki birim."@tr ,
-                     "Previous unit from which the membership was transferred."@en ;
-        rdfs:range   ngo:NGOUnit .
-
-    ngo:appointedBy
-        a owl:AnnotationProperty ;
-        rdfs:label   "Atayan"@tr , "Appointed By"@en ;
-        rdfs:comment "Göreve atamayı yapan kurul veya kişi."@tr ,
-                     "Governing body or person that made the appointment."@en .
-
-    # ── Birim / Yapı bağlamı ─────────────────────────────────────────────────
-
-    ngo:isLegalEntity
-        a owl:AnnotationProperty ;
-        rdfs:label   "Tüzel Kişilik"@tr , "Legal Entity"@en ;
-        rdfs:comment "Birimin o dönemde tüzel kişiliğe sahip olup olmadığı."@tr ,
-                     "Whether the unit holds legal personality in this period."@en ;
-        rdfs:range   xsd:boolean .
-
-    ngo:legalRegNo
-        a owl:AnnotationProperty ;
-        rdfs:label   "Tescil Numarası"@tr , "Registration Number"@en ;
-        rdfs:range   xsd:string .
-
-    ngo:legalJurisdiction
-        a owl:AnnotationProperty ;
-        rdfs:label   "Yargı Çevresi"@tr , "Jurisdiction"@en ;
-        rdfs:range   xsd:string .
-
-    ngo:unitType
-        a owl:AnnotationProperty ;
-        rdfs:label   "Birim Tipi"@tr , "Unit Type"@en ;
-        rdfs:comment "Bir birimin o dönemdeki tipi (ör: temsilcilik → başkanlık dönüşümü)."@tr ,
-                     "Type of unit in this period (e.g. representation → presidency transition)."@en .
-
-    # ── Proje / İş bağlamı ───────────────────────────────────────────────────
-
-    ngo:phase
-        a owl:AnnotationProperty ;
-        rdfs:label   "Faz"@tr , "Phase"@en ;
-        rdfs:comment "Proje atamasının ilgili olduğu faz."@tr ,
-                     "Project phase to which this assignment applies."@en ;
-        rdfs:range   xsd:string .
-
-    ngo:reportingPeriod
-        a owl:AnnotationProperty ;
-        rdfs:label   "Raporlama Dönemi"@tr , "Reporting Period"@en ;
-        rdfs:range   xsd:string .
-
-    ngo:reportingFrequency
-        a owl:AnnotationProperty ;
-        rdfs:label   "Raporlama Sıklığı"@tr , "Reporting Frequency"@en ;
-        rdfs:range   xsd:string .
-
-    # ── İlgi alanı bağlamı ───────────────────────────────────────────────────
-
-    ngo:interestWeight
-        a owl:AnnotationProperty ;
-        rdfs:label   "İlgi Ağırlığı"@tr , "Interest Weight"@en ;
-        rdfs:comment "0.0–1.0 arası ilgi yoğunluğu skoru."@tr ,
-                     "Interest intensity score between 0.0 and 1.0."@en ;
-        rdfs:range   xsd:decimal .
-}
 
 ###############################################################################
-#  GRAPH 3 — Enumeration Classes (owl:oneOf — individual içermez)
+#  GRAPH 3 — Sınıflar (11 adet)
 ###############################################################################
-
-ngog:enumerations {
-
-    # ── Üyelik Statüsü ────────────────────────────────────────────────────────
-    ngo:MembershipStatus
-        a owl:Class ;
-        rdfs:label   "Üyelik Statüsü"@tr , "Membership Status"@en ;
-        rdfs:comment "Bir kişinin NGO teşkilat birimindeki örgütsel üyelik aşaması."@tr ,
-                     "Organisational membership stage of a person in an NGO unit."@en ;
-        owl:oneOf (
-            ngo:Applicant
-            ngo:InformalMember
-            ngo:VolunteerMember
-            ngo:CandidateMember
-            ngo:FormalMember
-        ) .
-
-    ngo:Applicant
-        a ngo:MembershipStatus ;
-        rdfs:label   "Başvurucu"@tr , "Applicant"@en ;
-        rdfs:comment "Merkeze başvurmuş, henüz herhangi bir birime aktarılmamış kişi."@tr ,
-                     "Person who applied to headquarters but not yet transferred to any unit."@en .
-
-    ngo:InformalMember
-        a ngo:MembershipStatus ;
-        rdfs:label   "Resmi Olmayan Üye"@tr , "Informal Member"@en ;
-        rdfs:comment "İl temsilciliğine aktarılmış, henüz ilçe başkanlığı olmadığı için resmi üye olamayan kişi."@tr ,
-                     "Person transferred to a provincial representation but unable to become formal until a district presidency is established."@en .
-
-    ngo:VolunteerMember
-        a ngo:MembershipStatus ;
-        rdfs:label   "Gönüllü Üye"@tr , "Volunteer Member"@en ;
-        rdfs:comment "Aktif katılım istemeyip yalnızca sembolik bağını sürdüren üye."@tr ,
-                     "Member who does not wish active participation and maintains only a symbolic affiliation."@en .
-
-    ngo:CandidateMember
-        a ngo:MembershipStatus ;
-        rdfs:label   "Aday Üye"@tr , "Candidate Member"@en ;
-        rdfs:comment "İl/ilçe temsilciliğinde davranışları izlenen, aktif katılımı yüksek kişi."@tr ,
-                     "Person being observed at provincial/district representation level with high active participation."@en .
-
-    ngo:FormalMember
-        a ngo:MembershipStatus ;
-        rdfs:label   "Resmi Üye"@tr , "Formal Member"@en ;
-        rdfs:comment "Aidat yatırmış, yalnızca tek bir ilçe başkanlığına kayıtlı tam üye."@tr ,
-                     "Full member who has paid dues and is registered to exactly one district presidency."@en .
-
-    # ── Katılım / Görev Statüsü ───────────────────────────────────────────────
-    ngo:ParticipationStatus
-        a owl:Class ;
-        rdfs:label   "Katılım Statüsü"@tr , "Participation Status"@en ;
-        rdfs:comment "Bir kişinin komisyon, çalışma grubu veya proje birimindeki görev statüsü."@tr ,
-                     "Role status of a person in a commission, working group or project unit."@en ;
-        owl:oneOf (
-            ngo:Participant
-            ngo:CommissionHead
-            ngo:CommissionSecretary
-            ngo:ProjectManager
-            ngo:ProjectExecutor
-        ) .
-
-    ngo:Participant
-        a ngo:ParticipationStatus ;
-        rdfs:label   "Katılımcı / Üye"@tr , "Participant / Member"@en ;
-        rdfs:comment "Komisyon veya çalışma grubunda sıradan üye olarak görev alan kişi."@tr ,
-                     "Person serving as an ordinary member in a commission or working group."@en .
-
-    ngo:CommissionHead
-        a ngo:ParticipationStatus ;
-        rdfs:label   "Komisyon Başkanı"@tr , "Commission Head"@en .
-
-    ngo:CommissionSecretary
-        a ngo:ParticipationStatus ;
-        rdfs:label   "Komisyon Sekreteri"@tr , "Commission Secretary"@en .
-
-    ngo:ProjectManager
-        a ngo:ParticipationStatus ;
-        rdfs:label   "Proje Müdürü / Sorumlusu"@tr , "Project Manager"@en ;
-        rdfs:comment "Projeden birincil derecede sorumlu gerçek kişi."@tr ,
-                     "Natural person primarily responsible for a project."@en .
-
-    ngo:ProjectExecutor
-        a ngo:ParticipationStatus ;
-        rdfs:label   "Proje Yürütücüsü"@tr , "Project Executor"@en ;
-        rdfs:comment "Proje veya iş kalemini fiilen yürüten kişi; üst birime rapor verir."@tr ,
-                     "Person who operationally runs a project or work item and reports to a superior unit."@en .
-
-    # ── Üyelik Bitiş Nedeni ───────────────────────────────────────────────────
-    ngo:MembershipEndReason
-        a owl:Class ;
-        rdfs:label   "Üyelik Bitiş Nedeni"@tr , "Membership End Reason"@en ;
-        owl:oneOf (
-            ngo:Resignation
-            ngo:Expulsion
-            ngo:Deceased
-            ngo:OrganizationDissolved
-            ngo:TransferOut
-            ngo:StatusUpgrade
-        ) .
-
-    ngo:Resignation         a ngo:MembershipEndReason ;
-        rdfs:label "İstifa"@tr , "Resignation"@en .
-    ngo:Expulsion           a ngo:MembershipEndReason ;
-        rdfs:label "İhraç"@tr , "Expulsion"@en .
-    ngo:Deceased            a ngo:MembershipEndReason ;
-        rdfs:label "Vefat"@tr , "Deceased"@en .
-    ngo:OrganizationDissolved a ngo:MembershipEndReason ;
-        rdfs:label "Birim Lağvedildi"@tr , "Organization Dissolved"@en .
-    ngo:TransferOut         a ngo:MembershipEndReason ;
-        rdfs:label "Nakil"@tr , "Transfer Out"@en .
-    ngo:StatusUpgrade       a ngo:MembershipEndReason ;
-        rdfs:label "Statü Yükseltme"@tr , "Status Upgrade"@en ;
-        rdfs:comment "Bir üst statüye geçildiği için önceki statü kaydı kapandı."@tr ,
-                     "Previous status record closed because person moved to a higher status."@en .
-
-    # ── İş Kalemi Statüsü ─────────────────────────────────────────────────────
-    ngo:WorkItemStatus
-        a owl:Class ;
-        rdfs:label   "İş Kalemi Statüsü"@tr , "Work Item Status"@en ;
-        owl:oneOf (
-            ngo:WIActive
-            ngo:WIOnHold
-            ngo:WICompleted
-            ngo:WICancelled
-        ) .
-
-    ngo:WIActive      a ngo:WorkItemStatus ;
-        rdfs:label "Aktif"@tr , "Active"@en .
-    ngo:WIOnHold      a ngo:WorkItemStatus ;
-        rdfs:label "Beklemede"@tr , "On Hold"@en .
-    ngo:WICompleted   a ngo:WorkItemStatus ;
-        rdfs:label "Tamamlandı"@tr , "Completed"@en .
-    ngo:WICancelled   a ngo:WorkItemStatus ;
-        rdfs:label "İptal Edildi"@tr , "Cancelled"@en .
-
-    # ── Proje Faz Tipi ────────────────────────────────────────────────────────
-    ngo:ProjectPhaseType
-        a owl:Class ;
-        rdfs:label   "Proje Faz Tipi"@tr , "Project Phase Type"@en ;
-        owl:oneOf (
-            ngo:PhasePlanning
-            ngo:PhaseExecution
-            ngo:PhaseMonitoring
-            ngo:PhaseClosure
-        ) .
-
-    ngo:PhasePlanning   a ngo:ProjectPhaseType ;
-        rdfs:label "Planlama"@tr , "Planning"@en .
-    ngo:PhaseExecution  a ngo:ProjectPhaseType ;
-        rdfs:label "Uygulama"@tr , "Execution"@en .
-    ngo:PhaseMonitoring a ngo:ProjectPhaseType ;
-        rdfs:label "İzleme"@tr , "Monitoring"@en .
-    ngo:PhaseClosure    a ngo:ProjectPhaseType ;
-        rdfs:label "Kapanış"@tr , "Closure"@en .
-}
-
-###############################################################################
-#  GRAPH 4 — Core Classes
-###############################################################################
-
-ngog:classes {
 
     # ══════════════════════════════════════════════════════════════════════════
-    #  A. PERSON
-    # ══════════════════════════════════════════════════════════════════════════
-
-    ngo:Person
-        a owl:Class ;
-        rdfs:subClassOf foaf:Person , prov:Agent ;
-        rdfs:label   "Kişi"@tr , "Person"@en ;
-        rdfs:comment "NGO ile herhangi bir biçimde ilişkili gerçek kişi."@tr ,
-                     "Natural person associated with the NGO in any capacity."@en .
-
-    # ══════════════════════════════════════════════════════════════════════════
-    #  B. NGO UNIT HIERARCHY
+    #  A. NGOUnit — Soyut Üst Sınıf
     # ══════════════════════════════════════════════════════════════════════════
 
     ngo:NGOUnit
         a owl:Class ;
-        rdfs:subClassOf org:Organization , prov:Agent ;
+        rdfs:subClassOf <http://www.w3.org/ns/org#Organization> , <http://www.w3.org/ns/prov#Agent> ;
         rdfs:label   "NGO Birimi"@tr , "NGO Unit"@en ;
-        rdfs:comment "NGO'nun herhangi bir düzeydeki resmi veya yarı-resmi birimi."@tr ,
-                     "Any formal or semi-formal unit of the NGO at any level."@en .
+        rdfs:comment
+            "NGO'nun herhangi bir düzeydeki birimi için soyut üst sınıf. Doğrudan kullanılmaz; Headquarter, HQDepartment, TerritorialUnit gibi alt sınıflar kullanılır. W3C ORG ontolojisinin org:Organization sınıfından türetilmiştir; aynı zamanda PROV-O'da prov:Agent olarak da tanınır (aktivitelerde sorumlu birim olarak kullanılabilmesi için).\nÖrnek (dolaylı): ngo40:dXXX a ngo:TerritorialUnit . (NGOUnit'in dolaylı örneği)"@tr ,
+            "Abstract superclass for any unit of the NGO at any level. Not used directly; subclasses such as Headquarter, HQDepartment, TerritorialUnit are used instead. Derived from W3C ORG's org:Organization; also typed as prov:Agent so units can act as responsible parties in PROV-O activities.\nExample (indirect): ngo40:dXXX a ngo:TerritorialUnit . (indirect instance of NGOUnit)"@en .
 
-    # ── B1. Merkez ────────────────────────────────────────────────────────────
-    ngo:Headquarter
+    # ══════════════════════════════════════════════════════════════════════════
+    #  B. Genel Merkez — ngo:NGOUnit ile temsil edilir
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  D. Kurullar / Meclisler
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:GoverningBody
         a owl:Class ;
         rdfs:subClassOf ngo:NGOUnit ;
-        rdfs:label   "Merkez"@tr , "Headquarter"@en ;
-        rdfs:comment "NGO'nun tüzel kişilik sahibi tek üst yapısı."@tr ,
-                     "The single top-level legal entity of the NGO."@en .
+        rdfs:label   "Kurul / Meclis"@tr , "Governing Body"@en ;
+        rdfs:comment
+            "Herhangi bir düzeydeki resmi karar alma organı. Merkez düzeyindeki kurullar (MYK, Parti Meclisi, Merkez Disiplin Kurulu, Kurucular Kurulu) ve yerel düzeydeki kurullar (Yerel Meclis, Yerel Disiplin Kurulu) bu sınıfın örnekleridir. Kurul tipi ngo:Concept ile ayrışır. Bir birime ngo:hasGoverningBody ile bağlanır.\nÖrnek: ngo:MerkezYurutmeKurulu a ngo:GoverningBody ; rdfs:label \"Merkez Yürütme Kurulu\"@tr ; ngo:hasGoverningBody ngo:GenelMerkez ."@tr ,
+            "Formal decision-making body at any level. Central-level bodies (CEB, Party Council, Central Disciplinary Board, Founders Council) and local bodies (Local Assembly, Local Disciplinary Board) are instances of this class. Board type is distinguished via ngo:Concept. Linked to its parent unit via ngo:hasGoverningBody.\nExample: ngo:MerkezYurutmeKurulu a ngo:GoverningBody ; rdfs:label \"Central Executive Board\"@en ; ngo:hasGoverningBody ngo:GenelMerkez ."@en .
 
-    # ── B2. Coğrafi / İdari Birim ─────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════════════
+    #  E. Koordinasyon Katmanı
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:CoordinationZone
+        a owl:Class ;
+        rdfs:subClassOf ngo:NGOUnit ;
+        rdfs:label   "Koordinasyon Bölgesi"@tr , "Coordination Zone"@en ;
+        rdfs:comment
+            "Resmi tüzel kişiliği bulunmayan, yalnızca bir sorumlu kişiye sahip coğrafi koordinasyon katmanı. Türkiye için 7 bölge teşkilatı ve 1 yurtdışı teşkilatı bu sınıfın örnekleridir. Başkanlığa dönüşmez; alt bölgelere bölünebilir (Doğu Marmara, Batı Marmara). Sorumlu kişi aynı zamanda başka bir birimin başkanı veya temsilcisi olabilir. Alt bölgeler ngo:subUnitOf ile birbirine bağlanır.\nÖrnek: ngo:MarmaraBolgesi a ngo:CoordinationZone ; ngo:subUnitOf ngo:TeşkilatlanmaBaskanligi ; ngo:covers ngo:IstanbulIlBaskanligi , ngo:BursaIlBaskanligi ."@tr ,
+            "Geographic coordination layer with no legal personality, represented by a single responsible person. Instances include the 7 regional organisations and the overseas organisation. Does not convert to a presidency; can be split into sub-zones (East Marmara, West Marmara). The responsible person may simultaneously lead another unit. Sub-zones are linked via ngo:subUnitOf.\nExample: ngo:MarmaraBolgesi a ngo:CoordinationZone ; ngo:subUnitOf ngo:TeşkilatlanmaBaskanligi ; ngo:covers ngo:IstanbulIlBaskanligi , ngo:BursaIlBaskanligi ."@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  F. Coğrafi Teşkilat Birimleri (Soyut Üst)
+    # ══════════════════════════════════════════════════════════════════════════
+
     ngo:TerritorialUnit
         a owl:Class ;
         rdfs:subClassOf ngo:NGOUnit ;
         rdfs:label   "Coğrafi Teşkilat Birimi"@tr , "Territorial Unit"@en ;
-        rdfs:comment "Belirli bir idari coğrafyaya (bölge, il, ilçe, mahalle vb.) karşılık gelen birim. Kademenin tipi ngo:administrativeLevel property'si ile SKOS Concept olarak belirtilir."@tr ,
-                     "Unit corresponding to a specific administrative geography (region, province, district, neighbourhood, etc.). Level type is indicated via ngo:administrativeLevel as a SKOS Concept."@en .
+        rdfs:comment
+            "Belirli bir idari coğrafyaya (il, ilçe, mahalle/köy, ülke vb.) karşılık gelen teşkilat biriminin soyut üst sınıfı. Tüm coğrafi birimler doğrudan bu sınıftan örneklenir. Tüzel kişilik durumu ngo:isLegalEntity ile, aktiflik durumu ngo:dissolutionDate varlığı/yokluğu ile belirlenir. İdari kademe ngo:administrativeLevel ile, kapsanan alan ngo:administrativeArea ile ngo:Concept olarak belirtilir.\nÖrnek: ngo40:dXXX a ngo:TerritorialUnit ; ngo:isLegalEntity true ; ngo:administrativeLevel ngo40:vpl3m7kx .  # ProvinceLevel Başkanlık"@tr ,
+            "Abstract superclass for a territorial organisation unit corresponding to an administrative geography (province, district, neighbourhood/village, country, etc.). All territorial units are instantiated directly from this class. Legal personality is indicated by ngo:isLegalEntity; active/dissolved status by presence or absence of ngo:dissolutionDate. Administrative level is indicated via ngo:administrativeLevel and geographic area via ngo:administrativeArea, both as ngo:Concept values.\nExample: ngo40:dXXX a ngo:TerritorialUnit ; ngo:isLegalEntity true ; ngo:administrativeLevel ngo40:vpl3m7kx . # ProvinceLevel Presidency"@en .
 
-    # ── B3. Tüzel Kişi Başkanlıklar ───────────────────────────────────────────
-    ngo:Presidency
-        a owl:Class ;
-        rdfs:subClassOf ngo:TerritorialUnit ;
-        owl:disjointWith ngo:NonLegalUnit ;
-        rdfs:label   "Başkanlık"@tr , "Presidency"@en ;
-        rdfs:comment "Tüzel kişiliği olan resmi başkanlık (İl Başkanlığı, İlçe Başkanlığı vb.). Tüzel kişilik kazanım tarihi ve tescil no RDF-Star annotation ile taşınır."@tr ,
-                     "Formally incorporated presidency (provincial, district, etc.). Legal registration date and number are carried via RDF-Star annotation."@en .
+    # ══════════════════════════════════════════════════════════════════════════
+    #  G. Görev Birimleri (Komisyon / Çalışma Grubu)
+    # ══════════════════════════════════════════════════════════════════════════
 
-    # ── B4. Tüzel Kişi Olmayan Resmi Birimler ────────────────────────────────
-    ngo:NonLegalUnit
-        a owl:Class ;
-        rdfs:subClassOf ngo:NGOUnit ;
-        rdfs:label   "Tüzel Olmayan Resmi Birim"@tr , "Non-Legal Formal Unit"@en ;
-        rdfs:comment "Hiyerarşi içinde yer alan ancak tüzel kişiliği bulunmayan resmi birim (temsilcilik, saymanlık vb.)."@tr ,
-                     "Formal unit within the hierarchy but without legal personality (representation, treasury, etc.)."@en .
-
-    ngo:Representation
-        a owl:Class ;
-        rdfs:subClassOf ngo:NonLegalUnit ;
-        rdfs:label   "Temsilcilik"@tr , "Representation"@en ;
-        rdfs:comment "Yurt içi veya yurt dışı temsilcilik; tüzel kişiliği yoktur."@tr ,
-                     "Domestic or foreign representation; not a legal entity."@en .
-
-    ngo:Secretariat
-        a owl:Class ;
-        rdfs:subClassOf ngo:NonLegalUnit ;
-        rdfs:label   "Saymanlık / Sekreterlik"@tr , "Secretariat / Treasury"@en ;
-        rdfs:comment "Genel saymanlık, il saymanlığı gibi tüzel kişi olmayan idari birimler."@tr ,
-                     "Administrative non-legal units such as general treasury or provincial secretariat."@en .
-
-    # ── B5. Yönetim Kurulları ─────────────────────────────────────────────────
-    ngo:GoverningBody
-        a owl:Class ;
-        rdfs:subClassOf ngo:NGOUnit ;
-        rdfs:label   "Yönetim / Kurul"@tr , "Governing Body"@en ;
-        rdfs:comment "Herhangi bir düzeydeki resmi kurul (Merkez Yürütme Kurulu, İl Disiplin Kurulu, Mahalle Meclisi vb.)."@tr ,
-                     "Formal governing board at any level (Central Executive Board, Provincial Disciplinary Board, Neighbourhood Assembly, etc.)."@en .
-
-    # ── B6. Departmanlar ──────────────────────────────────────────────────────
-    ngo:Department
-        a owl:Class ;
-        rdfs:subClassOf ngo:NGOUnit ;
-        rdfs:label   "Departman"@tr , "Department"@en ;
-        rdfs:comment "NGO içinde işlevsel sorumluluk alanı olan kalıcı yapısal birim."@tr ,
-                     "Permanent structural unit with a defined functional responsibility within the NGO."@en .
-
-    # ── B7. Görev Birimleri (Komisyon / Çalışma Grubu) ───────────────────────
     ngo:TaskUnit
         a owl:Class ;
         rdfs:subClassOf ngo:NGOUnit ;
         rdfs:label   "Görev Birimi"@tr , "Task Unit"@en ;
-        rdfs:comment "Geçici veya kalıcı, belirli bir amaca yönelik komisyon veya çalışma grubu."@tr ,
-                     "Temporary or permanent commission or working group with a specific purpose."@en .
+        rdfs:comment
+            "Belirli bir amaç veya konuya yönelik oluşturulan komisyon veya çalışma grubu için soyut üst sınıf. Doğrudan kullanılmaz; Commission veya WorkingGroup olarak örneklenir. Herhangi bir NGO birimi düzeyinde kurulabilir. Kalıcı mı geçici mi olduğu ngo:isPermanent ile belirtilir.\nÖrnek (dolaylı): ngo:MerkezEkonomiKomisyonu a ngo:Commission ."@tr ,
+            "Abstract superclass for commissions or working groups formed for a specific purpose or topic. Not used directly; instantiated as Commission or WorkingGroup. Can be established at any NGO unit level. Whether permanent or temporary is indicated via ngo:isPermanent.\nExample (indirect): ngo:MerkezEkonomiKomisyonu a ngo:Commission ."@en .
 
-    ngo:PermanentCommission
+    ngo:Commission
         a owl:Class ;
         rdfs:subClassOf ngo:TaskUnit ;
-        rdfs:label   "Kalıcı Komisyon"@tr , "Permanent Commission"@en .
-
-    ngo:TemporaryCommission
-        a owl:Class ;
-        rdfs:subClassOf ngo:TaskUnit ;
-        rdfs:label   "Geçici Komisyon"@tr , "Temporary Commission"@en .
+        rdfs:label   "Komisyon"@tr , "Commission"@en ;
+        rdfs:comment
+            "Tüzükte veya resmi kararla oluşturulan, belirli bir konuda faaliyet yürüten komisyon. Kalıcı (ngo:isPermanent true) veya geçici olabilir. Merkez ekonomi komisyonu, X ilçesi tarım komisyonu gibi örnekler bu sınıfa aittir. Bir üst birime ngo:subUnitOf ile bağlanır.\nÖrnek: ngo:MerkezEkonomiKomisyonu a ngo:Commission ; ngo:isPermanent true ; ngo:subUnitOf ngo:GenelMerkez . ngo:GenelMerkez ngo:hasTaskUnit ngo:MerkezEkonomiKomisyonu ."@tr ,
+            "Commission formed by statute or formal decision to operate in a specific area. May be permanent (ngo:isPermanent true) or temporary. Central economy commission, district agriculture commission are examples of this class. Linked to its parent unit via ngo:subUnitOf.\nExample: ngo:MerkezEkonomiKomisyonu a ngo:Commission ; ngo:isPermanent true ; ngo:subUnitOf ngo:GenelMerkez . ngo:GenelMerkez ngo:hasTaskUnit ngo:MerkezEkonomiKomisyonu ."@en .
 
     ngo:WorkingGroup
         a owl:Class ;
         rdfs:subClassOf ngo:TaskUnit ;
-        rdfs:label   "Çalışma Grubu"@tr , "Working Group"@en .
+        rdfs:label   "Çalışma Grubu"@tr , "Working Group"@en ;
+        rdfs:comment
+            "Belirli bir çalışma veya projeyi yürütmek için oluşturulan, genellikle geçici, daha az resmi yapı. Komisyona göre daha esnek ve kısa ömürlüdür. Herhangi bir NGO birimi düzeyinde kurulabilir.\nÖrnek: ngo:AnayasaCalismGrubu a ngo:WorkingGroup ; ngo:isPermanent false ; ngo:subUnitOf ngo:HukukIşleriBaskanligi ."@tr ,
+            "Less formal, usually temporary group formed to carry out a specific task or project. More flexible and shorter-lived than a commission. Can be established at any NGO unit level.\nExample: ngo:AnayasaCalismGrubu a ngo:WorkingGroup ; ngo:isPermanent false ; ngo:subUnitOf ngo:HukukIşleriBaskanligi ."@en .
 
-    # ══════════════════════════════════════════════════════════════════════════
-    #  C. PROJECT & WORK ITEM
-    # ══════════════════════════════════════════════════════════════════════════
-
-    ngo:ProjectEntity
-        a owl:Class ;
-        rdfs:subClassOf prov:Activity ;
-        rdfs:label   "Proje"@tr , "Project"@en ;
-        rdfs:comment "En az bir gerçek kişi proje müdürü/sorumlusuna sahip olması zorunlu olan NGO projesi."@tr ,
-                     "NGO project that must have at least one natural person as project manager/responsible."@en .
-
-    ngo:SubProject
-        a owl:Class ;
-        rdfs:subClassOf ngo:ProjectEntity ;
-        rdfs:label   "Alt Proje"@tr , "Sub-Project"@en ;
-        rdfs:comment "Bir üst projeye bağlı alt proje."@tr ,
-                     "Sub-project attached to a parent project."@en .
-
-    ngo:WorkItem
-        a owl:Class ;
-        rdfs:label   "İş Kalemi"@tr , "Work Item"@en ;
-        rdfs:comment "Proje veya alt projeye bağlı, bir veya birden fazla yürütücüye atanabilen atomik iş birimi."@tr ,
-                     "Atomic unit of work attached to a project or sub-project, assignable to one or more executors."@en .
-
-    ngo:Report
-        a owl:Class ;
-        rdfs:subClassOf prov:Entity ;
-        rdfs:label   "Rapor"@tr , "Report"@en ;
-        rdfs:comment "Proje yürütücüsünün bir üst birime sunduğu ilerleme veya durum raporu."@tr ,
-                     "Progress or status report submitted by a project executor to a superior unit."@en .
-
-    # ══════════════════════════════════════════════════════════════════════════
-    #  D. TOPIC (SKOS Concept extension)
-    # ══════════════════════════════════════════════════════════════════════════
-
-    ngo:Topic
-        a owl:Class ;
-        rdfs:subClassOf skos:Concept ;
-        rdfs:label   "Konu"@tr , "Topic"@en ;
-        rdfs:comment "Komisyon, proje, iş kalemi veya üye ilgi alanlarını kategorize eden konu kavramı. ngo:TopicScheme içinde organize edilir."@tr ,
-                     "Subject concept categorising commissions, projects, work items or member interest areas. Organised within ngo:TopicScheme."@en .
-}
 
 ###############################################################################
-#  GRAPH 5 — Object Properties
+#  GRAPH 4 — Object Properties (10 adet)
 ###############################################################################
 
-ngog:object-properties {
-
     # ══════════════════════════════════════════════════════════════════════════
-    #  A. STRUCTURAL / HIERARCHY
+    #  A. Hiyerarşi
     # ══════════════════════════════════════════════════════════════════════════
 
     ngo:subUnitOf
         a owl:ObjectProperty ;
-        rdfs:subPropertyOf org:subOrganizationOf ;
+        rdfs:subPropertyOf ngo:transitiveSubUnitOf ;
+        rdfs:seeAlso       <http://www.w3.org/ns/org#subOrganizationOf> ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  ngo:NGOUnit ;
         rdfs:label   "alt birimi olduğu"@tr , "sub-unit of"@en ;
-        rdfs:comment "Bir birimin doğrudan üst birimine olan hiyerarşik bağı."@tr ,
-                     "Direct hierarchical link of a unit to its immediate parent."@en .
+        rdfs:comment
+            "Bir birimin doğrudan üst birimine olan hiyerarşik bağı. Transitif değildir; yalnızca doğrudan ebeveyn birimi ifade eder. Transitif kapanım için ngo:transitiveSubUnitOf kullanın. Tüm NGO birim türleri bu property'yi kullanabilir: TerritorialUnit, CoordinationZone, HQDepartment, TaskUnit vb.\nÖrnek: ngo:KadikoyIlceBaskanligi ngo:subUnitOf ngo:IstanbulIlBaskanligi .\nngo:MarmaraBolgesi ngo:subUnitOf ngo:TeşkilatlanmaBaskanligi ."@tr ,
+            "Direct hierarchical link of a unit to its immediate parent. Non-transitive; expresses only the direct parent. Use ngo:transitiveSubUnitOf for transitive closure. All NGO unit types may use this property: TerritorialUnit, CoordinationZone, HQDepartment, TaskUnit, etc.\nExample: ngo:KadikoyIlceBaskanligi ngo:subUnitOf ngo:IstanbulIlBaskanligi .\nngo:MarmaraBolgesi ngo:subUnitOf ngo:TeşkilatlanmaBaskanligi ."@en .
 
     ngo:hasSubUnit
         a owl:ObjectProperty ;
         owl:inverseOf ngo:subUnitOf ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  ngo:NGOUnit ;
-        rdfs:label   "alt birimi"@tr , "has sub-unit"@en .
+        rdfs:label   "alt birimi"@tr , "has sub-unit"@en ;
+        rdfs:comment
+            "ngo:subUnitOf'un tersi. Bir üst birimin doğrudan alt birimlerini verir. Reasoner tarafından otomatik çıkarılır; veriye elle eklenmesi gerekmez, ancak sorgu kolaylığı için eklenebilir.\nÖrnek: ngo:IstanbulIlBaskanligi ngo:hasSubUnit ngo:KadikoyIlceBaskanligi ."@tr ,
+            "Inverse of ngo:subUnitOf. Returns the direct sub-units of a parent unit. Inferred automatically by a reasoner; need not be asserted in data, but may be added for query convenience.\nExample: ngo:IstanbulIlBaskanligi ngo:hasSubUnit ngo:KadikoyIlceBaskanligi ."@en .
 
     ngo:transitiveSubUnitOf
         a owl:ObjectProperty , owl:TransitiveProperty ;
-        rdfs:subPropertyOf org:transitiveSubOrganizationOf ;
+        rdfs:seeAlso       <http://www.w3.org/ns/org#transitiveSubOrganizationOf> ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  ngo:NGOUnit ;
         rdfs:label   "transitif alt birimi olduğu"@tr , "transitive sub-unit of"@en ;
-        rdfs:comment "subUnitOf'un transitif kapatması. Bir birimin tüm üst birimlerini (dolaylı dahil) bulmak için kullanılır."@tr ,
-                     "Transitive closure of subUnitOf. Used to find all ancestor units (direct and indirect)."@en .
+        rdfs:comment
+            "ngo:subUnitOf'un transitif kapanımı. Bir birimin tüm üst birimlerini (doğrudan ve dolaylı) bulmak için kullanılır. owl:propertyChainAxiom ile tanımlanmıştır: (ngo:subUnitOf ∘ ngo:transitiveSubUnitOf). Döngü içermemelidir; bkz. IC-02.\nÖrnek: ngo:KadikoyIlceBaskanligi ngo:transitiveSubUnitOf ngo:IstanbulIlBaskanligi . (doğrudan)\nngo:KadikoyIlceBaskanligi ngo:transitiveSubUnitOf ngo:GenelMerkez . (reasoner çıkarımı)"@tr ,
+            "Transitive closure of ngo:subUnitOf. Used to find all ancestor units (direct and indirect) of a given unit. Defined via owl:propertyChainAxiom: (ngo:subUnitOf ∘ ngo:transitiveSubUnitOf). Must not contain cycles; see IC-02.\nExample: ngo:KadikoyIlceBaskanligi ngo:transitiveSubUnitOf ngo:IstanbulIlBaskanligi . (direct)\nngo:KadikoyIlceBaskanligi ngo:transitiveSubUnitOf ngo:GenelMerkez . (reasoner inference)"@en .
 
     ngo:reportsTo
         a owl:ObjectProperty ;
-        rdfs:subPropertyOf org:reportsTo ;
+        rdfs:seeAlso       <http://www.w3.org/ns/org#reportsTo> ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  ngo:NGOUnit ;
         rdfs:label   "raporladığı birim"@tr , "reports to"@en ;
-        rdfs:comment "Birimin raporlama sorumluluğu taşıdığı üst birim. Hiyerarşik bağdan farklı olabilir."@tr ,
-                     "Superior unit to which this unit has reporting accountability. May differ from hierarchical parent."@en .
+        rdfs:comment
+            "Birimin raporlama sorumluluğu taşıdığı üst birim. Hiyerarşik bağdan (ngo:subUnitOf) farklı olabilir. Yerel sekreterler informal olarak Genel Sekreterliğe, yerel saymanlar Genel Saymanlığa raporlar. Bu property hem formal hem informal raporlama bağlarını taşıyabilir; bağlamı RDF-Star annotation ile belirtilebilir.\nÖrnek: ngo:KadikoySekreteri ngo:reportsTo ngo:GenelSekreterlik {| ngo:legalBasis \"İnformal uygulama\" |} ."@tr ,
+            "Superior unit to which this unit has reporting accountability. May differ from the hierarchical parent (ngo:subUnitOf). Local secretaries informally report to the General Secretariat; local treasurers to the General Treasury. Supports both formal and informal reporting links; context may be indicated via RDF-Star annotation.\nExample: ngo:KadikoySekreteri ngo:reportsTo ngo:GenelSekreterlik {| ngo:legalBasis \"Informal practice\" |} ."@en .
+
+    ngo:isReportedToBy
+        a owl:ObjectProperty ;
+        owl:inverseOf ngo:reportsTo ;
+        rdfs:domain ngo:NGOUnit ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "raporlayan birim"@tr , "is reported to by"@en ;
+        rdfs:comment
+            "ngo:reportsTo'nun tersi. Bir birimin kendisine raporlayan birimleri verir. Reasoner tarafından otomatik çıkarılır.\nÖrnek: ngo:GenelSekreterlik ngo:isReportedToBy ngo:KadikoySekreteri ."@tr ,
+            "Inverse of ngo:reportsTo. Returns units that report to a given unit. Inferred automatically by a reasoner.\nExample: ngo:GenelSekreterlik ngo:isReportedToBy ngo:KadikoySekreteri ."@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  B. Bileşen Bağları
+    # ══════════════════════════════════════════════════════════════════════════
 
     ngo:hasGoverningBody
         a owl:ObjectProperty ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  ngo:GoverningBody ;
-        rdfs:label   "yönetim kurulu"@tr , "has governing body"@en .
+        rdfs:label   "kurulu"@tr , "has governing body"@en ;
+        rdfs:comment
+            "Bir NGO birimine bağlı resmi kurul veya meclisi belirtir. Bir birim birden fazla kurula sahip olabilir (örn. Yerel Meclis + Yerel Disiplin Kurulu). Kurul tipini ayırt etmek için rdfs:label veya ngo:Concept kullanın.\nÖrnek: ngo:KadikoyIlceBaskanligi ngo:hasGoverningBody ngo:KadikoyMeclisi , ngo:KadikoyDisiplinKurulu .\nngo:GenelMerkez ngo:hasGoverningBody ngo:MerkezYurutmeKurulu , ngo:PartiMeclisi , ngo:MerkezDisiplinKurulu ."@tr ,
+            "Indicates a formal board or assembly attached to an NGO unit. A unit may have multiple governing bodies (e.g. Local Assembly + Local Disciplinary Board). Use rdfs:label or ngo:Concept to distinguish board types.\nExample: ngo:KadikoyIlceBaskanligi ngo:hasGoverningBody ngo:KadikoyMeclisi , ngo:KadikoyDisiplinKurulu .\nngo:GenelMerkez ngo:hasGoverningBody ngo:MerkezYurutmeKurulu , ngo:PartiMeclisi ."@en .
 
-    ngo:hasDepartment
+    ngo:governingBodyOf
         a owl:ObjectProperty ;
-        rdfs:domain ngo:NGOUnit ;
-        rdfs:range  ngo:Department ;
-        rdfs:label   "departmanı"@tr , "has department"@en .
+        owl:inverseOf ngo:hasGoverningBody ;
+        rdfs:domain ngo:GoverningBody ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "kurulu olduğu birim"@tr , "governing body of"@en ;
+        rdfs:comment
+            "ngo:hasGoverningBody'nin tersi. Bir kurulun bağlı olduğu NGO birimini verir. Reasoner tarafından otomatik çıkarılır.\nÖrnek: ngo:KadikoyMeclisi ngo:governingBodyOf ngo:KadikoyIlceBaskanligi ."@tr ,
+            "Inverse of ngo:hasGoverningBody. Returns the NGO unit to which a governing body is attached. Inferred automatically by a reasoner.\nExample: ngo:KadikoyMeclisi ngo:governingBodyOf ngo:KadikoyIlceBaskanligi ."@en .
 
     ngo:hasTaskUnit
         a owl:ObjectProperty ;
-        rdfs:domain [ owl:unionOf ( ngo:NGOUnit ngo:Department ) ] ;
+        rdfs:domain ngo:NGOUnit ;
         rdfs:range  ngo:TaskUnit ;
-        rdfs:label   "görev birimi"@tr , "has task unit"@en .
+        rdfs:label   "görev birimi"@tr , "has task unit"@en ;
+        rdfs:comment
+            "Herhangi bir NGO birimine bağlı komisyon veya çalışma grubunu belirtir. Tüm NGO düzeylerinde geçerlidir: Genel Merkez düzeyinde bir ekonomi komisyonu, il düzeyinde bir tarım komisyonu vb.\nÖrnek: ngo:GenelMerkez ngo:hasTaskUnit ngo:MerkezEkonomiKomisyonu .\nngo:IstanbulIlBaskanligi ngo:hasTaskUnit ngo:IstanbulTarimKomisyonu ."@tr ,
+            "Indicates a commission or working group attached to any NGO unit. Valid at all NGO levels: a central economy commission, a provincial agriculture commission, etc.\nExample: ngo:GenelMerkez ngo:hasTaskUnit ngo:MerkezEkonomiKomisyonu .\nngo:IstanbulIlBaskanligi ngo:hasTaskUnit ngo:IstanbulTarimKomisyonu ."@en .
+
+    ngo:taskUnitOf
+        a owl:ObjectProperty ;
+        owl:inverseOf ngo:hasTaskUnit ;
+        rdfs:domain ngo:TaskUnit ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "görev birimi olduğu birim"@tr , "task unit of"@en ;
+        rdfs:comment
+            "ngo:hasTaskUnit'in tersi. Bir görev biriminin bağlı olduğu NGO birimini verir. Reasoner tarafından otomatik çıkarılır.\nÖrnek: ngo:MerkezEkonomiKomisyonu ngo:taskUnitOf ngo:GenelMerkez ."@tr ,
+            "Inverse of ngo:hasTaskUnit. Returns the NGO unit to which a task unit is attached. Inferred automatically by a reasoner.\nExample: ngo:MerkezEkonomiKomisyonu ngo:taskUnitOf ngo:GenelMerkez ."@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  C. Coğrafi / İdari Bağlam
+    # ══════════════════════════════════════════════════════════════════════════
 
     ngo:administrativeLevel
         a owl:ObjectProperty ;
         rdfs:domain ngo:TerritorialUnit ;
-        rdfs:range  skos:Concept ;
+        rdfs:range  ngo:Concept ;
         rdfs:label   "idari kademe"@tr , "administrative level"@en ;
-        rdfs:comment "Birimin ülke idari hiyerarşisindeki kademesini belirten SKOS kavramı (ör: İl, İlçe, Eyalet)."@tr ,
-                     "SKOS concept indicating the unit's level in the national administrative hierarchy (e.g. Province, District, State)."@en .
+        rdfs:comment
+            "Coğrafi teşkilat biriminin ülke idari hiyerarşisindeki kademesini belirten SKOS kavramı. Türkiye için İl, İlçe, Mahalle, Köy kademeleri; yurtdışı için Ülke, Eyalet, Oblast, Şehir, Semt gibi kademeler SKOS ile modellenir; OWL alt sınıfı açılmaz. SKOS kavramları NGO-vocabulary.trig dosyasında tanımlanır.\nÖrnek: ngo:IstanbulIlBaskanligi ngo:administrativeLevel ngo40:vpl3m7kx .  # ProvinceLevel\nngo:KadikoyIlceBaskanligi ngo:administrativeLevel ngo40:vdl8q2zn .  # DistrictLevel"@tr ,
+            "SKOS concept indicating the territorial unit's level in the national administrative hierarchy. For Turkey: Province, District, Neighbourhood, Village; for abroad: Country, State, Oblast, City, Borough etc. modelled via SKOS, not OWL subclasses. SKOS concepts are defined in NGO-vocabulary.trig.\nExample: ngo:IstanbulIlBaskanligi ngo:administrativeLevel ngo40:vpl3m7kx .  # ProvinceLevel\nngo:KadikoyIlceBaskanligi ngo:administrativeLevel ngo40:vdl8q2zn .  # DistrictLevel"@en .
 
     ngo:administrativeArea
         a owl:ObjectProperty ;
         rdfs:domain ngo:TerritorialUnit ;
-        rdfs:range  skos:Concept ;
+        rdfs:range  ngo:Concept ;
         rdfs:label   "idari bölge"@tr , "administrative area"@en ;
-        rdfs:comment "Birimin kapsadığı coğrafi idari bölge (SKOS Concept olarak)."@tr ,
-                     "Geographic administrative area covered by this unit (as a SKOS Concept)."@en .
+        rdfs:comment
+            "Birimin teşkilatlandığı coğrafi idari alanı belirten ngo:Concept. Türkiye için il ve ilçe adları; yurtdışı için ülke ve eyalet/şehir adları ngo:Concept olarak modellenir (ngo:AdminAreaScheme). Bu sayede yabancı coğrafi yapılar OWL sınıfı açmadan temsil edilebilir.\nÖrnek: ngo:IstanbulIlBaskanligi ngo:administrativeArea ngo40:visp4k2w .  # IstanbulProvince\nngo:ABDTemsilciligi ngo:administrativeArea ngo40:vusd2z7m .  # UnitedStates"@tr ,
+            "ngo:Concept indicating the geographic administrative area in which the unit is organised. Province and district names for Turkey; country and state/city names for abroad, all as ngo:Concept values (ngo:AdminAreaScheme). This allows foreign geographies to be represented without opening OWL subclasses.\nExample: ngo:IstanbulIlBaskanligi ngo:administrativeArea ngo40:visp4k2w .  # IstanbulProvince\nngo:ABDTemsilciligi ngo:administrativeArea ngo40:vusd2z7m .  # UnitedStates"@en .
 
-    # ══════════════════════════════════════════════════════════════════════════
-    #  B. AFFILIATION  (üst property — iki alt property tarafından paylaşılır)
-    # ══════════════════════════════════════════════════════════════════════════
-
-    ngo:affiliatedWith
-        a owl:ObjectProperty ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  ngo:NGOUnit ;
-        rdfs:label   "ile bağlantılı"@tr , "affiliated with"@en ;
-        rdfs:comment "Soyut üst property. Doğrudan kullanılmaz; ngo:memberOf ve ngo:participatesIn tarafından alt-property olarak kullanılır."@tr ,
-                     "Abstract super-property. Not used directly; subclassed by ngo:memberOf and ngo:participatesIn."@en .
-
-    ngo:memberOf
-        a owl:ObjectProperty ;
-        rdfs:subPropertyOf ngo:affiliatedWith ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  ngo:NGOUnit ;
-        rdfs:label   "üyesi olduğu birim"@tr , "member of unit"@en ;
-        rdfs:comment "Kişinin örgütsel üyelik bağını taşıdığı NGO birimi. Statü ve dönem bilgisi rdf:reifies ile annotate edilir."@tr ,
-                     "NGO unit to which the person holds organisational membership. Status and period annotated via rdf:reifies."@en .
-
-    ngo:participatesIn
-        a owl:ObjectProperty ;
-        rdfs:subPropertyOf ngo:affiliatedWith ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  [ owl:unionOf ( ngo:TaskUnit ngo:ProjectEntity ) ] ;
-        rdfs:label   "katılımcı olduğu görev/proje birimi"@tr , "participates in task/project unit"@en ;
-        rdfs:comment "Kişinin komisyon, çalışma grubu veya proje bazlı katılım bağı. Statü ve dönem bilgisi rdf:reifies ile annotate edilir."@tr ,
-                     "Commission, working group or project-based participation link. Status and period annotated via rdf:reifies."@en .
-
-    # ══════════════════════════════════════════════════════════════════════════
-    #  C. PROJECT & WORK ITEM
-    # ══════════════════════════════════════════════════════════════════════════
-
-    ngo:hasProject
+    ngo:hasOfficer
         a owl:ObjectProperty ;
         rdfs:domain ngo:NGOUnit ;
-        rdfs:range  ngo:ProjectEntity ;
-        rdfs:label   "yürüttüğü proje"@tr , "has project"@en .
-
-    ngo:hasSubProject
-        a owl:ObjectProperty ;
-        rdfs:domain ngo:ProjectEntity ;
-        rdfs:range  ngo:SubProject ;
-        rdfs:label   "alt projesi"@tr , "has sub-project"@en .
-
-    ngo:hasWorkItem
-        a owl:ObjectProperty ;
-        rdfs:domain [ owl:unionOf ( ngo:ProjectEntity ngo:SubProject ) ] ;
-        rdfs:range  ngo:WorkItem ;
-        rdfs:label   "iş kalemi"@tr , "has work item"@en .
-
-    ngo:assignedTo
-        a owl:ObjectProperty ;
-        rdfs:domain [ owl:unionOf ( ngo:ProjectEntity ngo:WorkItem ) ] ;
         rdfs:range  ngo:Person ;
-        rdfs:label   "atandığı kişi"@tr , "assigned to"@en ;
-        rdfs:comment "Proje veya iş kaleminin yürütücüsü. Faz ve dönem bilgisi rdf:reifies ile annotate edilir."@tr ,
-                     "Executor of the project or work item. Phase and period annotated via rdf:reifies."@en .
+        rdfs:label   "görevli"@tr , "has officer"@en ;
+        rdfs:comment
+            "Bir NGO birimine atanmış görevliyi (başkan, sayman, sekreter, temsilci vb.) belirtir. Bir birimde birden fazla görevli olabilir. Görevin türü, başlangıç/bitiş tarihleri ve bitiş nedeni RDF-Star annotation ile taşınır (ngo:officerRole, ngo:startDate, ngo:endDate, ngo:endReason). Aynı (birim, kişi) çifti için birden fazla rol veya dönem söz konusuysa rdf:reifies explicit formu kullanılır.\nÖrnek: ngo40:dBSK ngo:hasOfficer ngo40:dpXXX {| ngo:officerRole ngo40:vorf4ilb ; ngo:startDate \"2024-01-01\"^^xsd:date |} ."@tr ,
+            "Specifies an officer (president, treasurer, secretary, representative, etc.) assigned to an NGO unit. A unit may have more than one officer. Role type, start/end dates and end reason are carried via RDF-Star annotation (ngo:officerRole, ngo:startDate, ngo:endDate, ngo:endReason). When the same (unit, person) pair involves multiple roles or terms, the explicit rdf:reifies form is used.\nExample: ngo40:dBSK ngo:hasOfficer ngo40:dpXXX {| ngo:officerRole ngo40:vorf4ilb ; ngo:startDate \"2024-01-01\"^^xsd:date |} ."@en .
 
-    ngo:reportsProgressTo
+    ngo:officerOf
         a owl:ObjectProperty ;
+        owl:inverseOf ngo:hasOfficer ;
         rdfs:domain ngo:Person ;
-        rdfs:range  [ owl:unionOf ( ngo:NGOUnit ngo:GoverningBody ) ] ;
-        rdfs:label   "ilerleme raporladığı birim"@tr , "reports progress to"@en ;
-        rdfs:comment "Proje yürütücüsünün ilerleme raporu sunduğu üst birim veya kurul."@tr ,
-                     "Superior unit or board to which the project executor submits progress reports."@en .
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "görevli olduğu birim"@tr , "officer of"@en ;
+        rdfs:comment
+            "ngo:hasOfficer'ın tersi. Bir kişinin görevli olduğu NGO birimlerini verir. Bir kişi birden fazla birimde görev alabilir. Reasoner tarafından otomatik çıkarılır.\nÖrnek: ngo40:dpXXX ngo:officerOf ngo40:dBSK ."@tr ,
+            "Inverse of ngo:hasOfficer. Returns the NGO units in which a person holds an officer role. A person may serve in more than one unit. Inferred automatically by a reasoner.\nExample: ngo40:dpXXX ngo:officerOf ngo40:dBSK ."@en .
 
-    ngo:hasTopic
-        a owl:ObjectProperty ;
-        rdfs:domain [ owl:unionOf ( ngo:ProjectEntity ngo:TaskUnit ngo:WorkItem ) ] ;
-        rdfs:range  ngo:Topic ;
-        rdfs:label   "ilgili konu"@tr , "has topic"@en .
-
-    ngo:hasReport
-        a owl:ObjectProperty ;
-        rdfs:domain ngo:ProjectEntity ;
-        rdfs:range  ngo:Report ;
-        rdfs:label   "raporu"@tr , "has report"@en .
-
-    ngo:reportSubmittedBy
-        a owl:ObjectProperty ;
-        rdfs:domain ngo:Report ;
-        rdfs:range  ngo:Person ;
-        rdfs:label   "raporu sunan"@tr , "report submitted by"@en .
-
-    ngo:reportSubmittedTo
-        a owl:ObjectProperty ;
-        rdfs:domain ngo:Report ;
-        rdfs:range  [ owl:unionOf ( ngo:NGOUnit ngo:GoverningBody ) ] ;
-        rdfs:label   "raporun sunulduğu birim"@tr , "report submitted to"@en .
-
-    # ══════════════════════════════════════════════════════════════════════════
-    #  D. TOPIC / INTEREST
-    # ══════════════════════════════════════════════════════════════════════════
-
-    ngo:hasInterest
-        a owl:ObjectProperty ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  ngo:Topic ;
-        rdfs:label   "ilgi alanı"@tr , "has interest"@en ;
-        rdfs:comment "Üyenin dinamik olarak beyan ettiği ilgi alanı konusu. Beyan tarihi ve ağırlık skoru rdf:reifies ile annotate edilir."@tr ,
-                     "Topic dynamically declared by the member as an area of interest. Declaration date and weight annotated via rdf:reifies."@en .
-}
 
 ###############################################################################
-#  GRAPH 6 — Data Properties
+#  GRAPH 5 — Datatype Properties (7 adet)
 ###############################################################################
 
-ngog:data-properties {
-
-    # ── Person ────────────────────────────────────────────────────────────────
-    ngo:nationalId
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  xsd:string ;
-        rdfs:label  "TC Kimlik No"@tr , "National ID"@en .
-
-    ngo:birthDate
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  xsd:date ;
-        rdfs:label  "Doğum Tarihi"@tr , "Birth Date"@en .
-
-    ngo:phoneNumber
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:Person ;
-        rdfs:range  xsd:string ;
-        rdfs:label  "Telefon"@tr , "Phone Number"@en .
-
-    # ── NGOUnit ───────────────────────────────────────────────────────────────
     ngo:unitCode
         a owl:DatatypeProperty ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  xsd:string ;
         rdfs:label  "Birim Kodu"@tr , "Unit Code"@en ;
-        rdfs:comment "NGO'nun iç kodlama sistemindeki birim tanımlayıcısı."@tr ,
-                     "Unit identifier in the NGO's internal coding system."@en .
+        rdfs:comment
+            "NGO'nun iç kodlama sistemindeki benzersiz birim tanımlayıcısı. owl:hasKey ile birim kimliğinin belirlenmesinde kullanılır. Kod formatı kuruluşa özgüdür.\nÖrnek: ngo:IstanbulIlBaskanligi ngo:unitCode \"TR-34-IL\" ."@tr ,
+            "Unique unit identifier in the NGO's internal coding system. Used for unit identification together with owl:hasKey. Code format is organisation-specific.\nExample: ngo:IstanbulIlBaskanligi ngo:unitCode \"TR-34-IL\" ."@en .
 
     ngo:foundingDate
         a owl:DatatypeProperty ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  xsd:date ;
-        rdfs:label  "Kuruluş Tarihi"@tr , "Founding Date"@en .
+        rdfs:label  "Kuruluş Tarihi"@tr , "Founding Date"@en ;
+        rdfs:comment
+            "Birimin resmen kurulduğu tarih. Başkanlıklar için tüzel kişilik tescil tarihi; temsilcilikler için atama tarihi kullanılabilir.\nÖrnek: ngo:KadikoyIlceBaskanligi ngo:foundingDate \"2024-01-01\"^^xsd:date ."@tr ,
+            "Date when the unit was formally established. For presidencies: legal registration date; for representations: appointment date may be used.\nExample: ngo:KadikoyIlceBaskanligi ngo:foundingDate \"2024-01-01\"^^xsd:date ."@en .
 
     ngo:dissolutionDate
         a owl:DatatypeProperty ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  xsd:date ;
-        rdfs:label  "Lağvedilme Tarihi"@tr , "Dissolution Date"@en .
+        rdfs:label  "Lağvedilme Tarihi"@tr , "Dissolution Date"@en ;
+        rdfs:comment
+            "Birimin resmen lağvedildiği tarih. Temsilciliğin Başkanlığa dönüşümünde temsilcilik kaydı için de kullanılır. Değer yoksa birim hâlâ aktif demektir.\nÖrnek: ngo:UmraniyeTemsilciligi ngo:dissolutionDate \"2024-06-30\"^^xsd:date ."@tr ,
+            "Date when the unit was formally dissolved. Also used for representation records when converting to a presidency. Absent means the unit is still active.\nExample: ngo:UmraniyeTemsilciligi ngo:dissolutionDate \"2024-06-30\"^^xsd:date ."@en .
+
+    ngo:legalRegNo
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:TerritorialUnit ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Tescil Numarası"@tr , "Legal Registration Number"@en ;
+        rdfs:comment
+            "Birimin ilgili makama tescil numarası. Yalnızca tüzel kişilikli (ngo:isLegalEntity true) TerritorialUnit kaynaklarında kullanılır.\nÖrnek: ngo40:dXXX ngo:legalRegNo \"34-NGO-2024-0108\" ."@tr ,
+            "Legal registration number of the unit with the competent authority. Used only on TerritorialUnit resources with ngo:isLegalEntity true.\nExample: ngo40:dXXX ngo:legalRegNo \"34-NGO-2024-0108\" ."@en .
+
+    ngo:legalJurisdiction
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:TerritorialUnit ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Yargı Çevresi"@tr , "Legal Jurisdiction"@en ;
+        rdfs:comment
+            "Başkanlığın tescilli olduğu hukuki yargı çevresi (ülke veya idari birim adı). Yurtdışı Başkanlıkları için yerel hukuktaki yargı adı kullanılır.\nÖrnek: ngo:KadikoyIlceBaskanligi ngo:legalJurisdiction \"Türkiye\" .\nngo:ABDNewyorkBaskanligi ngo:legalJurisdiction \"New York, USA\" ."@tr ,
+            "Legal jurisdiction under which the presidency is registered (country or administrative unit name). For overseas presidencies, use the local law jurisdiction name.\nExample: ngo:KadikoyIlceBaskanligi ngo:legalJurisdiction \"Turkey\" .\nngo:ABDNewyorkBaskanligi ngo:legalJurisdiction \"New York, USA\" ."@en .
 
     ngo:addressText
         a owl:DatatypeProperty ;
         rdfs:domain ngo:NGOUnit ;
         rdfs:range  xsd:string ;
-        rdfs:label  "Adres"@tr , "Address"@en .
+        rdfs:label  "Adres"@tr , "Address"@en ;
+        rdfs:comment
+            "Birimin serbest metin formatında adresi. Yapılandırılmış adres için vcard:Address kullanılabilir; bu property kolaylık amaçlıdır.\nÖrnek: ngo:KadikoyIlceBaskanligi ngo:addressText \"Moda Cad. No:42 Kadıköy / İstanbul\" ."@tr ,
+            "Free-text address of the unit. For structured address, vcard:Address may be used; this property is for convenience.\nExample: ngo:KadikoyIlceBaskanligi ngo:addressText \"42 Moda St, Kadikoy / Istanbul\" ."@en .
 
-    ngo:email
+    ngo:isPermanent
         a owl:DatatypeProperty ;
-        rdfs:range  xsd:string ;
-        rdfs:label  "E-posta"@tr , "Email"@en .
+        rdfs:domain ngo:TaskUnit ;
+        rdfs:range  xsd:boolean ;
+        rdfs:label  "Kalıcı mı?"@tr , "Is Permanent?"@en ;
+        rdfs:comment
+            "Görev biriminin (komisyon veya çalışma grubu) kalıcı mı yoksa geçici mi olduğunu belirtir. Değer true ise birim süresiz aktif; false ise belirli bir görev veya dönem için kurulmuştur.\nÖrnek: ngo:MerkezEkonomiKomisyonu ngo:isPermanent true .\nngo:AnayasaCalismGrubu ngo:isPermanent false ."@tr ,
+            "Indicates whether the task unit (commission or working group) is permanent or temporary. If true, the unit is active indefinitely; if false, it was formed for a specific task or period.\nExample: ngo:MerkezEkonomiKomisyonu ngo:isPermanent true .\nngo:AnayasaCalismGrubu ngo:isPermanent false ."@en .
 
-    ngo:website
-        a owl:DatatypeProperty ;
-        rdfs:range  xsd:anyURI ;
-        rdfs:label  "Web Sitesi"@tr , "Website"@en .
-
-    # ── ProjectEntity / WorkItem ──────────────────────────────────────────────
-    ngo:projectCode
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:ProjectEntity ;
-        rdfs:range  xsd:string ;
-        rdfs:label  "Proje Kodu"@tr , "Project Code"@en .
-
-    ngo:budget
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:ProjectEntity ;
-        rdfs:range  xsd:decimal ;
-        rdfs:label  "Bütçe"@tr , "Budget"@en .
-
-    ngo:workItemCode
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:WorkItem ;
-        rdfs:range  xsd:string ;
-        rdfs:label  "İş Kalemi Kodu"@tr , "Work Item Code"@en .
-
-    ngo:workItemStatus
-        a owl:DatatypeProperty ;
-        rdfs:domain ngo:WorkItem ;
-        rdfs:range  xsd:string ;
-        rdfs:label  "İş Kalemi Durumu"@tr , "Work Item Status"@en ;
-        rdfs:comment "ngo:WorkItemStatus enum değerlerine referans verir."@tr ,
-                     "References values from ngo:WorkItemStatus enum."@en .
-}
 
 ###############################################################################
-#  GRAPH 7 — OWL Restrictions & Axioms
+#  GRAPH 6 — Axioms
+#  OWL kısıtları, property chain, disjointness, hasKey
 ###############################################################################
 
-ngog:axioms {
+    # ── Property Chain: transitiveSubUnitOf ────────────────────────────────────
+    #  Anlam: A subUnitOf B  ve  B transitiveSubUnitOf C  →  A transitiveSubUnitOf C
+    #  TransitiveProperty ile birlikte tam geçişlilik sağlanır.
 
-    # FormalMember sadece tek bir Presidency (ilçe başkanlığı) altında olabilir.
-    # Bu kısıt SPARQL integrity constraint olarak da uygulanabilir;
-    # burada OWL ile ifade ediliyor.
-
-    ngo:FormalMemberConstraint
-        a owl:Restriction ;
-        rdfs:comment "Resmi üye yalnızca tek bir Presidency biriminde ngo:FormalMember statüsünde olabilir."@tr ,
-                     "A formal member may hold ngo:FormalMember status in exactly one Presidency unit."@en ;
-        owl:onProperty ngo:memberOf ;
-        owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-        owl:onClass ngo:Presidency .
-
-    # ProjectEntity en az 1 ProjectManager'a sahip olmalı
-    ngo:ProjectEntity
-        rdfs:subClassOf [
-            a owl:Restriction ;
-            owl:onProperty ngo:assignedTo ;
-            owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-            owl:onClass ngo:Person
-        ] .
-
-    # transitiveSubUnitOf, subUnitOf'un transitif kapanımı olarak işlev görür
     ngo:transitiveSubUnitOf
-        rdfs:subPropertyOf ngo:transitiveSubUnitOf ;
         owl:propertyChainAxiom ( ngo:subUnitOf ngo:transitiveSubUnitOf ) .
 
-    # Presidency ve NonLegalUnit birbirinden ayrık
+    # ── hasKey: NGOUnit — unitCode ─────────────────────────────────────────────
+    #  Aynı unitCode'a sahip iki farklı NGOUnit IRI'si aynı birime karşılık gelir.
+
+    ngo:NGOUnit
+        owl:hasKey ( ngo:unitCode ) .
+
+    # ── Disjointness ──────────────────────────────────────────────────────────
+    #  CoordinationZone, TerritorialUnit değildir (coğrafi birim saymaz).
     [] a owl:AllDisjointClasses ;
-        owl:members ( ngo:Presidency ngo:NonLegalUnit ) .
-}
+        owl:members ( ngo:CoordinationZone ngo:TerritorialUnit ) .
+
 
 ###############################################################################
-#  GRAPH 8 — RDF-Star Usage Patterns  (normatif belgeleme)
-#
-#  Bu graf, ontoloji belgesi olarak annotation ve reification
-#  desenlerini açıklar. Gerçek veriler ayrı namedgraph'lerde yaşar.
+#  GRAPH 7 — RDF-Star Kullanım Desenleri  (normatif belgeleme)
+#  Gerçek bireyler ngog:ngo-yapi grafında yaşar.
 ###############################################################################
 
-ngog:rdfstar-patterns {
-
-    # ── PATTERN 1: Annotation — tek dönem üyelik ─────────────────────────────
+    # ── PATTERN 1: Temsilcilik Kapanışı + Yeni Başkanlık Kuruluşu ───────────────
     #
-    #  :Ahmet ngo:memberOf :KadikoyIlceBaskanligi {|
-    #      ngo:status    ngo:FormalMember ;
-    #      ngo:startDate "2024-01-01"^^xsd:date ;
-    #      ngo:membershipNo "TR-34-450-2024-00108"
-    #  |}
+    #  Senaryo: Ümraniye Temsilciliği yeterli üye/bütçeye ulaştı.
+    #  Temsilcilik kapatılır (dissolutionDate), ayrı IRI ile yeni Başkanlık kurulur.
+    #  İki varlık hukuken farklıdır — aynı IRI üzerinde tip değiştirilmez.
     #
-    #  Kullanım: Triple hem assert edilir hem annotate edilir.
-    #  Kural: Tek, benzersiz, zamanla değişmeyen bağlamlar için.
-
-    # ── PATTERN 2: Reification — çoklu dönem veya çoklu kaynak ───────────────
-    #
-    #  _:m1 rdf:reifies << :Ahmet ngo:memberOf :KadikoyBirimi >> ;
-    #      ngo:status    ngo:CandidateMember ;
-    #      ngo:startDate "2023-06-01"^^xsd:date ;
-    #      ngo:endDate   "2023-09-15"^^xsd:date ;
-    #      ngo:endReason ngo:StatusUpgrade .
-    #
-    #  _:m2 rdf:reifies << :Ahmet ngo:memberOf :KadikoyBirimi >> ;
-    #      ngo:status    ngo:CandidateMember ;
-    #      ngo:startDate "2024-03-01"^^xsd:date .
-    #
-    #  Kural: Aynı triple için birden fazla bağımsız dönem/kaynak gerektiğinde.
-
-    # ── PATTERN 3: Birim dönüşümü — reification ──────────────────────────────
-    #
-    #  _:occ1 rdf:reifies << :KadikoyBirimi ngo:subUnitOf :IstanbulIlBaskanligi >> ;
-    #      ngo:unitType      ngo:Representation ;
+    #  # Eski Temsilcilik — kapatılır
+    #  ngo40:dTEM a ngo:TerritorialUnit ;
+    #      rdfs:label        "Ümraniye Temsilciliği"@tr ;
     #      ngo:isLegalEntity false ;
-    #      ngo:startDate     "2023-03-01"^^xsd:date ;
-    #      ngo:endDate       "2023-12-31"^^xsd:date .
+    #      ngo:foundingDate  "2023-01-01"^^xsd:date ;
+    #      ngo:dissolutionDate "2023-12-31"^^xsd:date ;
+    #      ngo:legalBasis    "Tüzük Md. 11 — Temsilcilik Kuruluşu" .
     #
-    #  _:occ2 rdf:reifies << :KadikoyBirimi ngo:subUnitOf :IstanbulIlBaskanligi >> ;
-    #      ngo:unitType      ngo:Presidency ;
+    #  ngo40:dTEM ngo:hasOfficer ngo40:dpXXX {|
+    #      ngo:officerRole ngo40:vorfdilt ;           # İl Temsilcisi
+    #      ngo:startDate   "2023-01-01"^^xsd:date ;
+    #      ngo:endDate     "2023-12-31"^^xsd:date ;
+    #      ngo:endReason   ngo40:ver6cls3             # Kapanış
+    #  |} .
+    #
+    #  # Yeni Başkanlık — ayrı IRI
+    #  ngo40:dBSK a ngo:TerritorialUnit ;
+    #      rdfs:label        "Ümraniye İlçe Başkanlığı"@tr ;
     #      ngo:isLegalEntity true ;
-    #      ngo:startDate     "2024-01-01"^^xsd:date ;
-    #      ngo:legalRegNo    "34-NGO-2024-0108" .
-    #
-    #  Kural: URI değişmez; dönüşüm bağlamı reifier ile taşınır.
+    #      ngo:foundingDate  "2024-01-01"^^xsd:date ;
+    #      ngo:legalRegNo    "34-NGO-2024-0212" ;
+    #      ngo:legalBasis    "Tüzük Md. 14 — İlçe Başkanlığı Kuruluşu" .
 
-    # ── PATTERN 4: Komisyon katılımı ─────────────────────────────────────────
+    # ── PATTERN 2: Koordinasyon Bölgesi Sorumlu Ataması ───────────────────────
     #
-    #  _:p1 rdf:reifies << :Ahmet ngo:participatesIn :TarimKomisyonu >> ;
-    #      ngo:status    ngo:CommissionHead ;
-    #      ngo:startDate "2024-03-01"^^xsd:date ;
-    #      ngo:appointedBy :AnkaraIlYKurulu .
+    #  Senaryo: Ahmet Yılmaz, Marmara Bölgesi'nden sorumlu kişi olarak atanmıştır.
+    #  Sorumlu kişi ngo:hasOfficer ile, rolü ngo:officerRole annotation'ı ile belirtilir.
     #
-    # ── PATTERN 5: İlgi alanı beyanı ─────────────────────────────────────────
+    #  ngo40:dMARMARA ngo:hasOfficer ngo40:dpAhmet {|
+    #      ngo:officerRole ngo40:vorfcblt ;           # Bölge Temsilcisi
+    #      ngo:startDate   "2024-01-01"^^xsd:date
+    #  |} .
     #
-    #  :Ahmet ngo:hasInterest :TopicTarim {|
-    #      ngo:startDate     "2024-02-15"^^xsd:date ;
-    #      ngo:interestWeight 0.85
-    #  |}
+    #  Görevlisi olmayan bölgeler için yazışma dağıtımı:
+    #  SPARQL OPTIONAL ile sorgulanır; görevli yoksa ngo:administrativeArea → iller doğrudan.
 
-    # ── PATTERN 6: Proje yürütücüsü — çok fazlı atama ────────────────────────
+    # ── PATTERN 3: Hiyerarşik Bağın Tarihsel Belgesi ────────────────────────
     #
-    #  _:pa1 rdf:reifies << :ProjeX ngo:assignedTo :Ayse >> ;
-    #      ngo:status    ngo:ProjectExecutor ;
-    #      ngo:phase     "Faz-1" ;
-    #      ngo:startDate "2024-01-01"^^xsd:date ;
-    #      ngo:endDate   "2024-06-30"^^xsd:date .
+    #  Senaryo: Kadıköy birimi 2023'te farklı bir üst birime bağlıydı,
+    #  2024'te İstanbul İl Başkanlığı'na aktarıldı.
     #
-    #  _:pa2 rdf:reifies << :ProjeX ngo:assignedTo :Mehmet >> ;
-    #      ngo:status    ngo:ProjectExecutor ;
-    #      ngo:phase     "Faz-2" ;
-    #      ngo:startDate "2024-07-01"^^xsd:date .
+    #  _:h1 rdf:reifies <<( ngo:KadikoyBirimi ngo:subUnitOf ngo:EskiIlBirimi )>> ;
+    #      ngo:startDate "2023-01-01"^^xsd:date ;
+    #      ngo:endDate   "2023-12-31"^^xsd:date .
+    #
+    #  _:h2 rdf:reifies <<( ngo:KadikoyBirimi ngo:subUnitOf ngo:IstanbulIlBaskanligi )>> ;
+    #      ngo:startDate "2024-01-01"^^xsd:date .
+    #
+    #  Güncel triple: ngo:KadikoyBirimi ngo:subUnitOf ngo:IstanbulIlBaskanligi .
 
-    # ── PATTERN 7: Raporlama bağı annotation ─────────────────────────────────
-    #
-    #  :KadikoyIlceBaskanligi ngo:reportsTo :IstanbulIlBaskanligi {|
-    #      ngo:startDate         "2024-01-01"^^xsd:date ;
-    #      ngo:reportingFrequency "Aylık" ;
-    #      ngo:legalBasis        "Tüzük Md. 22"
-    #  |}
-
-    # ── PATTERN 8: Tüzel kişilik geçişi (type triple annotation) ─────────────
-    #
-    #  :KadikoyBirimi a ngo:Presidency {|
-    #      ngo:isLegalEntity true ;
-    #      ngo:legalRegNo    "34-NGO-2024-0108" ;
-    #      ngo:startDate     "2024-01-01"^^xsd:date ;
-    #      ngo:legalBasis    "2911 Sayılı Kanun Md.7"
-    #  |}
-}
 
 ###############################################################################
-#  GRAPH 9 — Ek Annotation Properties  (tartışmadan çıkan son kararlar)
+#  GRAPH 8 — SPARQL Integrity Constraints  (normatif kurallar)
 ###############################################################################
 
-ngog:annotation-properties-extended {
-
-    # ── isFormalMember — sadece Person domain'i için ──────────────────────────
-    #
-    #  ngo:status enum'ından ayrı tutulur çünkü:
-    #  a) boolean sorgusu çok daha hızlı
-    #  b) FormalMember statüsü özel OWL kısıtlarına (maxCardinality 1) tabi
-    #  c) Diğer statüler komisyon/temsilcilik bağlamında da kullanılır
-
-    ngo:isFormalMember
-        a owl:AnnotationProperty ;
-        rdfs:label   "Resmi Üye mi?"@tr , "Is Formal Member?"@en ;
-        rdfs:comment "Kişinin herhangi bir ilçe başkanlığında aktif FormalMember statüsünde olup olmadığını hızlı sorgulama için taşıyan boolean annotation. rdf:reifies bloğundaki ngo:status ngo:FormalMember ile tutarlı olmalıdır."@tr ,
-                     "Boolean annotation for fast querying of whether a person currently holds FormalMember status in any district presidency. Must be consistent with ngo:status ngo:FormalMember in any rdf:reifies block."@en ;
-        rdfs:domain  ngo:Person ;
-        rdfs:range   xsd:boolean .
-
-    # ── isActive — genel aktiflik bayrağı ────────────────────────────────────
-    #
-    #  endDate yokluğunu SPARQL FILTER NOT EXISTS ile bulmak yerine
-    #  explicit boolean flag: tooling desteği zayıf ortamlarda kullanılır.
-    #  endDate her zaman önceliklidir; isActive yalnızca ek kolaylık sağlar.
-
-    ngo:isActive
-        a owl:AnnotationProperty ;
-        rdfs:label   "Aktif mi?"@tr , "Is Active?"@en ;
-        rdfs:comment "Reify edilmiş triple'ın o anki aktiflik durumu. endDate bulunmuyorsa true kabul edilir; endDate varsa bu flag güncellenmeli ya da göz ardı edilmelidir."@tr ,
-                     "Activeness flag of a reified triple. Assumed true when endDate is absent; must be updated or ignored when endDate is present."@en ;
-        rdfs:range   xsd:boolean .
-
-    # ── weight — genel ağırlık/öncelik skoru ─────────────────────────────────
-    #
-    #  ngo:interestWeight'in genelleştirilmiş versiyonu.
-    #  İlgi alanı dışında proje önceliği, görev kritikliği vb. için de kullanılır.
-
-    ngo:weight
-        a owl:AnnotationProperty ;
-        rdfs:label   "Ağırlık / Öncelik"@tr , "Weight / Priority"@en ;
-        rdfs:range   xsd:decimal ;
-        rdfs:comment "0.0–1.0 arası genel ağırlık veya öncelik skoru."@tr ,
-                     "General weight or priority score between 0.0 and 1.0."@en .
-
-    # ── note — serbest metin notu ─────────────────────────────────────────────
-    ngo:note
-        a owl:AnnotationProperty ;
-        rdfs:subPropertyOf skos:note ;
-        rdfs:label   "Not"@tr , "Note"@en ;
-        rdfs:comment "Reify edilmiş triple veya herhangi bir kaynak hakkında serbest metin notu."@tr ,
-                     "Free-text note about a reified triple or any resource."@en ;
-        rdfs:range   rdf:langString .
-}
-
-###############################################################################
-#  GRAPH 10 — SPARQL Integrity Constraints  (normatif kurallar)
-#
-#  Bu grafta SPARQL-based integrity constraint'ler shape/rule olarak
-#  belgelenir. SHACL ile de ifade edilebilir; burada yorumlu SPARQL verilir.
-###############################################################################
-
-ngog:integrity-constraints {
-
-    # ── IC-01: FormalMember tek Presidency kısıtı ─────────────────────────────
-    #
-    #  Bir kişi en fazla bir Presidency biriminde aynı anda FormalMember olabilir.
+    # ── IC-01: transitiveSubUnitOf döngü içermemeli ────────────────────────────
     #
     #  ASK {
-    #    SELECT ?person (COUNT(DISTINCT ?unit) AS ?cnt) WHERE {
-    #      ?r1 rdf:reifies << ?person ngo:memberOf ?unit >> ;
-    #          ngo:status ngo:FormalMember .
-    #      ?unit a ngo:Presidency .
-    #      FILTER NOT EXISTS { ?r1 ngo:endDate ?ed }   # hâlâ aktif
-    #    } GROUP BY ?person
-    #    HAVING (?cnt > 1)
-    #  }
-    #  → Sonuç boş olmalıdır (violation yoktur).
-
-    # ── IC-02: ProjectEntity en az 1 ProjectManager ───────────────────────────
-    #
-    #  ASK {
-    #    ?proje a ngo:ProjectEntity .
-    #    FILTER NOT EXISTS {
-    #      ?r rdf:reifies << ?proje ngo:assignedTo ?kisi >> ;
-    #         ngo:status ngo:ProjectManager .
-    #    }
+    #    ?unit ngo:transitiveSubUnitOf ?unit .
     #  }
     #  → Sonuç boş olmalıdır.
 
-    # ── IC-03: FormalMember sadece Presidency biriminde ───────────────────────
+    # ── IC-02: foundingDate ≤ dissolutionDate ─────────────────────────────────
     #
     #  ASK {
-    #    ?r rdf:reifies << ?person ngo:memberOf ?unit >> ;
-    #       ngo:status ngo:FormalMember .
-    #    FILTER NOT EXISTS { ?unit a ngo:Presidency }
+    #    ?unit ngo:foundingDate ?f ; ngo:dissolutionDate ?d .
+    #    FILTER (?d < ?f)
     #  }
     #  → Sonuç boş olmalıdır.
 
-    # ── IC-04: WorkItem bir projeye bağlı olmalı ──────────────────────────────
-    #
-    #  ASK {
-    #    ?wi a ngo:WorkItem .
-    #    FILTER NOT EXISTS {
-    #      { ?p ngo:hasWorkItem ?wi } UNION { ?sp ngo:hasWorkItem ?wi }
-    #    }
-    #  }
-    #  → Sonuç boş olmalıdır.
-
-    # ── IC-05: endDate startDate'den önce olamaz ──────────────────────────────
+    # ── IC-03: RDF-Star dönemlerinde endDate ≥ startDate ─────────────────────
     #
     #  ASK {
     #    ?r ngo:startDate ?s ; ngo:endDate ?e .
@@ -1028,24 +511,540 @@ ngog:integrity-constraints {
     #  }
     #  → Sonuç boş olmalıdır.
 
-    # ── IC-06: transitiveSubUnitOf döngü içermemeli ───────────────────────────
+    # ── IC-04: Tüzel kişilikli TerritorialUnit en az bir GoverningBody içermeli ──
     #
     #  ASK {
-    #    ?unit ngo:transitiveSubUnitOf ?unit .
+    #    ?p a ngo:TerritorialUnit ; ngo:isLegalEntity true .
+    #    FILTER NOT EXISTS { ?p ngo:hasGoverningBody ?gb }
     #  }
     #  → Sonuç boş olmalıdır.
 
-    # ── IC-07: isFormalMember tutarlılığı ─────────────────────────────────────
-    #
-    #  isFormalMember true ise, kişinin aktif FormalMember reifier'ı olmalı.
+    # ── IC-05: CoordinationZone hiçbir zaman TerritorialUnit değil ─────────────
     #
     #  ASK {
-    #    ?person ngo:isFormalMember true .
+    #    ?cz a ngo:CoordinationZone , ngo:TerritorialUnit .
+    #  }
+    #  → Sonuç boş olmalıdır.
+
+    # ── IC-09: Tüzel kişilikli TerritorialUnit başkan, sekreter, sayman içermeli ──
+    #
+    #  Her aktif (dissolutionDate yok) isLegalEntity=true birimde en az bir
+    #  aktif (endDate yok) başkan, sekreter ve sayman görevlisi olmalıdır.
+    #  (Üç ayrı ASK — biri başarısız olursa hangi rolün eksik olduğu görülür.)
+    #
+    #  # Başkan eksik mi?
+    #  ASK {
+    #    ?unit a ngo:TerritorialUnit ; ngo:isLegalEntity true .
+    #    FILTER NOT EXISTS { ?unit ngo:dissolutionDate ?dd }
     #    FILTER NOT EXISTS {
-    #      ?r rdf:reifies << ?person ngo:memberOf ?unit >> ;
-    #         ngo:status ngo:FormalMember .
+    #      ?r rdf:reifies <<( ?unit ngo:hasOfficer ?p )>> ;
+    #         ngo:officerRole ?rol .
+    #      FILTER(?rol IN (ngo40:vorf1gnb, ngo40:vorf4ilb, ngo40:vorf7icb))
     #      FILTER NOT EXISTS { ?r ngo:endDate ?ed }
     #    }
     #  }
     #  → Sonuç boş olmalıdır.
+
+
+###############################################################################
+#  GRAPH 9 — NGO Vokabüler Profili
+#  Dış SKOS ontolojisi yüklenmez. Bu grafta yalnızca projede fiilen kullanılan
+#  SKOS class ve property'leri ngo: namespace'inde tanımlanır; rdfs:seeAlso ile
+#  orijinal SKOS IRI'larına köprü kurulur.
+###############################################################################
+
+    # ── Sınıflar ─────────────────────────────────────────────────────────────
+
+    ngo:ConceptScheme
+        a owl:Class ;
+        rdfs:label   "Kavram Şeması"@tr , "Concept Scheme"@en ;
+        rdfs:comment
+            "Belirli bir konuya ait NGO vokabüler kavramlarını bir araya getiren koleksiyon. NGO-vocabulary.trig dosyasındaki şemaların her biri bu sınıfın bir bireyi olarak modellenir.\nÖrnek: ngo:AdminLevelScheme a ngo:ConceptScheme ."@tr ,
+            "Collection grouping NGO vocabulary concepts belonging to a particular subject. Each scheme in NGO-vocabulary.trig is an individual of this class.\nExample: ngo:AdminLevelScheme a ngo:ConceptScheme ."@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#ConceptScheme> .
+
+    ngo:Concept
+        a owl:Class ;
+        rdfs:label   "Kavram"@tr , "Concept"@en ;
+        rdfs:comment
+            "Bir ngo:ConceptScheme içinde yer alan kontrollü vokabüler değeri. ngo:administrativeLevel, ngo:administrativeArea gibi property'lerin değer aralığını oluşturur.\nÖrnek: ngo40:vpl3m7kx a ngo:Concept .  # ProvinceLevel"@tr ,
+            "Controlled vocabulary value belonging to a ngo:ConceptScheme. Forms the value range of properties such as ngo:administrativeLevel and ngo:administrativeArea.\nExample: ngo40:vpl3m7kx a ngo:Concept .  # ProvinceLevel"@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#Concept> .
+
+    # ── Şema Bağlantı Property'leri ──────────────────────────────────────────
+
+    ngo:inScheme
+        a owl:ObjectProperty ;
+        rdfs:domain  ngo:Concept ;
+        rdfs:range   ngo:ConceptScheme ;
+        rdfs:label   "şema içinde"@tr , "in scheme"@en ;
+        rdfs:comment
+            "Kavramın ait olduğu ConceptScheme. Her kavram en az bir şemada yer almalıdır.\nÖrnek: ngo40:vpl3m7kx ngo:inScheme ngo:AdminLevelScheme .  # ProvinceLevel"@tr ,
+            "The ConceptScheme to which this concept belongs. Every concept must belong to at least one scheme.\nExample: ngo40:vpl3m7kx ngo:inScheme ngo:AdminLevelScheme .  # ProvinceLevel"@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#inScheme> .
+
+    ngo:topConceptOf
+        a owl:ObjectProperty ;
+        owl:inverseOf ngo:hasTopConcept ;
+        rdfs:domain  ngo:Concept ;
+        rdfs:range   ngo:ConceptScheme ;
+        rdfs:label   "üst kavramı olduğu şema"@tr , "top concept of"@en ;
+        rdfs:comment
+            "Kavramın şema hiyerarşisinin kökünde yer aldığını belirtir; daha geniş (ngo:broader) kavramı yoktur. ngo:hasTopConcept'in tersidir.\nÖrnek: ngo40:vcl5p9rt ngo:topConceptOf ngo:AdminLevelScheme .  # CountryLevel"@tr ,
+            "Indicates that the concept sits at the root of the scheme hierarchy; it has no broader concept. Inverse of ngo:hasTopConcept.\nExample: ngo40:vcl5p9rt ngo:topConceptOf ngo:AdminLevelScheme .  # CountryLevel"@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#topConceptOf> .
+
+    ngo:hasTopConcept
+        a owl:ObjectProperty ;
+        owl:inverseOf ngo:topConceptOf ;
+        rdfs:domain  ngo:ConceptScheme ;
+        rdfs:range   ngo:Concept ;
+        rdfs:label   "üst kavramı"@tr , "has top concept"@en ;
+        rdfs:comment
+            "Bir ConceptScheme'in hiyerarşik kök kavramlarını listeler. ngo:topConceptOf'un tersidir; reasoner tarafından otomatik çıkarılır.\nÖrnek: ngo:AdminLevelScheme ngo:hasTopConcept ngo40:vcl5p9rt .  # CountryLevel"@tr ,
+            "Lists the root concepts of a ConceptScheme. Inverse of ngo:topConceptOf; inferred automatically by a reasoner.\nExample: ngo:AdminLevelScheme ngo:hasTopConcept ngo40:vcl5p9rt .  # CountryLevel"@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#hasTopConcept> .
+
+    # ── Hiyerarşi Property'leri ───────────────────────────────────────────────
+
+    ngo:broader
+        a owl:ObjectProperty ;
+        owl:inverseOf ngo:narrower ;
+        rdfs:domain  ngo:Concept ;
+        rdfs:range   ngo:Concept ;
+        rdfs:label   "daha geniş kavram"@tr , "broader"@en ;
+        rdfs:comment
+            "Bu kavramdan daha geniş kapsamlı olan üst kavrama bağ. Transitif değildir. ngo:narrower'ın tersidir.\nÖrnek: ngo40:vpl3m7kx ngo:broader ngo40:vcl5p9rt .  # ProvinceLevel → CountryLevel"@tr ,
+            "Link to the concept with a broader scope. Non-transitive. Inverse of ngo:narrower.\nExample: ngo40:vpl3m7kx ngo:broader ngo40:vcl5p9rt .  # ProvinceLevel → CountryLevel"@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#broader> .
+
+    ngo:narrower
+        a owl:ObjectProperty ;
+        owl:inverseOf ngo:broader ;
+        rdfs:domain  ngo:Concept ;
+        rdfs:range   ngo:Concept ;
+        rdfs:label   "daha dar kavram"@tr , "narrower"@en ;
+        rdfs:comment
+            "Bu kavramdan daha dar kapsamlı olan alt kavrama bağ. ngo:broader'ın tersidir; reasoner tarafından otomatik çıkarılır, veriye elle eklenmesi gerekmez.\nÖrnek: ngo40:vpl3m7kx ngo:narrower ngo40:vdl8q2zn .  # ProvinceLevel → DistrictLevel (reasoner ngo:broader'dan çıkarır)"@tr ,
+            "Link to the concept with a narrower scope. Inverse of ngo:broader; inferred automatically by a reasoner, need not be asserted in data.\nExample: ngo40:vpl3m7kx ngo:narrower ngo40:vdl8q2zn .  # ProvinceLevel → DistrictLevel (inferred by reasoner from ngo:broader)"@en ;
+        rdfs:seeAlso <http://www.w3.org/2004/02/skos/core#narrower> .
+
+
+###############################################################################
+#  DEMAND-NGO-002 — Kişi / Üyelik Modeli
+#  Aşağıdaki graflar DEMAND-NGO-001'deki örgütsel hiyerarşi modelini
+#  kişi, üyelik, iletişim ve vokabüler kavram tipleriyle genişletir.
+###############################################################################
+
+
+###############################################################################
+#  GRAPH 10 — Kişi Sınıfları  (DEMAND-NGO-002)
+###############################################################################
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  A. Person — Tek sınıf + participationStatus property
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:Person
+        a owl:Class ;
+        rdfs:label   "Kişi"@tr , "Person"@en ;
+        rdfs:comment
+            "NGO ile herhangi bir ilişkisi olan kişiyi temsil eden tek sınıf. Resmi üye, gönüllü, aday gönüllü, aktif gönüllü ve takipçi arasındaki ayrım ngo:participationStatus property'si ile yapılır (OWL alt sınıflarıyla değil). Katılım durumu değiştiğinde (örn. aktif gönüllü → resmi üye) eski triple silinir, yeni eklenir; geçiş tarihi RDF-Star annotation ile izlenir.\nInstance URI formatı: ngo40:d[8-alfanümerik]"@tr ,
+            "Single class representing any person with a relationship to the NGO. The distinction between official member, volunteer, candidate volunteer, active volunteer, and follower is expressed via ngo:participationStatus (not OWL subclasses). When status changes (e.g. active volunteer → official member) the old triple is deleted and a new one asserted; transition date is tracked via RDF-Star annotation.\nInstance IRI format: ngo40:d[8-alphanumeric]"@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  B. PostalAddress — Yapılandırılmış adres sınıfı
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:PostalAddress
+        a owl:Class ;
+        rdfs:label   "Posta Adresi"@tr , "Postal Address"@en ;
+        rdfs:comment
+            "Kişinin bir posta adresini temsil eden yapılandırılmış sınıf. Bir kişinin birden fazla adresi olabilir (iş, ev vb.). Adres tipi RDF-Star annotation ile ngo:addressType üzerinden belirtilir.\nÖrnek: ngo40:dXXX ngo:hasAddress ngo40:dYYY . ngo40:dYYY a ngo:PostalAddress ; ngo:streetAddress \"Moda Cad. No:5\" ; ngo:city ngo40:v[istanbul-iri] ."@tr ,
+            "Structured class representing a postal address of a person. A person may have multiple addresses (work, home, etc.). Address type is indicated via RDF-Star annotation on ngo:addressType.\nExample: ngo40:dXXX ngo:hasAddress ngo40:dYYY . ngo40:dYYY a ngo:PostalAddress ; ngo:streetAddress \"Moda St No:5\" ; ngo:city ngo40:v[istanbul-iri] ."@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  C. Typed Concept Subclasses — Kavram rol sınıfları
+    #  Her biri ngo:Concept'in alt sınıfıdır; aynı kavram birden fazla
+    #  alt sınıfta aynı anda yer alabilir (owl:disjoint yoktur).
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:ContributionConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "Katkı Alanı Kavramı"@tr , "Contribution Concept"@en ;
+        rdfs:comment
+            "Bir kişinin NGO'ya gönüllü katkı vermek istediği alana karşılık gelen kavram. ngo:KatkiAlanlariScheme'de yer alır. Çok spesifik (Amasya'da ulaşım desteği) veya genel (Tarım politikası) olabilir; ngo:broader/narrower ile hiyerarşilenir. Bir kavram aynı anda hem ContributionConcept hem ExpertiseConcept veya ProfessionConcept olabilir."@tr ,
+            "Concept representing an area in which a person wishes to contribute voluntarily to the NGO. Belongs to ngo:KatkiAlanlariScheme. May be very specific (transport support in Amasya) or general (Agricultural policy); hierarchised via ngo:broader/narrower. A concept may simultaneously be a ContributionConcept and an ExpertiseConcept or ProfessionConcept."@en .
+
+    ngo:ExpertiseConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "Uzmanlık Alanı Kavramı"@tr , "Expertise Concept"@en ;
+        rdfs:comment
+            "Kişinin uzman olduğu alana karşılık gelen kavram. ngo:UzmanlikAlanlariScheme'de yer alır. Kişi bu uzmanlığı fiilen kullanıyor olmak zorunda değildir ve bu alanda NGO'ya katkı vermek istemeyebilir (bkz. ngo:ContributionConcept farkı).\nÖrnek: Emekli bir psikiyatrist için uzmanlık alanı Psikiyatri olurken katkı alanı Tarım Ekonomisi olabilir."@tr ,
+            "Concept representing a domain in which the person holds expertise. Belongs to ngo:UzmanlikAlanlariScheme. The person need not currently practice this expertise, nor wish to contribute to the NGO in this field (cf. ngo:ContributionConcept).\nExample: for a retired psychiatrist, expertise is Psychiatry while contribution area may be Agricultural Economics."@en .
+
+    ngo:ProfessionConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "Meslek Kavramı"@tr , "Profession Concept"@en ;
+        rdfs:comment
+            "Kişinin profesyonel olarak icra ettiği veya ettiği mesleğe karşılık gelen kavram. ngo:MesleklerScheme'de yer alır. Uzmanlık alanından bağımsızdır; aynı kavram her ikisinde de yer alabilir (ör. Ziraat Mühendisliği hem Meslek hem Uzmanlık olabilir)."@tr ,
+            "Concept representing the profession the person practises or has practised professionally. Belongs to ngo:MesleklerScheme. Independent of expertise; the same concept may appear in both (e.g. Agricultural Engineering can be both Profession and Expertise)."@en .
+
+    ngo:ParticipationStatusConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "Katılım Durumu Kavramı"@tr , "Participation Status Concept"@en ;
+        rdfs:comment
+            "ngo:participationStatus property'sinin değer uzayını oluşturan kontrollü vokabüler kavramı. ngo:ParticipationStatusScheme'de tanımlanır. Olası değerler: OfficialMemberStatus, VolunteerStatus, ActiveVolunteerStatus, CandidateVolunteerStatus, FollowerStatus."@tr ,
+            "Controlled vocabulary concept forming the value range of the ngo:participationStatus property. Defined in ngo:ParticipationStatusScheme. Possible values: OfficialMemberStatus, VolunteerStatus, ActiveVolunteerStatus, CandidateVolunteerStatus, FollowerStatus."@en .
+
+    ngo:ContactStatusConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "İletişim Durumu Kavramı"@tr , "Contact Status Concept"@en ;
+        rdfs:comment
+            "RDF-Star iletişim triple'larına annotation olarak eklenen kontrollü vokabüler kavramı. ngo:ContactStatusScheme'de tanımlanır. Olası değerler: ContactActive, ContactInactive, ContactNotVeryActive."@tr ,
+            "Controlled vocabulary concept added as RDF-Star annotation to contact triples. Defined in ngo:ContactStatusScheme. Possible values: ContactActive, ContactInactive, ContactNotVeryActive."@en .
+
+    ngo:AddressTypeConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "Adres Türü Kavramı"@tr , "Address Type Concept"@en ;
+        rdfs:comment
+            "RDF-Star adres triple'larına annotation olarak eklenen kontrollü vokabüler kavramı. ngo:AddressTypeScheme'de tanımlanır. Olası değerler: HomeAddress, WorkAddress, OtherAddress."@tr ,
+            "Controlled vocabulary concept added as RDF-Star annotation to address triples. Defined in ngo:AddressTypeScheme. Possible values: HomeAddress, WorkAddress, OtherAddress."@en .
+
+    ngo:OfficerRoleConcept
+        a owl:Class ;
+        rdfs:subClassOf ngo:Concept ;
+        rdfs:label   "Görev Rolü Kavramı"@tr , "Officer Role Concept"@en ;
+        rdfs:comment
+            "ngo:officerRole annotation property'sinin değer uzayını oluşturan kontrollü vokabüler kavramı. ngo:OfficerRoleScheme'de tanımlanır. Genel Merkez, İl/İlçe Başkanlığı ve Temsilcilik rollerini kapsar (Genel Başkan, İl Saymanı, İlçe Temsilcisi vb.)."@tr ,
+            "Controlled vocabulary concept forming the value range of the ngo:officerRole annotation property. Defined in ngo:OfficerRoleScheme. Covers Headquarter, Province/District Presidency and Representation roles (General President, Provincial Treasurer, District Representative, etc.)."@en .
+
+
+###############################################################################
+#  GRAPH 11 — Kişi Object Properties  (DEMAND-NGO-002)
+###############################################################################
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  A. Katılım / Üyelik Bağları
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:participationStatus
+        a owl:ObjectProperty , owl:FunctionalProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:ParticipationStatusConcept ;
+        rdfs:label   "katılım durumu"@tr , "participation status"@en ;
+        rdfs:comment
+            "Kişinin NGO ile ilişkisinin mevcut türü. owl:FunctionalProperty: her kişinin en fazla bir durumu olabilir. Durum değişimlerinde eski triple silinir, yeni eklenir; RDF-Star annotation ile geçiş tarihi kaydedilir.\nDeğerler: ngo:ParticipationStatusScheme'deki kavramlar (OfficialMemberStatus, VolunteerStatus, ActiveVolunteerStatus, CandidateVolunteerStatus, FollowerStatus)."@tr ,
+            "Current type of the person's relationship with the NGO. owl:FunctionalProperty: at most one status per person. On status change, old triple is deleted and new one asserted; transition date recorded via RDF-Star annotation.\nValues: concepts in ngo:ParticipationStatusScheme."@en .
+
+    ngo:memberOf
+        a owl:ObjectProperty , owl:FunctionalProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "üyesi olduğu birim"@tr , "member of"@en ;
+        rdfs:comment
+            "Resmi üyenin (OfficialMemberStatus) kayıtlı olduğu ilçe başkanlığı. owl:FunctionalProperty: her resmi üye tam olarak bir ilçe başkanlığına kayıtlıdır. SPARQL IC ile range'in ngo:TerritorialUnit (isLegalEntity true, DistrictLevel) olduğu doğrulanır.\nÖrnek: ngo40:d[kisi-iri] ngo:memberOf ngo40:d[ilce-iri] ."@tr ,
+            "District presidency where the official member (OfficialMemberStatus) is registered. owl:FunctionalProperty: each official member is registered at exactly one district presidency. Validated via SPARQL IC that the range is ngo:TerritorialUnit (isLegalEntity true, DistrictLevel).\nExample: ngo40:d[person-iri] ngo:memberOf ngo40:d[district-iri] ."@en .
+
+    ngo:pendingMemberOf
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "üye olacağı beklenen birim"@tr , "pending member of"@en ;
+        rdfs:comment
+            "Aktif gönüllünün (ActiveVolunteerStatus) ileride üye olmak istediği ilçe başkanlığı. İlçe kurulmamış olabilir (0..1). İlçe kurulduğunda bu property silinir, ngo:memberOf eklenir ve participationStatus güncellenir."@tr ,
+            "District presidency where the active volunteer (ActiveVolunteerStatus) intends to become a member. The district may not yet exist (0..1). When the district is established this property is removed, ngo:memberOf is added, and participationStatus is updated."@en .
+
+    ngo:affiliatedWith
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "bağlı olduğu birim"@tr , "affiliated with"@en ;
+        rdfs:comment
+            "Gönüllünün (VolunteerStatus veya ActiveVolunteerStatus) faaliyetlerine katıldığı NGO birimi. 0..* değer alabilir; birden fazla birimle ilişkilendirilebilir.\nÖrnek: ngo40:d[kisi-iri] ngo:affiliatedWith ngo40:d[istanbul-il-iri] ."@tr ,
+            "NGO unit whose activities the volunteer (VolunteerStatus or ActiveVolunteerStatus) participates in. 0..* values allowed; may be associated with multiple units."@en .
+
+    ngo:follows
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:NGOUnit ;
+        rdfs:label   "takip ettiği birim"@tr , "follows"@en ;
+        rdfs:comment
+            "Takipçinin (FollowerStatus) takip ettiği NGO birimi. Üyelik veya gönüllülük içermez. 0..* değer alabilir."@tr ,
+            "NGO unit followed by the person (FollowerStatus). Does not imply membership or volunteering. 0..* values allowed."@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  B. Kişi → Kavram Bağları (Katkı, Uzmanlık, Meslek)
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:hasContributionArea
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:ContributionConcept ;
+        rdfs:label   "katkı alanı"@tr , "has contribution area"@en ;
+        rdfs:comment
+            "Kişinin NGO'ya gönüllü katkı vermek istediği alan(lar). 0..* değer alır; SKOS broader/narrower ile hiyerarşik sorgulama desteklenir.\nÖrnek: ngo40:d[kisi] ngo:hasContributionArea ngo40:v[tarim-ekonomisi-iri] ."@tr ,
+            "Area(s) in which the person wishes to contribute voluntarily to the NGO. 0..* values; hierarchical querying supported via SKOS broader/narrower."@en .
+
+    ngo:hasExpertise
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:ExpertiseConcept ;
+        rdfs:label   "uzmanlık alanı"@tr , "has expertise"@en ;
+        rdfs:comment
+            "Kişinin uzman olduğu alan(lar). ngo:hasContributionArea'dan bağımsızdır; kişi uzmanlığını kullanmak zorunda değildir. 0..* değer alır."@tr ,
+            "Domain(s) in which the person holds expertise. Independent of ngo:hasContributionArea; the person need not use this expertise. 0..* values."@en .
+
+    ngo:hasProfession
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:ProfessionConcept ;
+        rdfs:label   "mesleği"@tr , "has profession"@en ;
+        rdfs:comment
+            "Kişinin profesyonel olarak icra ettiği veya ettiği meslek(ler). 0..* değer alır."@tr ,
+            "Profession(s) the person practises or has practised professionally. 0..* values."@en .
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  C. İletişim Bağları
+    # ══════════════════════════════════════════════════════════════════════════
+
+    ngo:hasAddress
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  ngo:PostalAddress ;
+        rdfs:label   "adresi"@tr , "has address"@en ;
+        rdfs:comment
+            "Kişinin posta adres(ler)ini belirtir. 0..* değer alır; her adres ayrı bir ngo:PostalAddress kaynağıdır. Adres türü RDF-Star annotation ile belirtilir.\nÖrnek: ngo40:d[kisi] ngo:hasAddress ngo40:d[adres] {| ngo:addressType ngo40:v[ev-adres-iri] |} ."@tr ,
+            "Postal address(es) of the person. 0..* values; each address is a separate ngo:PostalAddress resource. Address type is indicated via RDF-Star annotation.\nExample: ngo40:d[person] ngo:hasAddress ngo40:d[addr] {| ngo:addressType ngo40:v[home-addr-iri] |} ."@en .
+
+    ngo:city
+        a owl:ObjectProperty ;
+        rdfs:domain ngo:PostalAddress ;
+        rdfs:range  ngo:Concept ;
+        rdfs:label   "şehir / il"@tr , "city / province"@en ;
+        rdfs:comment
+            "Adresin bulunduğu il veya şehri belirten coğrafi alan kavramı. Değer ngo:AdminAreaScheme'deki bir kavramdır; yerler dönüşümünden sonra Türkiye illeri bu şemada yer alacaktır.\nÖrnek: ngo40:d[adres] ngo:city ngo40:v[istanbul-iri] ."@tr ,
+            "Geographic area concept indicating the province or city of the address. Value is a concept in ngo:AdminAreaScheme; Turkish provinces will be present after the places conversion.\nExample: ngo40:d[addr] ngo:city ngo40:v[istanbul-iri] ."@en .
+
+
+###############################################################################
+#  GRAPH 12 — Kişi Datatype Properties  (DEMAND-NGO-002)
+###############################################################################
+
+    ngo:firstName
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Adı"@tr , "First Name"@en ;
+        rdfs:comment
+            "Kişinin adı (verilen ad). Örnek: ngo40:d[kisi] ngo:firstName \"Ahmet\" ."@tr ,
+            "Given name of the person. Example: ngo40:d[kisi] ngo:firstName \"Ahmet\" ."@en .
+
+    ngo:familyName
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Soyadı"@tr , "Family Name"@en ;
+        rdfs:comment
+            "Kişinin soyadı. Örnek: ngo40:d[kisi] ngo:familyName \"Yılmaz\" ."@tr ,
+            "Family name (surname) of the person. Example: ngo40:d[kisi] ngo:familyName \"Yılmaz\" ."@en .
+
+    ngo:phone
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Telefon"@tr , "Phone"@en ;
+        rdfs:comment
+            "Kişinin telefon numarası. Birden fazla değer alabilir (iş, cep vb.). RDF-Star annotation ile durum ve not eklenebilir.\nÖrnek: ngo40:d[kisi] ngo:phone \"+90 555 001 0001\" {| ngo:contactStatus ngo40:v[aktif] ; ngo:contactNote \"22:00'den sonra aramayın\" |} ."@tr ,
+            "Phone number of the person. Multiple values allowed (work, mobile, etc.). RDF-Star annotation may add status and note."@en .
+
+    ngo:email
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "E-posta"@tr , "Email"@en ;
+        rdfs:comment
+            "Kişinin e-posta adresi. Birden fazla değer alabilir. RDF-Star annotation ile durum eklenebilir."@tr ,
+            "Email address of the person. Multiple values allowed. RDF-Star annotation may add status."@en .
+
+    ngo:twitterHandle
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:Person ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Twitter Hesabı"@tr , "Twitter Handle"@en ;
+        rdfs:comment
+            "Kişinin Twitter/X kullanıcı adı (@ dahil veya hariç). RDF-Star annotation ile aktivite durumu eklenebilir.\nÖrnek: ngo40:d[kisi] ngo:twitterHandle \"@ahmetyilmaz\" {| ngo:contactStatus ngo40:v[az-aktif] |} ."@tr ,
+            "Twitter/X handle of the person (with or without @). RDF-Star annotation may add activity status."@en .
+
+    ngo:streetAddress
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:PostalAddress ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Sokak Adresi"@tr , "Street Address"@en ;
+        rdfs:comment
+            "Posta adresinin cadde/sokak satırı.\nÖrnek: ngo40:d[adres] ngo:streetAddress \"Moda Cad. No:42\" ."@tr ,
+            "Street line of the postal address."@en .
+
+    ngo:postalDistrict
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:PostalAddress ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "İlçe / Semt"@tr , "District / Borough"@en ;
+        rdfs:comment
+            "Posta adresinin ilçe veya semt bilgisi (serbest metin). Coğrafi birim bağı için ngo:city kullanın."@tr ,
+            "District or borough of the postal address (free text). Use ngo:city for the geographic unit link."@en .
+
+    ngo:postalCode
+        a owl:DatatypeProperty ;
+        rdfs:domain ngo:PostalAddress ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "Posta Kodu"@tr , "Postal Code"@en ;
+        rdfs:comment
+            "Posta adresinin posta kodu.\nÖrnek: ngo40:d[adres] ngo:postalCode \"34710\" ."@tr ,
+            "Postal code of the address."@en .
+
+
+###############################################################################
+#  GRAPH 13 — Kişi Annotation Properties  (DEMAND-NGO-002)
+#  RDF-Star iletişim triple'larına annotation için kullanılır.
+###############################################################################
+
+    ngo:contactStatus
+        a owl:AnnotationProperty ;
+        rdfs:range  ngo:ContactStatusConcept ;
+        rdfs:label  "İletişim Durumu"@tr , "Contact Status"@en ;
+        rdfs:comment
+            "İletişim triple'ına RDF-Star annotation olarak eklenen durum değeri. Değer ngo:ContactStatusScheme'deki bir kavramdır.\nÖrnek: ngo40:d[kisi] ngo:phone \"+90...\" {| ngo:contactStatus ngo40:v[aktif-iri] |} ."@tr ,
+            "Status value added as RDF-Star annotation to a contact triple. Value is a concept in ngo:ContactStatusScheme."@en .
+
+    ngo:contactNote
+        a owl:AnnotationProperty ;
+        rdfs:range  xsd:string ;
+        rdfs:label  "İletişim Notu"@tr , "Contact Note"@en ;
+        rdfs:comment
+            "İletişim triple'ına RDF-Star annotation olarak eklenen serbest metin not.\nÖrnek: ngo40:d[kisi] ngo:phone \"+90...\" {| ngo:contactNote \"22:00'den sonra aramayın\" |} ."@tr ,
+            "Free-text note added as RDF-Star annotation to a contact triple."@en .
+
+    ngo:contactPriority
+        a owl:AnnotationProperty ;
+        rdfs:range  xsd:integer ;
+        rdfs:label  "İletişim Önceliği"@tr , "Contact Priority"@en ;
+        rdfs:comment
+            "İletişim kanalının öncelik sırası (1 = birincil). RDF-Star annotation olarak kullanılır.\nÖrnek: ngo40:d[kisi] ngo:email \"...\" {| ngo:contactPriority 1 |} ."@tr ,
+            "Priority order of the contact channel (1 = primary). Used as RDF-Star annotation."@en .
+
+    ngo:addressType
+        a owl:AnnotationProperty ;
+        rdfs:range  ngo:AddressTypeConcept ;
+        rdfs:label  "Adres Türü"@tr , "Address Type"@en ;
+        rdfs:comment
+            "Adres triple'ına RDF-Star annotation olarak eklenen adres türü. Değer ngo:AddressTypeScheme'deki bir kavramdır.\nÖrnek: ngo40:d[kisi] ngo:hasAddress ngo40:d[adres] {| ngo:addressType ngo40:v[ev-adresi-iri] |} ."@tr ,
+            "Address type added as RDF-Star annotation to an address triple. Value is a concept in ngo:AddressTypeScheme."@en .
+
+
+###############################################################################
+#  GRAPH 14 — Kişi Model Axiomları  (DEMAND-NGO-002)
+###############################################################################
+
+    # ── hasKey: Person — firstName + familyName ───────────────────────────────
+    #  Not: Person için güçlü bir doğal anahtar yoktur; gerçek sistemlerde
+    #  ulusal kimlik veya sistem ID'si bu rolü üstlenir. Şimdilik ad+soyad
+    #  bileşimi kısmi tekil kimlik sağlar; DEMAND-NGO-003'te gözden geçirilecektir.
+
+    # ngo:Person owl:hasKey ( ngo:firstName ngo:familyName ) .  # ← opsiyonel, gerçek veriye göre karar verilecek
+
+    # ── Concept Subclass Disjointness ─────────────────────────────────────────
+    #  ContactStatusConcept, AddressTypeConcept ve ParticipationStatusConcept
+    #  birbirinden ayrıktır (aynı kavram birden fazla operasyonel rolde olamaz).
+
+    [] a owl:AllDisjointClasses ;
+        owl:members (
+            ngo:ParticipationStatusConcept
+            ngo:ContactStatusConcept
+            ngo:AddressTypeConcept
+        ) .
+
+    #  ContributionConcept, ExpertiseConcept, ProfessionConcept birbirinden
+    #  AYRI DEĞİLDİR — aynı kavram birden fazla rolde bulunabilir.
+    #  (ör. ZiraatMühendisliği hem ProfessionConcept hem ExpertiseConcept)
+
+
+###############################################################################
+#  GRAPH 15 — Kişi Model Integrity Constraints  (DEMAND-NGO-002)
+###############################################################################
+
+    # ── IC-06: OfficialMember → memberOf zorunlu ─────────────────────────────
+    #
+    #  ASK {
+    #    ?p ngo:participationStatus ngo40:v[OfficialMemberStatus-iri] .
+    #    FILTER NOT EXISTS { ?p ngo:memberOf ?unit }
+    #  }
+    #  → Sonuç boş olmalıdır.
+
+    # ── IC-07: memberOf range → TerritorialUnit (isLegalEntity true, DistrictLevel)
+    #
+    #  ASK {
+    #    ?p ngo:memberOf ?unit .
+    #    FILTER NOT EXISTS { ?unit a ngo:TerritorialUnit ; ngo:isLegalEntity true }
+    #  }
+    #  → Sonuç boş olmalıdır.
+
+    # ── IC-08: Follower → memberOf olmamalı ──────────────────────────────────
+    #
+    #  ASK {
+    #    ?p ngo:participationStatus ngo40:v[FollowerStatus-iri] ;
+    #       ngo:memberOf ?unit .
+    #  }
+    #  → Sonuç boş olmalıdır.
+
+
+###############################################################################
+#  GRAPH 16 — RDF-Star Kullanım Desenleri  (DEMAND-NGO-002)
+###############################################################################
+
+    # ── PATTERN 5: İletişim Annotation ───────────────────────────────────────
+    #
+    #  Senaryo: Ahmet Yılmaz'ın telefonu aktif, Twitter hesabı az aktif.
+    #
+    #  ngo40:d[ahmet] ngo:phone  "+90 555 001 0001" .
+    #  ngo40:d[ahmet] ngo:email  "ahmet@example.com" .
+    #  ngo40:d[ahmet] ngo:twitterHandle "@ahmetyilmaz" .
+    #
+    #  ngo40:d[ahmet] ngo:phone "+90 555 001 0001" {|
+    #      ngo:contactStatus   ngo40:v[aktif-iri] ;
+    #      ngo:contactNote     "22:00'den sonra aramayın" ;
+    #      ngo:contactPriority 1
+    #  |} .
+    #
+    #  ngo40:d[ahmet] ngo:twitterHandle "@ahmetyilmaz" {|
+    #      ngo:contactStatus ngo40:v[az-aktif-iri]
+    #  |} .
+    #
+    #  Adres annotation:
+    #  ngo40:d[ahmet] ngo:hasAddress ngo40:d[ahmet-adres] {|
+    #      ngo:addressType ngo40:v[ev-iri]
+    #  |} .
+
+    # ── PATTERN 6: Katılım Durumu Geçişi ─────────────────────────────────────
+    #
+    #  Senaryo: Fatma aktif gönüllüyken Çankaya İlçe Başkanlığı kuruldu,
+    #  resmi üye oldu.
+    #
+    #  # Eski durum silinir, yeni eklenir:
+    #  # DELETE: ngo40:d[fatma] ngo:participationStatus ngo40:v[aktif-gonullu-iri]
+    #  # ADD:    ngo40:d[fatma] ngo:participationStatus ngo40:v[resmi-uye-iri]
+    #  #         ngo40:d[fatma] ngo:memberOf            ngo40:d[cankaya-ilce-iri]
+    #
+    #  Geçiş tarihi annotation:
+    #  ngo40:d[fatma] ngo:participationStatus ngo40:v[resmi-uye-iri] {|
+    #      ngo:since "2025-03-15"^^xsd:date ;
+    #      ngo:notes "Çankaya İlçe Başkanlığı kuruluşuyla dönüşüm"
+    #  |} .
+
 }

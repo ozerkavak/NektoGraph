@@ -343,7 +343,7 @@ export class SystemBar {
             <div class="sys-dd-item"><span>Main Store:</span><span class="badge">${repoStats.main}</span></div>
             <div class="sys-dd-item"><span>Diff Store:</span><span class="badge">${repoStats.diff}</span></div>
             <div class="sys-dd-sec">Version</div>
-             <div class="sys-dd-item"><span>Client:</span><span class="badge">Beta v1.0.4</span></div>
+             <div class="sys-dd-item"><span>Client:</span><span class="badge">Beta v1.0.5</span></div>
         `;
     }
 
