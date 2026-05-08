@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/edit-engine",
-    "version": "1.0.5-beta",
+    "version": "1.0.6-beta",
     "description": "Edit Engine and Session Management for Quadstore.",
     "main": "./dist/edit-engine.umd.js",
     "module": "./dist/edit-engine.es.js",

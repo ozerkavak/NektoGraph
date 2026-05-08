@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/data-sync",
-    "version": "1.0.5-beta",
+    "version": "1.0.6-beta",
     "description": "Modular UI Synchronization Engine for Nektograph.",
     "main": "./dist/data-sync.umd.js",
     "module": "./dist/data-sync.es.js",

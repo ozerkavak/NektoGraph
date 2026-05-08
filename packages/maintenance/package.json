@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/maintenance",
-    "version": "1.0.5-beta",
+    "version": "1.0.6-beta",
     "description": "Maintenance and Data Management utilities for Quadstore.",
     "private": true,
     "main": "dist/index.js",

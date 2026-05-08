@@ -68,7 +68,7 @@ export class AppState {
     public windowManager: WindowManager;
     public generator: IDGenerator;
     public dataSync: DataSyncEngine;
-    
+
     public language: 'en' | 'tr' = 'en'; // Default language
 
     public prefixes: Record<string, string> = {};
@@ -158,7 +158,7 @@ export class AppState {
             invalidateCache: () => {
                 try {
                     KGEntity.invalidateAll();
-                    IdentityMap.clear(); 
+                    IdentityMap.clear();
                 } catch (e) {
                     console.warn('[State] Cache invalidation failed, continuing with UI refresh:', e);
                 }
@@ -191,6 +191,25 @@ export class AppState {
         this.reactivity = new ReactivityService(this.store, this.windowManager);
         this.sessionMonitor = new SessionMonitor(this.factory, this.dataSync);
         this.reactivity.init();
+
+        // 9. Global Graph Discovery Listeners
+        this.bindStoreListeners();
+    }
+
+    private bindStoreListeners() {
+        this.store.on('data', (event) => {
+            if (event.type === 'add') {
+                event.quads.forEach(q => this.graphMonitor.incrementGraphCount(q.graph, 'main'));
+            }
+        });
+    }
+
+    private bindSessionListeners(session: DraftStore) {
+        session.on('data', (event) => {
+            if (event.type === 'add') {
+                event.quads.forEach(q => this.graphMonitor.incrementGraphCount(q.graph, 'draft'));
+            }
+        });
     }
 
     // --- Graph & Repository Management ---
@@ -257,7 +276,7 @@ export class AppState {
         const count = isRemote ? ++this.remoteSourceCount : ++this.localSourceCount;
         const sourceID = `${isRemote ? 'remote' : 'local'}_${count.toString().padStart(2, '0')}`.replace(/\s+/g, '_');
         const effectiveTargetURI = targetGraphURI || (intendedType === 'ontology' ? ONTOLOGY_GRAPH_URI : (`http://example.org/graphs/data_from/${filename.replace(/\s+/g, '_')}`));
- 
+
         this.inference.pause();
         KGEntity.invalidateAll();
 
@@ -568,7 +587,7 @@ export class AppState {
                 if (subTerm.termType === 'BlankNode' && isReificationLink) {
                     if (processedBNodes.has(q[0])) continue;
                     processedBNodes.add(q[0]);
-                    
+
                     const bundle = composite.match(q[0], null, null, q[3]);
                     for (const bq of bundle) {
                         session.delete(bq[0], bq[1], bq[2], bq[3]);
@@ -594,11 +613,11 @@ export class AppState {
         this.ensureSession();
         const session = this.currentSession!;
         const composite = new CompositeStore(this.store, session);
-        
+
         // Generate a random 6-char alphanumeric BNode ID (e.g., b_xy12z3)
         const randomSuffix = Math.random().toString(36).substring(2, 8);
         const bnode = this.factory.blankNode(`b_${randomSuffix}`);
-        
+
         // 1. Link the Triple to the BNode (Occurrence/Reification link)
         const reifiesPred = this.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies');
         session.add(bnode, reifiesPred, tripleId, targetGraphId);
@@ -644,7 +663,7 @@ export class AppState {
                 if (subTerm.termType === 'BlankNode' && isReificationLink) {
                     if (processedBNodes.has(q[0])) continue;
                     processedBNodes.add(q[0]);
-                    
+
                     const bundle = composite.match(q[0], null, null, q[3]);
                     for (const bq of bundle) {
                         session.delete(bq[0], bq[1], bq[2], bq[3]);
@@ -663,7 +682,7 @@ export class AppState {
      */
     public mergeDuplicateQuads(tripleIds: NodeID[], targetGraphId: NodeID) {
         let sessionStarted = false;
-        
+
         for (const tid of tripleIds) {
             const t = this.factory.decode(tid) as any;
             if (t.termType !== 'Triple') continue;
@@ -672,7 +691,7 @@ export class AppState {
             const composite = sessionForLookup ? new CompositeStore(this.store, sessionForLookup) : this.store;
 
             const matches = Array.from(composite.match(t.subject, t.predicate, t.object, null));
-            if (matches.length === 0) continue; 
+            if (matches.length === 0) continue;
 
             if (!sessionStarted) {
                 this.ensureSession();
@@ -680,12 +699,12 @@ export class AppState {
             }
 
             const session = this.currentSession!;
-            
+
             // Delete from all original graphs
             for (const q of matches) {
                 session.delete(q[0], q[1], q[2], q[3]);
             }
-            
+
             // Add exactly one to target graph
             session.add(t.subject, t.predicate, t.object, targetGraphId);
         }
@@ -705,23 +724,23 @@ export class AppState {
         for (const qid of quadIds) {
             const quadToken = this.factory.decode(qid) as any;
             if (!quadToken || !quadToken.subject) continue;
-            
+
             const subjectId = quadToken.subject;
             const subjectTerm = this.factory.decode(subjectId) as any;
             if (subjectTerm.termType !== 'BlankNode') continue;
-            
+
             // Resolve target triple from Store OR Session (using composite view)
             let tripleId: NodeID | null = null;
             const sessionForLookup = this.currentSession;
             const searchSource = sessionForLookup ? new CompositeStore(this.store, sessionForLookup) : this.store;
-            
+
             const occurrencePred = this.factory.namedNode('http://www.w3.org/ns/rdf-star#occurrenceOf');
             const reifiesPred = this.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies');
 
             // Search all graphs for the BNode (occurrenceOf | reifies) link
             for (const q of searchSource.match(subjectId, occurrencePred, null, null)) {
                 tripleId = q[2];
-                break; 
+                break;
             }
             if (!tripleId) {
                 for (const q of searchSource.match(subjectId, reifiesPred, null, null)) {
@@ -735,15 +754,15 @@ export class AppState {
                     this.ensureSession();
                     sessionStarted = true;
                 }
-                
+
                 const session = this.currentSession!;
                 affectedBNodes.add(subjectId);
 
                 // Find ALL copies of this specific BNode annotation and delete from their original graphs
                 for (const raw of searchSource.match(subjectId, quadToken.predicate, quadToken.object, null)) {
-                     session.delete(raw[0], raw[1], raw[2], raw[3]);
+                    session.delete(raw[0], raw[1], raw[2], raw[3]);
                 }
-                
+
                 // Add the unpacked one to the target graph
                 session.add(tripleId, quadToken.predicate, quadToken.object, targetGraphId);
             }
@@ -786,12 +805,23 @@ export class AppState {
         const query = this.parser.parse(queryStr);
 
         if ('type' in query && query.type === 'update') {
-            await this.sparql.execute(query as any, baseGraphID);
+            // 🎯 Ensure session exists (create if missing)
+            this.ensureSession();
+            
+            // 🎯 Use a specialized engine bound to the session's DraftStore
+            // This redirects all INSERT/DELETE operations to the session's Draft layer.
+            const sessionEngine = new SPARQLEngine(this.currentSession!, this.factory);
+            await sessionEngine.execute(query as any, baseGraphID);
+
             this.resetDraftCounts(); // Force recount of all graphs for the UI
             this.reactivity.triggerManualRefresh();
+
             return {
-                variables: ['Update Status'],
-                results: [{ 'Update Status': { termType: 'Literal', value: 'Success', datatype: { value: 'http://www.w3.org/2001/XMLSchema#string' } } }]
+                variables: ['Update Status', 'Context'],
+                results: [{ 
+                    'Update Status': { termType: 'Literal', value: 'Success', datatype: { value: 'http://www.w3.org/2001/XMLSchema#string' } },
+                    'Context': { termType: 'Literal', value: 'Data stored in Active Session. Review changes in Graph Manager / Editor before committing.', datatype: { value: 'http://www.w3.org/2001/XMLSchema#string' } }
+                }]
             };
         }
 
@@ -883,11 +913,16 @@ export class AppState {
     public currentSession: DraftStore | null = null;
 
     public startSession() {
-        if (!this.currentSession) {
-            this.currentSession = this.sessionManager.createSession();
-            this.bindSessionInference(this.currentSession);
-            this.sessionMonitor.trackSession(this.currentSession);
-        }
+        if (this.currentSession) return this.currentSession;
+        this.currentSession = this.sessionManager.createSession();
+        
+        // 1. Bind Core Logic (Inference & Discovery)
+        this.bindSessionInference(this.currentSession);
+        this.bindSessionListeners(this.currentSession);
+        
+        // 2. Bind UI Monitors
+        this.sessionMonitor.trackSession(this.currentSession);
+        
         return this.currentSession;
     }
 
@@ -916,7 +951,7 @@ export class AppState {
 
         // --- STEP 2.2: Extract Mutated Entity IDs for Granular Refresh ---
         const mutatedIds = new Set<bigint>();
-        
+
         // 1. Collect from additions
         for (const q of session.additions.match(null, null, null, null)) {
             mutatedIds.add(q[0]); // Subject
@@ -944,7 +979,7 @@ export class AppState {
         this.currentSession = null;
         uiState.currentSession = null;
         this.sessionMonitor.trackSession(null);
-        
+
         // --- STEP 2.1: Granular Notification ---
         if (mutatedIds.size > 0 && mutatedIds.size <= 100) {
             this.dataSync.syncDirtyEntities(Array.from(mutatedIds), 'critical');
@@ -968,8 +1003,8 @@ export class AppState {
         const toClose: string[] = [];
         this.windowManager.windows.forEach((win, winId) => {
             const entityId = win.state.entityId;
-            if (!entityId || !entityId.includes(':')) return; 
-            
+            if (!entityId || !entityId.includes(':')) return;
+
             try {
                 const node = this.factory.namedNode(entityId);
                 // Standard check: if it's not in the main store, it's probably a new session-only entity
@@ -1004,7 +1039,7 @@ export class AppState {
         for (const info of this.graphs.values()) {
             info.mainCount = undefined; // Force recount on next getGraphStats for accuracy
             info.diffCount = undefined;
-            
+
             if (this.currentSession) {
                 // Count active draft quads from memory store
                 let aCount = 0;
@@ -1033,7 +1068,7 @@ export class AppState {
         const targetGraphNode = graphURI ? this.factory.namedNode(graphURI) : undefined;
 
         this.tripleManager.addTriple(this.currentSession!, sNode, pNode, oNode, targetGraphNode);
-        
+
         // Always track metadata counts regardless of sync mode
         this.incrementGraphCount(targetGraphNode || DEFAULT_GRAPH, 'draft');
 
@@ -1086,7 +1121,7 @@ export class AppState {
         if (this.dataSyncMode === 'on') {
             this.dataSync.fullRefresh();
         } else {
-             this.windowManager.refreshAllWindows(); 
+            this.windowManager.refreshAllWindows();
         }
     }
 
@@ -1254,7 +1289,7 @@ export class AppState {
             });
         });
     }
-    
+
     /**
      * Generates a recursive, semantic 'Premium' label for an RDF-star Triple.
      * Uses KGEntity labels where available.
@@ -1263,17 +1298,17 @@ export class AppState {
         try {
             const t = this.factory.decode(nodeId) as any;
             if (!t || t.termType !== 'Triple') return nodeId.toString();
-            
+
             // Fix: Constituents are raw NodeIDs (bigints). Must decode to check for nested Triples.
             const sTerm = this.factory.decode(t.subject);
             const oTerm = this.factory.decode(t.object);
 
-            const s = sTerm.termType === 'Triple' 
-                ? this.getTriplePremiumLabel(t.subject) 
+            const s = sTerm.termType === 'Triple'
+                ? this.getTriplePremiumLabel(t.subject)
                 : KGEntity.get(t.subject).getDisplayName();
-                
+
             const p = KGEntity.get(t.predicate).getDisplayName();
-            
+
             const o = oTerm.termType === 'Triple'
                 ? this.getTriplePremiumLabel(t.object)
                 : (oTerm.termType === 'Literal' ? oTerm.value : KGEntity.get(t.object).getDisplayName());
@@ -1297,7 +1332,7 @@ export class AppState {
                 ids.push(...this.collectDeepIds(t.predicate));
                 ids.push(...this.collectDeepIds(t.object));
             }
-        } catch (e) {}
+        } catch (e) { }
         return ids;
     }
 

@@ -123,7 +123,7 @@ export class RemoteLoader {
         const headers: any = {
             'Accept': 'application/sparql-results+json, */*',
             'Content-Type': 'application/sparql-update',
-            'User-Agent': 'NektoGraph/Beta-v1.0.5'
+            'User-Agent': 'NektoGraph/Beta-v1.0.6'
         };
         if (auth) headers['Authorization'] = `Basic ${btoa(`${auth.user}:${auth.pass}`)}`;
         
@@ -143,7 +143,7 @@ export class RemoteLoader {
         const headers: any = {
             'Accept': accept,
             'Content-Type': 'application/x-www-form-urlencoded',
-            'User-Agent': 'NektoGraph/Beta-v1.0.5 (SPARQL/1.1)'
+            'User-Agent': 'NektoGraph/Beta-v1.0.6 (SPARQL/1.1)'
         };
         if (auth) headers['Authorization'] = `Basic ${btoa(`${auth.user}:${auth.pass}`)}`;
         

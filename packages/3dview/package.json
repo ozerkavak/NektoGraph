@@ -1,6 +1,6 @@
 {
     "name": "@triplestore/3dview",
-    "version": "1.0.5-beta",
+    "version": "1.0.6-beta",
     "description": "Zero-dependency WebGL 2.0 3D Entity Voyager library",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
