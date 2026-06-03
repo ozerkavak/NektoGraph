@@ -1,0 +1,13 @@
+{
+  "name": "@nektograph/headless-api",
+  "version": "1.0.7-beta",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "devDependencies": {
+    "bun-types": "^1.1.0",
+    "typescript": "^5.0.0"
+  }
+}

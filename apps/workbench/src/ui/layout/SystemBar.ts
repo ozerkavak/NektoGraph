@@ -336,14 +336,25 @@ export class SystemBar {
         const content = document.getElementById('sb-monitor-content');
         if (!content) return;
 
+        let mode = 'Standalone';
+        if (typeof window !== 'undefined' && window.location.protocol !== 'file:') {
+            if (window.location.port === '3000') {
+                mode = 'Website';
+            } else if (window.location.port === '3001') {
+                mode = 'Server';
+            } else {
+                mode = 'Website';
+            }
+        }
+
         const repoStats = state.getRepoStats();
         content.innerHTML = `
             <div class="sys-dd-sec">System Status</div>
-            <div class="sys-dd-item"><span>Server:</span><span class="badge ok-bg">ON</span></div>
+            <div class="sys-dd-item"><span>Mode:</span><span class="badge ok-bg">${mode}</span></div>
             <div class="sys-dd-item"><span>Main Store:</span><span class="badge">${repoStats.main}</span></div>
             <div class="sys-dd-item"><span>Diff Store:</span><span class="badge">${repoStats.diff}</span></div>
             <div class="sys-dd-sec">Version</div>
-             <div class="sys-dd-item"><span>Client:</span><span class="badge">Beta v1.0.6</span></div>
+             <div class="sys-dd-item"><span>Client:</span><span class="badge">Beta v1.0.7</span></div>
         `;
     }
 

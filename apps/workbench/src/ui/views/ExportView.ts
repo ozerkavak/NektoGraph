@@ -29,6 +29,8 @@ export function renderExport() {
     const container = document.querySelector('.view-container') as HTMLElement;
     if (!container) return;
 
+    const isServerMode = typeof window !== 'undefined' && window.location.protocol !== 'file:' && window.location.port === '3001';
+
     // View Header & Layout Initialization
     container.innerHTML = `
         <div style="max-width: 1400px; width: 100%; margin: 0 auto;">
@@ -38,6 +40,7 @@ export function renderExport() {
             </div>
 
             <div class="card-grid" style="display: flex; flex-direction: column; gap: 24px;">
+                ${isServerMode ? '<div class="card" id="card-api"></div>' : ''}
                 <div class="card" id="card-full"></div>
                 <div class="card" id="card-ontology"></div>
                 <div class="card" id="card-diff"></div>
@@ -46,6 +49,9 @@ export function renderExport() {
     `;
 
     // Initialize sub-panels
+    if (isServerMode) {
+        renderPanel('api', document.getElementById('card-api')!);
+    }
     renderPanel('full', document.getElementById('card-full')!);
     renderPanel('diff', document.getElementById('card-diff')!);
     renderPanel('ontology', document.getElementById('card-ontology')!);
@@ -54,13 +60,19 @@ export function renderExport() {
 /**
  * Renders an export control panel (Full, Ontology, or Diff)
  */
-function renderPanel(type: 'full' | 'diff' | 'ontology', root: HTMLElement) {
+function renderPanel(type: 'full' | 'diff' | 'ontology' | 'api', root: HTMLElement) {
     let title = '';
     let icon = '';
     let desc = '';
     let defaultFilename = '';
 
     switch (type) {
+        case 'api':
+            title = 'API Server Export';
+            icon = '⚡';
+            desc = 'Sync the active store and string pool dictionary directly to Python/Node API Server.';
+            defaultFilename = 'http://localhost:3001';
+            break;
         case 'full':
             title = 'Full Quadstore';
             icon = '📚';
@@ -91,7 +103,7 @@ function renderPanel(type: 'full' | 'diff' | 'ontology', root: HTMLElement) {
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
+            <div style="display: ${type === 'api' ? 'none' : 'flex'}; align-items: center; gap: 12px; font-size: 11px;">
                 <label style="font-weight: 700; color: var(--text-muted); min-width: 90px; letter-spacing: 0.5px;">Export Mode:</label>
                 <div style="display: flex; gap: 12px;">
                     <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--text-main);">
@@ -106,7 +118,7 @@ function renderPanel(type: 'full' | 'diff' | 'ontology', root: HTMLElement) {
                 </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
+            <div style="display: ${type === 'api' ? 'none' : 'flex'}; align-items: center; gap: 12px; font-size: 11px;">
                 <label style="font-weight: 700; color: var(--text-muted); min-width: 90px; letter-spacing: 0.5px;">Format:</label>
                 <select id="${type}-format" class="form-select" style="max-width: 150px; height: 26px; padding: 0 8px; font-size: 11px;"></select>
                 <div id="${type}-format-help" style="margin-left: auto; font-size: 10px; opacity: 0.4; font-style: italic;">
@@ -115,10 +127,10 @@ function renderPanel(type: 'full' | 'diff' | 'ontology', root: HTMLElement) {
             </div>
 
             <div style="display: flex; align-items: center; gap: 12px; font-size: 11px;">
-                <label style="font-weight: 700; color: var(--text-muted); min-width: 90px; letter-spacing: 0.5px;">Filename:</label>
+                <label style="font-weight: 700; color: var(--text-muted); min-width: 90px; letter-spacing: 0.5px;">${type === 'api' ? 'API Address:' : 'Filename:'}</label>
                 <input type="text" id="${type}-filename" class="form-input" value="${defaultFilename}" style="max-width: 200px; height: 26px; font-size: 11px;">
                 <div style="margin-left: auto; font-size: 10px; opacity: 0.4; font-style: italic;">
-                    Notes: Files saved to Downloads folder.
+                    ${type === 'api' ? 'Notes: Port 3001 is default for local server.' : 'Notes: Files saved to Downloads folder.'}
                 </div>
             </div>
         </div>
@@ -132,30 +144,32 @@ function renderPanel(type: 'full' | 'diff' | 'ontology', root: HTMLElement) {
                 <span>Select which named graphs to include. Empty graphs hidden.</span>
                 <a href="#" id="${type}-select-all" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">Select All</a>
             </div>
-        </div>
-
-        <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.03);">
+               <div style="display: ${type === 'api' ? 'none' : 'block'}; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.03);">
             <div style="display: flex; align-items: center; gap: 20px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                      <input type="checkbox" id="${type}-check-base" checked>
                      <label style="font-size: 11px; font-weight: 600; opacity: 0.8;">ENFORCE BASE:</label>
                      <input type="text" id="${type}-base-uri" class="form-input" list="${type}-base-options" style="width: 150px; height: 22px; font-size: 10px; margin: 0;" placeholder="http://example.org/">
                      <datalist id="${type}-base-options">
-                         ${[...new Set([...state.baseURIs, ...Object.values(state.prefixes)])].sort().map(uri => `<option value="${uri}"></option>`).join('')}
+                          ${[...new Set([...state.baseURIs, ...Object.values(state.prefixes)])].sort().map(uri => `<option value="${uri}"></option>`).join('')}
                      </datalist>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="${type}-check-prefix" checked>
                     <label style="font-size: 11px; font-weight: 600; opacity: 0.8;">INCLUDE PREFIXES</label>
                 </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="${type}-check-legacy-star">
+                    <label style="font-size: 11px; font-weight: 600; opacity: 0.8;" title="Removes RDF 1.2 parentheses from triple terms for GraphDB compatibility.">LEGACY RDF-STAR</label>
+                </div>
                 <div id="${type}-base-help" style="margin-left: auto; font-size: 10px; opacity: 0.4; font-style: italic;">
                     Notes: Optimization for import/readability.
                 </div>
             </div>
-        </div>
+        </div>     </div>
 
         <button id="${type}-btn-export" class="btn-box primary" style="width: 100%; justify-content: center; height: 32px; font-size: 12px; font-weight: 800; letter-spacing: 1px;">
-            DOWNLOAD ${title}
+            ${type === 'api' ? 'PUSH TO API SERVER' : `DOWNLOAD ${title.toUpperCase()}`}
         </button>
         <div id="${type}-status" style="margin-top: 12px; padding: 8px; border-radius: 4px; display: none; text-align: center; font-size: 11px;"></div>
     `;
@@ -271,7 +285,11 @@ function renderPanel(type: 'full' | 'diff' | 'ontology', root: HTMLElement) {
     });
 
     btnExport.addEventListener('click', () => {
-        executeExport(type);
+        if (type === 'api') {
+            executeApiExport();
+        } else {
+            executeExport(type as any);
+        }
     });
 }
 
@@ -296,6 +314,7 @@ async function executeExport(type: 'full' | 'diff' | 'ontology') {
         const usePrefixes = (document.getElementById(`${type}-check-prefix`) as HTMLInputElement).checked;
         const enforceBase = (document.getElementById(`${type}-check-base`) as HTMLInputElement).checked;
         const baseURI = (document.getElementById(`${type}-base-uri`) as HTMLInputElement).value.trim();
+        const legacyRdfStar = (document.getElementById(`${type}-check-legacy-star`) as HTMLInputElement).checked;
 
         if (enforceBase && !baseURI) throw new Error("Base URI required for enforcement.");
 
@@ -362,7 +381,8 @@ async function executeExport(type: 'full' | 'diff' | 'ontology') {
         const output = await serializer.serialize(quads, {
             format: formatKey,
             prefixes: usePrefixes ? cleanPrefixes : undefined,
-            baseIRI: enforceBase && baseURI ? baseURI : undefined
+            baseIRI: enforceBase && baseURI ? baseURI : undefined,
+            legacyRdfStar: legacyRdfStar
         });
 
         // 3. Browser Download Trigger
@@ -382,6 +402,103 @@ async function executeExport(type: 'full' | 'diff' | 'ontology') {
 
     } catch (e: any) {
         statusEl.innerHTML = `❌ Error: ${e.message}`;
+        statusEl.style.color = 'var(--accent-red)';
+        statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
+    }
+}
+
+async function executeApiExport() {
+    const type = 'api';
+    const statusEl = document.getElementById(`${type}-status`)!;
+    statusEl.innerHTML = '';
+    statusEl.style.display = 'none';
+
+    try {
+        const apiAddress = (document.getElementById(`${type}-filename`) as HTMLInputElement).value.trim();
+        if (!apiAddress) throw new Error("API Address is required.");
+
+        const checkboxes = document.querySelectorAll(`.${type}-graph-check:checked`) as NodeListOf<HTMLInputElement>;
+        const selectedGraphs = new Set(Array.from(checkboxes).map(c => c.value));
+
+        if (selectedGraphs.size === 0) throw new Error("No graphs selected for sync.");
+
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `⏳ Collecting store data and building String Pool dictionary...`;
+        statusEl.style.background = 'var(--bg-hover)';
+
+        // 1. Gather all quads and build dictionary of used NodeIDs
+        const sourceStore = state.overlay;
+        const activeQuads: bigint[][] = [];
+        const uniqueNodeIDs = new Set<bigint>();
+
+        for (const q of sourceStore.match(null, null, null, null)) {
+            const graphId = q[3];
+            const graphURI = graphId === 0n ? '' : state.factory.decode(graphId).value;
+
+            if (selectedGraphs.has(graphURI)) {
+                activeQuads.push([q[0], q[1], q[2], q[3]]);
+                uniqueNodeIDs.add(q[0]);
+                uniqueNodeIDs.add(q[1]);
+                uniqueNodeIDs.add(q[2]);
+                uniqueNodeIDs.add(q[3]);
+            }
+        }
+
+        const size = activeQuads.length;
+        if (size === 0) throw new Error("No quads found in the selected graphs.");
+
+        // 2. Build dictionary JSON
+        const dictionary: Record<string, any> = {};
+        for (const id of uniqueNodeIDs) {
+            try {
+                dictionary[id.toString()] = state.factory.decode(id);
+            } catch (e) {}
+        }
+
+        statusEl.innerHTML = `⏳ Sending String Pool dictionary (${Object.keys(dictionary).length} items)...`;
+
+        // 3. POST dictionary to server
+        const dictRes = await fetch(`${apiAddress}/api/v1/store/dictionary`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dictionary, (_, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+            )
+        });
+        if (!dictRes.ok) {
+            const errBody = await dictRes.json();
+            throw new Error(`Dictionary Ingestion Failed: ${errBody.message || dictRes.statusText}`);
+        }
+
+        statusEl.innerHTML = `⏳ Pushing 32-byte binary layout stream (${size} quads)...`;
+
+        // 4. Serialize to flat 32-byte layout BigUint64Array
+        const uploadBuffer = new ArrayBuffer(size * 32);
+        const uploadView = new BigUint64Array(uploadBuffer);
+        let idx = 0;
+        for (const [s, p, o, g] of activeQuads) {
+            uploadView[idx++] = s;
+            uploadView[idx++] = p;
+            uploadView[idx++] = o;
+            uploadView[idx++] = g;
+        }
+
+        // 5. POST binary stream to server
+        const binRes = await fetch(`${apiAddress}/api/v1/store/binary`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: new Uint8Array(uploadBuffer)
+        });
+        if (!binRes.ok) {
+            const errBody = await binRes.json();
+            throw new Error(`Binary Ingestion Failed: ${errBody.message || binRes.statusText}`);
+        }
+
+        statusEl.innerHTML = `✅ API Sync Success! Sent ${size} quads and aligned String Pool.`;
+        statusEl.style.color = 'var(--accent-green)';
+        statusEl.style.background = 'rgba(34, 197, 94, 0.1)';
+    } catch (e: any) {
+        statusEl.innerHTML = `❌ Sync Error: ${e.message}`;
         statusEl.style.color = 'var(--accent-red)';
         statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
     }
