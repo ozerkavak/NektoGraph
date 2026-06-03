@@ -1,9 +1,10 @@
 {
-  "name": "antigravity-monorepo",
+  "name": "nektograph-monorepo",
   "version": "1.0.7-beta",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "lib_sources/*"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
@@ -11,6 +12,7 @@
     "test": "echo 'No tests yet'"
   },
   "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.60.1",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^3.0.0"
